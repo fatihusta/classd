@@ -71,6 +71,7 @@ Description: Untangle Total Security Bundle
  The Untangle Total Security Bundle Store Item.
 
 Package: untangle-libitem-professional-package
+Section: premium
 Architecture: any
 Depends: untangle-libitem-portal,untangle-libitem-boxbackup, untangle-professional-core
 Conflicts: professional-package-disabler, portal-disabler, boxbackup-disabler
@@ -1121,6 +1122,7 @@ Description: Untangle Reports
  Untangle Reports Store Item.
 
 Package: untangle-libitem-boxbackup
+Section: premium
 Architecture: any
 Depends: untangle-node-boxbackup, untangle-libitem-professional-package
 Conflicts: boxbackup-disabler
@@ -1211,6 +1213,7 @@ Description: Untangle Configuration Backup
  The Untangle Configuration Backup Store Item.
 
 Package: untangle-libitem-portal
+Section: premium
 Architecture: any
 Depends: untangle-node-portal, untangle-libitem-professional-package
 Conflicts: portal-disabler
@@ -1289,6 +1292,7 @@ Description: Untangle Remote Access Portal
  The Untangle Remote Access Portal Store Item.
 
 Package: untangle-libitem-trial30-professional-package
+Section: premium
 Architecture: any
 Depends: untangle-libitem-trial30-portal,untangle-libitem-trial30-boxbackup, untangle-professional-core
 XB-View-Position: 10
@@ -1390,6 +1394,7 @@ Description: Untangle Dual Virus Blocker 30-Day Trial
  The Untangle Dual Virus Blocker 30-Day Trial Store Item.
 
 Package: untangle-libitem-trial30-portal
+Section: premium
 Architecture: any
 Depends: untangle-node-portal
 Conflicts: portal-storeitem
@@ -1465,6 +1470,7 @@ Description: Untangle Remote Access Portal 30-Day Trial
  The Untangle Remote Access Portal 30-Day Trial Store Item.
 
 Package: untangle-libitem-trial30-boxbackup
+Section: premium
 Architecture: any
 Depends: untangle-node-boxbackup
 Conflicts: boxbackup-storeitem
