@@ -340,6 +340,7 @@ Description: Untangle Web Content Control
  The Untangle Web Content Control Store Item.
 
 Package: untangle-libitem-hauri
+Section: premium
 Architecture: any
 Depends: untangle-node-hauri
 Conflicts: hauri-disabler
@@ -1355,6 +1356,7 @@ Description: Untangle Professional Packages 30-Day Trial
  The Untangle Professional Package 30-Day Trial Store Item.
 
 Package: untangle-libitem-trial30-hauri
+Section: premium
 Architecture: any
 Depends: untangle-node-hauri
 Conflicts: hauri-storeitem
