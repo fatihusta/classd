@@ -1,0 +1,12 @@
+Source: untangle-appliance-int
+Section: admin
+Priority: optional
+Maintainer: Sebastien Delafond <seb@untangle.com>
+Build-Depends: debhelper (>> 3.0.0)
+Standards-Version: 3.7.2
+
+Package: untangle-appliance-int
+Architecture: any
+Depends: untangle-appliance, untangle-client-windows-jre, untangle-bootsplash, atop
+Description: The Untangle appliance internal
+ The Untangle appliance internal-to-untangle mode.
