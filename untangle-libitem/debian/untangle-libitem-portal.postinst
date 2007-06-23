@@ -4,5 +4,5 @@
 
 
 
-mcli reloadLicenses
+mcli -t 30 reloadLicenses > /dev/null 2>&1
 true

@@ -1,5 +1,5 @@
 #!/bin/sh
 
 /usr/share/untangle/bin/xpd ucb-trial.ulg 0x43341c3f3e0f5f04 d3064270365967046cc010a0429739d4
-mcli reloadLicenses
+mcli -t 30 reloadLicenses > /dev/null 2>&1
 true
