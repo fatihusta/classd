@@ -75,6 +75,9 @@ Section: premium
 Architecture: any
 Depends: untangle-libitem-portal,untangle-libitem-boxbackup, untangle-professional-core
 Conflicts: professional-package-disabler, portal-disabler, boxbackup-disabler
+Conflicts: professional-package-storeitem
+Replaces: professional-package-storeitem
+Provides: professional-package-storeitem
 XB-View-Position: 20
 XB-Display-Name: Professional Package
 XB-Untangle-Type: lib_item
