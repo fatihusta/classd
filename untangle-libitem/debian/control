@@ -1279,6 +1279,9 @@ Package: untangle-libitem-trial30-professional-package
 Section: premium
 Architecture: any
 Depends: untangle-libitem-trial30-portal,untangle-libitem-trial30-boxbackup, untangle-professional-core
+Conflicts: professional-package-trial30-storeitem
+Replaces: professional-package-trial30-storeitem
+Provides: professional-package-trial30-storeitem
 XB-View-Position: 10
 XB-Display-Name: Professional Package 30-Day Trial
 XB-Untangle-Type: trial
@@ -1342,9 +1345,9 @@ Package: untangle-libitem-trial30-hauri
 Section: premium
 Architecture: any
 Depends: untangle-node-hauri
-Conflicts: hauri-storeitem
-Replaces: hauri-storeitem
-Provides: hauri-storeitem
+Conflicts: hauri-trial30-storeitem
+Replaces: hauri-trial30-storeitem
+Provides: hauri-trial30-storeitem
 XB-View-Position: 60
 XB-Display-Name: Dual Virus Blocker 30-Day Trial
 XB-Untangle-Type: trial
@@ -1382,9 +1385,9 @@ Package: untangle-libitem-trial30-portal
 Section: premium
 Architecture: any
 Depends: untangle-node-portal
-Conflicts: portal-storeitem
-Replaces: portal-storeitem
-Provides: portal-storeitem
+Conflicts: portal-trial30-storeitem
+Replaces: portal-trial30-storeitem
+Provides: portal-trial30-storeitem
 XB-View-Position: 75
 XB-Display-Name: Remote Access Portal 30-Day Trial
 XB-Untangle-Type: trial
@@ -1458,9 +1461,9 @@ Package: untangle-libitem-trial30-boxbackup
 Section: premium
 Architecture: any
 Depends: untangle-node-boxbackup
-Conflicts: boxbackup-storeitem
-Replaces: boxbackup-storeitem
-Provides: boxbackup-storeitem
+Conflicts: boxbackup-trial30-storeitem
+Replaces: boxbackup-trial30-storeitem
+Provides: boxbackup-trial30-storeitem
 XB-View-Position: 1015
 XB-Display-Name: Configuration Backup 30-Day Trial
 XB-Untangle-Type: trial
