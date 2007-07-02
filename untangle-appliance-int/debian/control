@@ -7,7 +7,8 @@ Standards-Version: 3.7.2
 
 Package: untangle-appliance-int
 Architecture: any
-Depends: untangle-appliance, untangle-client-windows-jre, untangle-bootsplash, atop
+Essential: yes
+Depends: untangle-vm, untangle-appliance, untangle-client-windows-jre, untangle-bootsplash, atop, untangle-iptables, untangle-libnfnetlink0, untangle-libnetfilter-queue0, untangle-ujac2pdf, untangle-nsis-addons, untangle-restore-tools, untangle-dhclient-config, untangle-postgresql-config
 Conflicts: kiosk-mv, dlocate, slocate, firefox-r-kiosk
 Provides: kiosk-mv
 Replaces: kiosk-mv
