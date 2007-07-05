@@ -2,7 +2,5 @@
 
 /usr/share/untangle/bin/xpd urap-sub.ulg 0x4735680e3f387b72 8cbc4e31dd28e3b964dab75ec8834a1d
 
-
-
-mcli -t 30 reloadLicenses > /dev/null 2>&1
+/usr/bin/mcli -t 30 reloadLicenses > /dev/null 2>&1
 true
