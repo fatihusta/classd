@@ -1,6 +1,6 @@
 #!/bin/sh
 
-/usr/share/untangle/bin/xpd udvb-sub.ulg 0x675d4dfc6f4657c8 cb9288c27c3bb8196e381ba083f0a5a9
+/usr/share/untangle/bin/xpd udvb-sub.ulg 0x2ba302c60b367e3b cb9288c27c3bb8196e381ba083f0a5a9
 
 /usr/bin/mcli -t 30 reloadLicenses > /dev/null 2>&1
 true

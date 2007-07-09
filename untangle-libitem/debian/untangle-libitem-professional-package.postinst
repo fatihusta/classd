@@ -1,7 +1,8 @@
 #!/bin/sh
 
-/usr/share/untangle/bin/xpd upm-sub.ulg 0x202a5a8f03e750fa 947327ce7d2c9d66f4b8c338a2bbc0a3
-/usr/share/untangle/bin/xpd uudi-sub.ulg 0x52153f920d477c0a b4c30f044588c8ae9e6edbdc76622015
-/usr/share/untangle/bin/xpd uudm-sub.ulg 0x791f4d1148972682 374c0dc2fc0de5fd28238eca348ee66f
+/usr/share/untangle/bin/xpd upm-sub.ulg 0x6f874d646d6e6bca 947327ce7d2c9d66f4b8c338a2bbc0a3
+/usr/share/untangle/bin/xpd uudi-sub.ulg 0x76da5ddc36190b6f b4c30f044588c8ae9e6edbdc76622015
+/usr/share/untangle/bin/xpd uudm-sub.ulg 0x333115a011c37b9d 374c0dc2fc0de5fd28238eca348ee66f
+
 /usr/bin/mcli -t 30 reloadLicenses > /dev/null 2>&1
 true
