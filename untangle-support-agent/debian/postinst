@@ -8,12 +8,11 @@ RBOT_CONF_FILE=/home/rbot/.rbot/conf.yaml
 
 source /etc/default/untangle-vm
 
-if [[ -f $ACTIVATION_KEY_FILE ]] ; then
-  KEY=`perl -npe 's/-//g' /usr/share/untangle/activation.key`
- 
- # FIXME: repeat ?
-  curl --insecure --fail -o /dev/null `printf ${REMOTE_SUPPORT_ENABLE_URL_TEMPLATE} "$KEY" $(/usr/share/untangle/bin/utip)`
+# FIXME: repeat ?
+curl --insecure --fail -o /dev/null `printf ${REMOTE_SUPPORT_ENABLE_URL_TEMPLATE} $(cat ${ACTIVATION_KEY_FILE}) $(/usr/share/untangle/bin/utip)`
 
+if [[ -f $ACTIVATION_KEY_FILE ]] ; then
+  KEY=`perl -npe 's/-//g' ${ACTIVATION_KEY_FILE}`
   CHANNEL="#untangle"
   if [[ $KEY = 012747a7bbff0752 || $KEY = 0000000000000000 ]] ; then
     KEY=`hostname | perl -npe 's/\..*//'`
