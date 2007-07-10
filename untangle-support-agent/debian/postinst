@@ -10,6 +10,10 @@ source /etc/default/untangle-vm
 
 if [[ -f $ACTIVATION_KEY_FILE ]] ; then
   KEY=`perl -npe 's/-//g' /usr/share/untangle/activation.key`
+ 
+ # FIXME: repeat ?
+  curl --insecure --fail -o /dev/null `printf ${REMOTE_SUPPORT_ENABLE_URL_TEMPLATE} "$KEY" $(/usr/share/untangle/bin/utip)`
+
   CHANNEL="#untangle"
   if [[ $KEY = 012747a7bbff0752 || $KEY = 0000000000000000 ]] ; then
     KEY=`hostname | perl -npe 's/\..*//'`
@@ -23,9 +27,6 @@ else
 fi
 
 perl -npe 's/\+NAME\+/'"$KEY"'/ ; s/\+CHANNEL\+/'"$CHANNEL"'/' $RBOT_CONF_FILE.template >| $RBOT_CONF_FILE
-
-# FIXME: repeat ?
-curl --insecure --fail -o /dev/null `printf ${REMOTE_SUPPORT_URL_TEMPLATE} "$KEY" $(/usr/share/untangle/bin/utip)`
 
 if pidof /usr/sbin/sshd > /dev/null ; then
   /etc/init.d/untangle-support-agent stop
