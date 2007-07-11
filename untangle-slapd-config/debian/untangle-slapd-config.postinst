@@ -10,6 +10,7 @@ ourAdminAccount=`ldapAdmin ${UNTANGLE_SLAPD_CONFIG_DIR}/initial.ldif`
 
 if [ ! "$theirAdminAccount" = "$ourAdminAccount" ] ; then
   /etc/init.d/slapd stop
+  killall slapd
   mv ${LDAP_LIB_DIR} /var/backups/ldap-`date -Iseconds`
   mkdir ${LDAP_LIB_DIR}
   cp ${UNTANGLE_SLAPD_CONFIG_DIR}/DB_CONFIG ${LDAP_LIB_DIR}/DB_CONFIG
@@ -17,6 +18,8 @@ if [ ! "$theirAdminAccount" = "$ourAdminAccount" ] ; then
   slapindex
 fi
 
-/etc/init.d/slapd restart
+/etc/init.d/slapd stop
+killall slapd
+/etc/init.d/slapd start
 
 true
