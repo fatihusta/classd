@@ -8,7 +8,7 @@ UNTANGLE_SLAPD_CONFIG_DIR=/usr/share/untangle-slapd-config
 theirAdminAccount=`slapcat | grep -A 1 "LDAP administrator"`
 ourAdminAccount=`grep -A 1 "LDAP administrator" ${UNTANGLE_SLAPD_CONFIG_DIR}/initial.ldif`
 
-if [ $theirAdminAccount != $ourAdminAccount ] ; then
+if [ ! "$theirAdminAccount" = "$ourAdminAccount" ] ; then
   /etc/init.d/slapd stop
   mv ${LDAP_LIB_DIR} /var/backup/ldap-`date -Iseconds`
   mkdir ${LDAP_LIB_DIR}
