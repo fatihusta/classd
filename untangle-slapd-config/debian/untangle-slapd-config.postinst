@@ -4,9 +4,13 @@ exec > /tmp/untangle-slapd-config.postinst.log 2>&1
 
 LDAP_LIB_DIR=/var/lib/ldap
 UNTANGLE_SLAPD_CONFIG_DIR=/usr/share/untangle-slapd-config
-if [ ! -f ${LDAP_LIB_DIR}/DB_CONFIG ] || [ -n "`diff ${LDAP_LIB_DIR}/DB_CONFIG ${UNTANGLE_SLAPD_CONFIG_DIR}/DB_CONFIG`" ] || [ `ls ${LDAP_LIB_DIR}/* | wc -l` -lt 2 ] ; then
+
+theirAdminAccount=`slapcat | grep -A 1 "LDAP administrator"`
+ourAdminAccount=`grep -A 1 "LDAP administrator" ${UNTANGLE_SLAPD_CONFIG_DIR}/initial.ldif`
+
+if [ $theirAdminAccount != $ourAdminAccount ] ; then
   /etc/init.d/slapd stop
-  rm -rf ${LDAP_LIB_DIR}
+  mv ${LDAP_LIB_DIR} /var/backup/ldap-`date -Iseconds`
   mkdir ${LDAP_LIB_DIR}
   cp ${UNTANGLE_SLAPD_CONFIG_DIR}/DB_CONFIG ${LDAP_LIB_DIR}/DB_CONFIG
   slapadd -l ${UNTANGLE_SLAPD_CONFIG_DIR}/initial.ldif
