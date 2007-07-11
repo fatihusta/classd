@@ -9,5 +9,8 @@ if [ ! -f ${LDAP_LIB_DIR}/DB_CONFIG ] || [ -n "`diff ${LDAP_LIB_DIR}/DB_CONFIG $
   cp ${UNTANGLE_SLAPD_CONFIG_DIR}/DB_CONFIG ${LDAP_LIB_DIR}/DB_CONFIG
   slapadd -l ${UNTANGLE_SLAPD_CONFIG_DIR}/initial.ldif
   slapindex
-  /etc/init.d/slapd start
 fi
+
+/etc/init.d/slapd restart
+
+true
