@@ -1,12 +1,14 @@
-#!/bin/sh -x
+#!/bin/sh
 
-exec > /tmp/untangle-slapd-config.postinst.log 2>&1
+ldapAdmin() {
+  grep -A 1 -E '^description: LDAP administrator$'
+}
 
 LDAP_LIB_DIR=/var/lib/ldap
 UNTANGLE_SLAPD_CONFIG_DIR=/usr/share/untangle-slapd-config
 
-theirAdminAccount=`slapcat | grep -A 1 "LDAP administrator"`
-ourAdminAccount=`grep -A 1 "LDAP administrator" ${UNTANGLE_SLAPD_CONFIG_DIR}/initial.ldif`
+theirAdminAccount=`slapcat | ldapAdmin`
+ourAdminAccount=`ldapAdmin ${UNTANGLE_SLAPD_CONFIG_DIR}/initial.ldif`
 
 if [ ! "$theirAdminAccount" = "$ourAdminAccount" ] ; then
   /etc/init.d/slapd stop
