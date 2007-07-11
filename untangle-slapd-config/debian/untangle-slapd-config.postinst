@@ -1,8 +1,6 @@
 #!/bin/sh
 
-ldapAdmin() {
-  grep -A 1 -E '^description: LDAP administrator$'
-}
+alias ldapAdmin="grep -A 1 -E '^description: LDAP administrator$'"
 
 LDAP_LIB_DIR=/var/lib/ldap
 UNTANGLE_SLAPD_CONFIG_DIR=/usr/share/untangle-slapd-config
