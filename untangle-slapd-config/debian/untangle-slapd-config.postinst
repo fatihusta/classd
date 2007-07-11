@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/bin/sh -x
+
+exec > /tmp/untangle-slapd-config.postinst.log 2>&1
 
 LDAP_LIB_DIR=/var/lib/ldap
 UNTANGLE_SLAPD_CONFIG_DIR=/usr/share/untangle-slapd-config
