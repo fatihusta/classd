@@ -21,8 +21,8 @@ if mount | grep -q '/dev/hda1 on /' ; then
   fi
 fi
 
-# fix sources.list
-sed -i -e 's/\([^:]\)metavize/\1untangle/g' /etc/apt/sources.list
+# Fix up old APT default release (now specified in sources.list)
+sed -i -e '/Default-Release "testing"/ d' /etc/apt/apt.conf
 
 # Have cron.daily run earlier in the day, at a random time between 1:00 and 2:00
 CRONTAB_FILE=/etc/crontab
