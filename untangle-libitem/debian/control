@@ -788,6 +788,7 @@ Description: Untangle Identity Theft Blocker
 
 Package: untangle-libitem-test
 Architecture: any
+Section qa/admin
 Depends: untangle-node-test
 Conflicts: test-storeitem
 Replaces: test-storeitem
