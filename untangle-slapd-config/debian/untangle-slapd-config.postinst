@@ -10,6 +10,8 @@ UNTANGLE_SLAPD_CONFIG_DIR=/usr/share/untangle-slapd-config
 theirAdminAccount=`slapcat | ldapAdmin`
 ourAdminAccount=`ldapAdmin ${UNTANGLE_SLAPD_CONFIG_DIR}/initial.ldif`
 
+cp -f ${UNTANGLE_SLAPD_CONFIG_DIR}/slapd.conf /etc/ldap/slapd.conf
+
 if [ ! "$theirAdminAccount" = "$ourAdminAccount" ] ; then
   /etc/init.d/slapd stop
   killall slapd
