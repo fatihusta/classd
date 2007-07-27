@@ -1,3 +1,9 @@
+untangle-bootsplash (5.0.1-1) mustang-1; urgency=low
+
+  * auto build
+
+ --  <seb@untangle.com>  Fri, 27 Jul 2007 14:35:54 -0700
+
 untangle-bootsplash (0-11) mustang; urgency=low
 
   * auto build
