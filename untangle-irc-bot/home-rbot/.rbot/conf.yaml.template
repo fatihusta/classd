@@ -1,5 +1,6 @@
 ---    
 irc.nick: botangle
+nickserv.wants_nick: false
 core.address_prefix: 
 - "!"
 irc.user: botangle
