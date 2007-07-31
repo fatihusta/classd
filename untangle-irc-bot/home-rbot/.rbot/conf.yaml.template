@@ -4,7 +4,7 @@ core.address_prefix:
 - "!"
 irc.user: botangle
 server.name: irc.freenode.net
-auth.password: 
+auth.password: sakahc
 irc.join_channels: 
 - "#untangle-private chakas"
 server.sendq_burst: 100
