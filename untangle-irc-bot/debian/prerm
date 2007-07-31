@@ -1,0 +1,5 @@
+#! /bin/sh
+
+/etc/init.d/untangle-irc-bot stop
+
+exit 0
