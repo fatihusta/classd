@@ -1,8 +1,8 @@
 ---    
-irc.nick: +NAME+
+irc.nick: botangle
 core.address_prefix: 
 - "!"
-irc.user: +NAME+
+irc.user: botangle
 server.name: irc.freenode.net
 auth.password: 
 irc.join_channels: 
