@@ -1264,7 +1264,7 @@ Description: Untangle Remote Access Portal
  The Untangle Remote Access Portal Store Item.
 
 Package: untangle-libitem-update-service
-Section: premium
+Section: qa/premium
 Architecture: any
 XB-View-Position: 1015
 XB-Display-Name: Premium Signature Service
