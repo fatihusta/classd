@@ -5,14 +5,29 @@ class PenguinPlugin < Plugin
 
   def initialize
     super()
-    @pipe = IO.popen("/opt/tuxdroid/bin/tuxsh")
+    @pipe = IO.popen("python /opt/tuxdroid/api/python/tux2.py", "r+")
   end
 
-  def runPenguinCommand(m, command)
+  def consumeInput
+    o = "0"
+    while true do
+      a = @pipe.gets
+      break if a =~ /^0/
+      o = a
+    end
+    return o
+  end
+
+  def runPenguinCommand(m, args)
+    command = args[:command].join(" ")
     begin
       @pipe.puts(command)
+      o = consumeInput
+      if o != "0"
+          m.reply(o)
+      end
     rescue Exception => e
-      handleException(m, e, true)
+      handleException(m, e, false)
     end
   end
 
@@ -34,6 +49,6 @@ class PenguinPlugin < Plugin
 
 end
 
-plugin = ExecPlugin.new
-plugin.map 'penguin *args', :action => 'runPenguinCommand'
+plugin = PenguinPlugin.new
+plugin.map 'penguin *command', :action => 'runPenguinCommand'
 
