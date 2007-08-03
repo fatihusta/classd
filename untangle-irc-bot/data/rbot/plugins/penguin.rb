@@ -50,5 +50,5 @@ class PenguinPlugin < Plugin
 end
 
 plugin = PenguinPlugin.new
-plugin.map 'penguin *command', :action => 'runPenguinCommand'
+plugin.map 'penguin *command', :action => 'runPenguinCommand', :public => false
 
