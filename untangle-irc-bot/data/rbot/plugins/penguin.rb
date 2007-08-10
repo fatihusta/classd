@@ -43,7 +43,7 @@ class PenguinPlugin < Plugin
 
   def help(plugin, topic="")
     <<-eos
-      pengin *command => Run command
+      penguin *command => Run command
     eos
   end
 
