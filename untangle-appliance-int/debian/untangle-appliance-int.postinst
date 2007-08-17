@@ -24,6 +24,9 @@ fi
 # Fix up old APT default release (now specified in sources.list)
 sed -i -e '/Default-Release "testing"/ d' /etc/apt/apt.conf
 
+# Fix timezone
+[ -f /usr/share/untangle/conf/timezone ] && cat /usr/share/untangle/conf/timezone > /etc/timezone
+
 # Have cron.daily run earlier in the day, at a random time between 1:00 and 2:00
 CRONTAB_FILE=/etc/crontab
 if [ -f "${CRONTAB_FILE}" ] ; then
