@@ -1,6 +1,5 @@
 #!/usr/bin/make -f
 
-export DH_COMPAT=4
 
 DESTDIR=$(CURDIR)/debian/untangle-support-keyring
 
