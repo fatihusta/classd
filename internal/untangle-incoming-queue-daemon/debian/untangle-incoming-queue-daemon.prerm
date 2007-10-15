@@ -1,5 +1,5 @@
 #! /bin/sh
 
-/etc/init.d/untangle-incoming-queue-daemon stop
+#DEBHELPER#
 
 exit 0
