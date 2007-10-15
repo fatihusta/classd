@@ -1,5 +1,5 @@
 #! /bin/sh
 
-/etc/init.d/untangle-incoming-queue start
+/etc/init.d/untangle-incoming-queue-daemon start
 
 exit 0
