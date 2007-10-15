@@ -297,23 +297,23 @@ class ChangeFileUpload < DebianUpload
 end
 
 def initializeLogging(stdoutOnly, verbose)
-  log = Log4r.Logger.new("Untangle Incoming Queue Daemon")
-  stdoutFormat = log4r.PatternFormatter.new(:pattern => "%l:\t %m")
-  log.add(Log4r.StdoutOutputter.new('stdout', :formatter => console_format))
+  log = Log4r::Logger.new("Untangle Incoming Queue Daemon")
+  stdoutFormat = Log4r::PatternFormatter.new(:pattern => "%l:\t %m")
+  log.add(Log4r::StdoutOutputter.new('stdout', :formatter => stdoutFormat))
 
   if not stdoutOnly then
-    fileFormat = Log4r.PatternFormatter.new(:pattern => "[ %d ] %l\t %m")
-    log.add(Log4r.FileOutputter.new("fileOutputter", :filename => LOGFILE,
-                                    :trunc => false, :formatter => fileFormat))
+    fileFormat = Log4r::PatternFormatter.new(:pattern => "[ %d ] %l\t %m")
+    log.add(Log4r::FileOutputter.new("fileOutputter", :filename => LOGFILE,
+                                     :trunc => false, :formatter => fileFormat))
   end
 
-  log.level=(verbose ? Log4r.DEBUG : Log4r.INFO)
+  log.level=(verbose ? Log4r::DEBUG : Log4r::INFO)
   
   return log
 end
 
 def processLocation(location, options)
-  log = initializeLogging(options[:log] == stdoutOnly, options[:verbose])
+  log = initializeLogging(options[:log] == :stdoutOnly, options[:verbose])
 
   if File.directory?(location)
     Dir["#{location}/*.changes"].each { |file|
