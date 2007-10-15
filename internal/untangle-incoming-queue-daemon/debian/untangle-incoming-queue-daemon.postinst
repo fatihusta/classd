@@ -1,0 +1,5 @@
+#! /bin/sh
+
+/etc/init.d/untangle-incoming-queue start
+
+exit 0
