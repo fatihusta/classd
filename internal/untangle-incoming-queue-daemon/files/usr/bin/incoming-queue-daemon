@@ -296,15 +296,16 @@ class ChangeFileUpload < DebianUpload
   end
 end
 
-def initializeLogging(stdoutOnly, verbose)
+def initializeLogging(logToFileOnly, verbose)
   log = Log4r::Logger.new("Untangle Incoming Queue Daemon")
-  stdoutFormat = Log4r::PatternFormatter.new(:pattern => "%l:\t %m")
-  log.add(Log4r::StdoutOutputter.new('stdout', :formatter => stdoutFormat))
 
-  if not stdoutOnly then
+  if logToFileOnly then
     fileFormat = Log4r::PatternFormatter.new(:pattern => "[ %d ] %l\t %m")
     log.add(Log4r::FileOutputter.new("fileOutputter", :filename => LOGFILE,
                                      :trunc => false, :formatter => fileFormat))
+  else
+    stdoutFormat = Log4r::PatternFormatter.new(:pattern => "%l:\t %m")
+    log.add(Log4r::StdoutOutputter.new('stdout', :formatter => stdoutFormat))
   end
 
   log.level=(verbose ? Log4r::DEBUG : Log4r::INFO)
@@ -313,7 +314,7 @@ def initializeLogging(stdoutOnly, verbose)
 end
 
 def processLocation(location, options)
-  log = initializeLogging(options[:log] == :stdoutOnly, options[:verbose])
+  log = initializeLogging(options[:daemonize], options[:verbose])
 
   if File.directory?(location)
     Dir["#{location}/*.changes"].each { |file|
@@ -343,13 +344,11 @@ def parseCommandLineArgs(args)
   options = {}
   options[:daemonize] = false
   options[:moveFiles] = false
-  options[:log] = :stdoutOnly
   options[:verbose] = false
 
   opts = OptionParser.new do |opts|
     opts.on("-d", "--daemonize", "Daemonize the process") do |s|
       options[:daemonize] = true
-      options[:log] = :both
     end
     opts.on("-m", "--move-files", "Move files after they're processed") do |s|
       options[:moveFiles] = true
