@@ -3,6 +3,7 @@
 # Sebastien Delafond <seb@untangle.com>
 
 require 'optparse'
+require 'log4r'
 require 'net/smtp'
 
 # constants
@@ -11,7 +12,7 @@ DISTS = "#{REP}/dists"
 INCOMING = "#{REP}/incoming"
 PROCESSED = "#{REP}/processed"
 FAILED = "#{PROCESSED}/failed"
-
+LOGFILE = "/var/log/untangle-incoming-queue-daemon.log"
 DELAY = 60 # in seconds
 DISTRIBUTIONS = Dir.entries(DISTS).delete_if { |f| f =~ /\./ or File.symlink?(f) }
 # FIXME: please extract those dynamically from the distributions file; this
@@ -71,8 +72,9 @@ class DebianUpload # Main base class
 
   attr_reader :files, :distribution, :uploader, :version
 
-  def initialize(file, moveFiles = true)
+  def initialize(file, log, moveFiles = true)
     @file = file
+    @log = log
     @moveFiles = moveFiles
     @files = [ @file ]
   end
@@ -103,10 +105,19 @@ class DebianUpload # Main base class
     subject = "Upload of #{@name} failed (#{e.class})"
     body = e.message
     body += "\n" + e.backtrace.join("\n") if not e.is_a?(UploadFailure)
-    puts "#{subject}\n#{body}"
+    @log.error("#{subject}\n#{body}")
     email(@emailRecipientsFailure,
           subject,
           body) if @@doEmailFailure
+  end
+
+  def runCommand(command)
+    @log.debug("Running '#{command}'")
+    output = `#{command} 2>&1`
+    rc = $?
+    @log.debug("RC: #{$?}")
+    @log.debug("Output: #{output}")
+    return rc, output
   end
 
   def addToRepository
@@ -152,9 +163,9 @@ class DebianUpload # Main base class
       end
 
       # then try to actually add the package
-      output = `#{@command} 2>&1`
-      puts output
-      if $? != 0
+      rc, output = runCommand(@command)
+
+      if rc != 0 then
         if output =~ /No section was given for '#{@name}', skipping/ then
           raise UploadFailureNoSection.new(output)
         elsif output =~ /No priority was given for '#{@name}', skipping/ then
@@ -178,21 +189,21 @@ class DebianUpload # Main base class
       # first remove it from all distros that have it...
       UNLOCKED_DISTRIBUTIONS.each { |d|
         listCommand = "reprepro -V -b #{REP} list #{d} #{@name}"
-        output = `#{listCommand} 2>&1`
-#        puts d, output
-        if $? == 0 and output != "" then # this package is present in this distro...
+        rc, output = runCommand(listCommand)
+
+        if rc == 0 and output != "" then # this package is present in this distro...
           version = output.split(/\s+/)[-1]
-#          puts "version: #{version}, matched: #{@version}"
+          log.info("version: #{version}, matched: #{@version}")
           if version == @version then # ... with the same version -> remove it
             @files.each { |f|
               if f =~ /.+\/(.+?)_.+\.dsc$/ then
                 sourceName = $1
                 removeCommand = "reprepro -V -b #{REP} remove #{d} #{sourceName}"
-                output = `#{removeCommand} 2>&1`
+                rc, output = runCommand(removeCommand)
               elsif f =~ /.+\/(.+?)_.+\.deb$/ then
                 packageName = $1
                 removeCommand = "reprepro -V -b #{REP} remove #{d} #{packageName}"
-                output = `#{removeCommand} 2>&1`
+                rc, output = runCommand(removeCommand)
               end
             }
           end
@@ -224,20 +235,21 @@ class DebianUpload # Main base class
 end
 
 class PackageUpload < DebianUpload
-  def initialize(file, moveFiles)
-    super(file, moveFiles)
+  def initialize(file, log, moveFiles)
+    super(file, log, moveFiles)
     @name = File.basename(@file).gsub(/_.*/, "")
     @distribution = DEFAULT_DISTRIBUTION
     @component = DEFAULT_COMPONENT
     @command = "reprepro -V -b #{REP} --component #{@component} includedeb #{@distribution} #{@file}"
     @emailRecipientsSuccess = DEFAULT_MAIL_RECIPIENTS
     @emailRecipientsFailure = DEFAULT_MAIL_RECIPIENTS
+    log.debug(self.to_s)
   end
 end
 
 class ChangeFileUpload < DebianUpload
-  def initialize(file, moveFiles)
-    super(file, moveFiles)
+  def initialize(file, log, moveFiles)
+    super(file, log, moveFiles)
     filesSection = false
     File.open(file).each { |line|
       line.strip!
@@ -279,29 +291,49 @@ class ChangeFileUpload < DebianUpload
       @emailRecipientsFailure += QA_MAIL_RECIPIENTS
     end
     @emailRecipientsFailure.uniq!
+
+    log.debug(self.to_s)
   end
 end
 
+def initializeLogging(stdoutOnly, verbose)
+  log = Log4r.Logger.new("Untangle Incoming Queue Daemon")
+  stdoutFormat = log4r.PatternFormatter.new(:pattern => "%l:\t %m")
+  log.add(Log4r.StdoutOutputter.new('stdout', :formatter => console_format))
+
+  if not stdoutOnly then
+    fileFormat = Log4r.PatternFormatter.new(:pattern => "[ %d ] %l\t %m")
+    log.add(Log4r.FileOutputter.new("fileOutputter", :filename => LOGFILE,
+                                    :trunc => false, :formatter => fileFormat))
+  end
+
+  log.level=(verbose ? Log4r.DEBUG : Log4r.INFO)
+  
+  return log
+end
+
 def processLocation(location, options)
+  log = initializeLogging(options[:log] == stdoutOnly, options[:verbose])
+
   if File.directory?(location)
     Dir["#{location}/*.changes"].each { |file|
-      cfu = ChangeFileUpload.new(file, options[:moveFiles])
+      cfu = ChangeFileUpload.new(file, log, options[:moveFiles])
       cfu.addToRepository
     }
 
     Dir["#{location}/*.deb"].each { |file|
       if not File.file?(location + "/" + file.sub(/_.?\.deb/, ".dsc")) then
         # we're good, this wasn't a source pkg upload taking too long to be uploaded...
-        pu = PackageUpload.new(file, options[:moveFiles])
+        pu = PackageUpload.new(file, log, options[:moveFiles])
         pu.addToRepository
       end
     }
   else
     if location =~ /\.changes$/
-      cfu = ChangeFileUpload.new(location, options[:moveFiles])
+      cfu = ChangeFileUpload.new(location, log, options[:moveFiles])
       cfu.addToRepository
     else
-      pu = PackageUpload.new(location, options[:moveFiles])
+      pu = PackageUpload.new(location, log, options[:moveFiles])
       pu.addToRepository
     end
   end
@@ -311,13 +343,19 @@ def parseCommandLineArgs(args)
   options = {}
   options[:daemonize] = false
   options[:moveFiles] = false
+  options[:log] = :stdoutOnly
+  options[:verbose] = false
 
   opts = OptionParser.new do |opts|
     opts.on("-d", "--daemonize", "Daemonize the process") do |s|
       options[:daemonize] = true
+      options[:log] = :both
     end
     opts.on("-m", "--move-files", "Move files after they're processed") do |s|
       options[:moveFiles] = true
+    end
+    opts.on("-v", "--verbose", "Turn on debug mode") do |s|
+      options[:verbose] = true
     end
     opts.on_tail("-h", "--help", "Show this usage statement") do |h|
       puts opts
