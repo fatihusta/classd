@@ -18,7 +18,7 @@ DISTRIBUTIONS = Dir.entries(DISTS).delete_if { |f| f =~ /\./ or File.symlink?(f)
 # FIXME: please extract those dynamically from the distributions file; this
 # hardcoding is so horrendous even rbscott wouldn't settle for it
 TESTING_DISTRIBUTIONS = [ "testing", "mustang-2" ]
-LOCKED_DISTRIBUTIONS = [ "stable", "mustang-2", "mustang-1", "oldstable", "mustang" ]
+LOCKED_DISTRIBUTIONS = [ "stable", "mustang-3", "mustang-2", "mustang-1", "oldstable", "mustang" ]
 UNLOCKED_DISTRIBUTIONS = DISTRIBUTIONS.delete_if { |d| LOCKED_DISTRIBUTIONS.include?(d) }
 USER_DISTRIBUTIONS = [ "amread", "arthur", "dmorris", "jdi", "khilton", "rbscott", "seb" ]
 DEFAULT_DISTRIBUTION = "chaos"
@@ -193,7 +193,7 @@ class DebianUpload # Main base class
 
         if rc == 0 and output != "" then # this package is present in this distro...
           version = output.split(/\s+/)[-1]
-          @log.info("version: #{version}, matched: #{@version}")
+          @log.debug("version: #{version}, matched: #{@version} (command: #{listCommand}; output: #{output})")
           if version == @version then # ... with the same version -> remove it
             @files.each { |f|
               if f =~ /.+\/(.+?)_.+\.dsc$/ then
@@ -209,11 +209,14 @@ class DebianUpload # Main base class
           end
         end
       }
-      retry # ... then retry
+      tries += 1
+      retry if tries < MAX_TRIES
+      @log.info("Due to MD5 mismatch, gave up on adding: #{self}")
     rescue UploadFailureFileMissing # sleep some, then retry
       sleep(3)
       tries += 1
       retry if tries < MAX_TRIES
+      @log.info("Due to missing file(s), gave up on adding: #{self}")
 # This should now be handled by the override file
     rescue UploadFailureNoSection # force the section, then retry
       @command = @command.gsub!(/\-V/, "-V --section #{DEFAULT_SECTION}")
@@ -238,6 +241,7 @@ class PackageUpload < DebianUpload
   def initialize(file, log, moveFiles)
     super(file, log, moveFiles)
     @name = File.basename(@file).gsub(/_.*/, "")
+    @version = @file.gsub(/.+?_(.+)_.+.deb$/, '\1')
     @distribution = DEFAULT_DISTRIBUTION
     @component = DEFAULT_COMPONENT
     @command = "reprepro -V -b #{REP} --component #{@component} includedeb #{@distribution} #{@file}"
