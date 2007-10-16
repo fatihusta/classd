@@ -193,7 +193,7 @@ class DebianUpload # Main base class
 
         if rc == 0 and output != "" then # this package is present in this distro...
           version = output.split(/\s+/)[-1]
-          log.info("version: #{version}, matched: #{@version}")
+          @log.info("version: #{version}, matched: #{@version}")
           if version == @version then # ... with the same version -> remove it
             @files.each { |f|
               if f =~ /.+\/(.+?)_.+\.dsc$/ then
@@ -243,7 +243,7 @@ class PackageUpload < DebianUpload
     @command = "reprepro -V -b #{REP} --component #{@component} includedeb #{@distribution} #{@file}"
     @emailRecipientsSuccess = DEFAULT_MAIL_RECIPIENTS
     @emailRecipientsFailure = DEFAULT_MAIL_RECIPIENTS
-    log.debug(self.to_s)
+    @log.debug(self.to_s)
   end
 end
 
@@ -292,7 +292,7 @@ class ChangeFileUpload < DebianUpload
     end
     @emailRecipientsFailure.uniq!
 
-    log.debug(self.to_s)
+    @log.debug(self.to_s)
   end
 end
 
