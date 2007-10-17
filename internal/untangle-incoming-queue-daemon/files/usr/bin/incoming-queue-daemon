@@ -247,7 +247,7 @@ class PackageUpload < DebianUpload
     @command = "reprepro -V -b #{REP} --component #{@component} includedeb #{@distribution} #{@file}"
     @emailRecipientsSuccess = DEFAULT_MAIL_RECIPIENTS
     @emailRecipientsFailure = DEFAULT_MAIL_RECIPIENTS
-    @log.debug(self.to_s)
+    @log.info("About to try adding: #{self.to_s}")
   end
 end
 
@@ -296,7 +296,7 @@ class ChangeFileUpload < DebianUpload
     end
     @emailRecipientsFailure.uniq!
 
-    @log.debug(self.to_s)
+    @log.info("About to try adding: #{self.to_s}")
   end
 end
 
@@ -383,16 +383,20 @@ def parseCommandLineArgs(args)
 end
 
 # Main
-location, options = parseCommandLineArgs(ARGV)
+begin
+  location, options = parseCommandLineArgs(ARGV)
 
-if options[:daemonize] then
-  pid = fork do
-    loop do
-      processLocation(location, options)
-      sleep(DELAY)
+  if options[:daemonize] then
+    pid = fork do
+      loop do
+        processLocation(location, options)
+        sleep(DELAY)
+      end
     end
+    Process.detach(pid)
+  else
+    processLocation(location, options)
   end
-  Process.detach(pid)
-else
-  processLocation(location, options)
+rescue Exception => e
+  @log.error("#{e.class}: #{e.message}\n\t" + e.backtrace.join("\n\t"))
 end
