@@ -211,12 +211,12 @@ class DebianUpload # Main base class
       }
       tries += 1
       retry if tries < MAX_TRIES
-      @log.info("Due to MD5 mismatch, gave up on adding: #{self}")
+      @log.warning("Due to MD5 mismatch, gave up on adding: #{self}")
     rescue UploadFailureFileMissing # sleep some, then retry
       sleep(3)
       tries += 1
       retry if tries < MAX_TRIES
-      @log.info("Due to missing file(s), gave up on adding: #{self}")
+      @log.warning("Due to missing file(s), gave up on adding: #{self}")
 # This should now be handled by the override file
     rescue UploadFailureNoSection # force the section, then retry
       @command = @command.gsub!(/\-V/, "-V --section #{DEFAULT_SECTION}")
