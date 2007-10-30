@@ -1,4 +1,10 @@
-untangle-incoming-queue-daemon (5.0.1-1) stable; urgency=low
+untangle-incoming-queue-daemon (0.2-1) stable; urgency=low
+
+  * Support multiple repositories via untangle-libreprepro-ruby
+
+ -- Sebastien Delafond <seb@untangle.com>  Tue, 30 Oct 2007 15:58:53 -0700
+
+untangle-incoming-queue-daemon (0.1-1) stable; urgency=low
 
   * Initial release.
 
