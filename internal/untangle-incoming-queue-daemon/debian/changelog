@@ -1,3 +1,9 @@
+untangle-incoming-queue-daemon (0.2+5.1.0~svn20071030r12561+5.1.0~svn20071030r12563+5.1.0~svn20071031r12569-1sid) thunderbird; urgency=low
+
+  * auto build
+
+ -- Sebastien Delafond <seb@debian.org>  Wed, 31 Oct 2007 11:32:49 -0700
+
 untangle-incoming-queue-daemon (0.2+5.1.0~svn20071030r12561+5.1.0~svn20071030r12563-1sid) thunderbird; urgency=low
 
   * auto build
