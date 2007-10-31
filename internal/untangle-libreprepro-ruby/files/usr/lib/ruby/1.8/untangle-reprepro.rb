@@ -175,7 +175,7 @@ end
 
 # Custom exceptions
 class UploadFailure < Exception ; end
-class UploadFailureNoDistribution < UploadFailure ; end
+class UploadFailureNoRepository < UploadFailure ; end
 class UploadFailureByPolicy < UploadFailure ; end
 class UploadFailureNoSection < UploadFailure ; end
 class UploadFailureNoPriority < UploadFailure ; end
@@ -370,11 +370,11 @@ EOM
 
       # FIXME: those next 2 are lame, really; they shouldn't even reach here
       if not debianUpload.repository then
-        raise UploadFailureNoDistribution.new("#{debianUpload.name} doesn't specify a repository to be added to.")
+        raise UploadFailureNoRepository.new("#{debianUpload.name} doesn't specify a repository to be added to:\n#{debianUpload.to_s}")
       end
 
       if debianUpload.repository != @name then
-        raise UploadFailureNoDistribution.new("#{debianUpload.name} specifies an unknown repository (#{debianUpload.repository}) to be added to.")
+        raise UploadFailureNoRepository.new("#{debianUpload.name} specifies an unknown repository (#{debianUpload.repository}) to be added to:\n#{debianUpload.to_s}")
       end
 
       if @testingDistributions.include?(debianUpload.distribution) and debianUpload.uploader !~ /(seb|rbscott|jdi)/i
