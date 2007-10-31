@@ -362,10 +362,13 @@ EOM
   def add(debianUpload, doEmail = false)
     @@logger.info("About to try adding: #{debianUpload.to_s}")
     success = false
+    emailRecipients = [ debianUpload.uploader, debianUpload.maintainer ]
     tries = 0
 
     begin
       # first do a few policy checks
+
+      # FIXME: those next 2 are lame, really; they shouldn't even reach here
       if not debianUpload.repository then
         raise UploadFailureNoDistribution.new("#{debianUpload.name} doesn't specify a repository to be added to.")
       end
@@ -413,8 +416,6 @@ EOM
         output = "#{debianUpload.name} was intended for user distribution '#{debianUpload.distribution}', but was not built from a locally modified SVN tree."
         raise UploadFailureNotLocallyModifiedBuild.new(output)
       end
-
-      emailRecipients = [ debianUpload.uploader, debianUpload.maintainer ]
 
       # then try to actually add the package
       @distributions[debianUpload.distribution].add(debianUpload)
