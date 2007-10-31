@@ -37,7 +37,7 @@ def processLocation(location, repositories, options)
       # FIXME: nasty; we just pick the 1st distribution if none is specified,
       # because the error-handling code is in Repository
       rep = ( repositories[cfu.repository] or repositories.values[0] )
-      rep.add(cfu)
+      rep.add(cfu, options[:email])
     }
 
 #     Dir["#{location}/*.deb"].each { |file|
@@ -53,7 +53,7 @@ def processLocation(location, repositories, options)
       # FIXME: nasty; we just pick the 1st distribution if none is specified,
       # because the error-handling code is in Repository
       rep = ( repositories[cfu.repository] or repositories.values[0] )
-      rep.add(cfu)
+      rep.add(cfu, options[:email])
     else
 #       pu = PackageUpload.new(location, options[:moveFiles])
 #       pu.addToRepository
