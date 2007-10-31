@@ -36,7 +36,7 @@ def processLocation(location, repositories, options)
 
       # FIXME: nasty; we just pick the 1st distribution if none is specified,
       # because the error-handling code is in Repository
-      rep = ( repositories[cfu.distribution] or repositories.values[0] )
+      rep = ( repositories[cfu.repository] or repositories.values[0] )
       rep.add(cfu)
     }
 
@@ -52,7 +52,7 @@ def processLocation(location, repositories, options)
       cfu = ChangeFileUpload.new(location, options[:moveFiles])
       # FIXME: nasty; we just pick the 1st distribution if none is specified,
       # because the error-handling code is in Repository
-      rep = ( repositories[cfu.distribution] or repositories.values[0] )
+      rep = ( repositories[cfu.repository] or repositories.values[0] )
       rep.add(cfu)
     else
 #       pu = PackageUpload.new(location, options[:moveFiles])
