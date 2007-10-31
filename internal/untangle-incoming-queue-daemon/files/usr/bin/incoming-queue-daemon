@@ -121,9 +121,9 @@ begin
     pid = fork do
       loop do
         begin
-          @@logger.info("Daemon waking up")
+          logger.info("Daemon waking up")
           processLocation(location, repositories, options)
-          @@logger.info("Daemon going to sleep for #{DELAY} seconds")
+          logger.info("Daemon going to sleep for #{DELAY} seconds")
           sleep(DELAY)
         rescue Exception => e
           logger.error("#{e.class}: #{e.message}\n\t" + e.backtrace.join("\n\t"))
