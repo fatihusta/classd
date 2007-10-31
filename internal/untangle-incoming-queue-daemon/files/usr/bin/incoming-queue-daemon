@@ -8,6 +8,7 @@ require 'untangle-reprepro.rb'
 
 TOP_LEVEL_DIR = "/var/www/public"
 INCOMING_DIR = "/var/www/untangle/incoming"
+LOGFILE = "/var/log/untangle-incoming-queue-daemon.log"
 DELAY = 60
 
 def initializeLogging(logToFileOnly, verbose)
