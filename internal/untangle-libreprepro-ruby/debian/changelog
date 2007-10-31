@@ -1,3 +1,9 @@
+untangle-libreprepro-ruby (0.1+5.1.0~svn20071030r12565+5.1.0~svn20071031r12567-1sid) thunderbird; urgency=low
+
+  * auto build
+
+ -- Sebastien Delafond <seb@debian.org>  Wed, 31 Oct 2007 11:06:37 -0700
+
 untangle-libreprepro-ruby (0.1+5.1.0~svn20071030r12565-1sid) thunderbird; urgency=low
 
   * auto build
