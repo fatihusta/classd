@@ -466,7 +466,7 @@ EOM
         subject = "Upload of #{debianUpload.name} succeeded"
         body = debianUpload.to_s if not body
         @@logger.info("#{subject}\n#{body}")
-        sendEmail(emailRecipients, suject, body) if doEmail
+        sendEmail(emailRecipients, subject, body) if doEmail
         destination = @processedPath
       else
         destination = @failedPath        
