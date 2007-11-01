@@ -14,7 +14,7 @@ case "$1" in
     echo -n "Starting $DAEMON: "
     killDaemon # just to be sure
     start-stop-daemon --start --quiet --pidfile $PIDFILE \
-      --make-pidfile --exec $DAEMON -- -d -m
+      --make-pidfile --exec $DAEMON -- -d -m -e
     echo "done"
     ;;
   stop)
