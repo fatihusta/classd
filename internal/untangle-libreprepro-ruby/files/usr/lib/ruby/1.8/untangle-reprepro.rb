@@ -356,7 +356,7 @@ EOM
     Net::SMTP.start('localhost', 25, 'localhost.localdomain') { |smtp|
       smtp.send_message(myMessage,"seb@untangle.com",*recipients)
     }
-    @@logger.debug("Sent email to #{recipients}")
+    @@logger.debug("Sent email to #{recipients.join(,)}")
   end
   private :sendEmail
 
