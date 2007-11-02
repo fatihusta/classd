@@ -401,9 +401,8 @@ EOM
     output.split(/\n/).grep(/\.deb$/).each { |line|
       distribution, component, architecture, file = line.split(/[\s|]/)
       pkg = DebianPackage.new(file, distribution, component, architecture)
-      array = pkgs[pkg.name]
-      if array then
-        array << pkg
+      if pkgs[pkg.name] then
+        pkgs[pkg.name] << pkg
       else
         pkgs[pkg.name] = [ pkg, ]
       end
