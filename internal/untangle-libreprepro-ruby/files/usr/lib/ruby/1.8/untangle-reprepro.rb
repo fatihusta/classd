@@ -178,6 +178,7 @@ end
 
 
 
+
 class DebianPackage
 
   attr_reader :file, :name, :distribution, :version, \
@@ -322,7 +323,7 @@ class ChangeFileUpload < DebianUpload
 end
 
 class Repository
-  attr_reader :distributions
+  attr_reader :distributions, :name
 
   @@DEFAULT_MAIL_RECIPIENTS = [ "rbscott@untangle.com", "seb@untangle.com" ]
   @@QA_MAIL_RECIPIENTS      = [ "ronni@untangle.com", "ksteele@untangle.com", "fariba@untangle.com" ]
