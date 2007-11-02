@@ -129,6 +129,7 @@ class Distribution < RepreproConfig
   def getPackageVersion(packageName)
     listCommand = "#{@baseCommand} list #{@codename} #{packageName}"
     rc, output = runCommand(listCommand, @@logger)
+    return nil if output == ""
     return output.split(/\s+/)[-1]
   end
 
@@ -174,6 +175,37 @@ class Distribution < RepreproConfig
 end
 
 # Custom exceptions
+
+
+
+class DebianPackage
+
+  attr_reader :file, :name, :distribution, :version, \
+              :architecture, :component
+
+  @@logger = ( Log4r::Logger["DebianUpload"] or Log4r::Logger.root() )
+  def self.logger=(logger)
+    @@logger = logger
+  end
+
+  def initialize(file, distribution, component, architecture)
+    @file           = file
+    @distribution   = distribution
+    @component      = component
+    @architecture   = architecture
+    @file           =~ /pool.*\/(.+?)_(.+?)_/
+    @name, @version = $1, $2
+  end
+
+  def to_s
+    return "#{@name}: #{@distribution} #{@component} #{@arch} #{@version}"
+  end
+
+end
+
+
+
+
 class UploadFailure < Exception ; end
 class UploadFailureNoRepository < UploadFailure ; end
 class UploadFailureByPolicy < UploadFailure ; end
@@ -316,6 +348,7 @@ class Repository
     @testingDistributions = @distributions.reject { |name, d| d.suite !~ /testing/ }
     # FIXME: find those how ?
     @userDistributions = [ ]
+    @baseCommand = "reprepro -V -b #{@basePath}"
     @@logger.debug("Initialized #{self.class}: #{self.to_s}")
   end
 
@@ -359,6 +392,24 @@ EOM
     @@logger.debug("Sent email to #{recipients.join(',')}")
   end
   private :sendEmail
+
+
+  def getAllPackages
+    pkgs = {}
+    listAllCommand = "#{@baseCommand} dumpreferences"
+    rc, output = runCommand(listAllCommand, @@logger)
+    output.split(/\n/).grep(/\.deb$/).each { |line|
+      distribution, component, architecture, file = line.split(/[\s|]/)
+      pkg = DebianPackage.new(file, distribution, component, architecture)
+      array = pkgs[pkg.name]
+      if array then
+        array << pkg
+      else
+        pkgs[pkg.name] = [ pkg, ]
+      end
+    }
+    return pkgs
+  end
 
   def add(debianUpload, doEmail = false)
     @@logger.info("About to try adding: #{debianUpload.to_s}")
