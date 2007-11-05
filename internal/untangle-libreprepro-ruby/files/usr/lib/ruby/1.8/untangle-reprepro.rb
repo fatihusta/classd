@@ -353,7 +353,7 @@ class Repository
     @testingDistributions = @distributions.reject { |name, d| d.suite !~ /testing/ }
     # FIXME: find those how ?
     @userDistributions = [ ]
-    @baseCommand = "reprepro -V -b #{@basePath}"
+    @baseCommand = "sudo reprepro -V -b #{@basePath}"
     @@logger.debug("Initialized #{self.class}: #{self.to_s}")
   end
 
