@@ -113,7 +113,7 @@ class Distribution < RepreproConfig
     @update = nil # this one is not always defined in the conf file
     @updater = updater
     super(file, hash)
-    @baseCommand = "reprepro -V -b #{@basePath}"
+    @baseCommand = "sudo reprepro -V -b #{@basePath}"
   end
 
   def locked?
