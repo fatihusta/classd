@@ -53,13 +53,18 @@ def processLocation(location, repositories, options)
     }
 
     Dir["#{location}/*.manifest"].each { |file|
-      processManifestFile(file, repositories, options)
+      if File.file?(file.sub(/_\w.+\.manifest/, ".deb")) then
+        # fine, the .deb file is also here...
+        processManifestFile(file, repositories, options)
+      else
+        logger.debug("#{file} didn't have a corresponding .deb file alongside it.")
+      end
     }
   else
     if location =~ /\.changes$/
-      processChangeFile(file, repositories, options)
+      processChangeFile(location, repositories, options)
     elsif location =~ /\.manifest$/
-      processManifestFile(file, repositories, options)
+      processManifestFile(location, repositories, options)
     else
       logger.error("#{location} is neither a manifest file nor a changes file, giving up.")
     end
