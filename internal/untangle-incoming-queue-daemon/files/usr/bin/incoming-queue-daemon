@@ -28,12 +28,12 @@ def initializeLogging(logToFileOnly, verbose)
   return log
 end
 
-def processChangeFile(changeFile, options)
+def processChangeFile(changeFile, repositories, options)
   cfu = ChangeFileUpload.new(file, options[:moveFiles])
   processDebianUpload(cfu, repositories, options)
 end
 
-def processManifestFile(file, options)
+def processManifestFile(file, repositories, options)
   pu = PackageUpload.new(file, options[:moveFiles])
   processDebianUpload(pu, repositories, options)
 end
