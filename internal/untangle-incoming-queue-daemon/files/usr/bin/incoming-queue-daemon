@@ -28,36 +28,40 @@ def initializeLogging(logToFileOnly, verbose)
   return log
 end
 
+def processChangeFile(changeFile, options)
+  cfu = ChangeFileUpload.new(file, options[:moveFiles])
+  processDebianUpload(cfu, repositories, options)
+end
+
+def processManifestFile(file, options)
+  pu = PackageUpload.new(file, options[:moveFiles])
+  processDebianUpload(pu, repositories, options)
+end
+
+def processDebianUpload(debianUpload, repositories, options)
+  # FIXME: nasty; we just pick the 1st distribution if none is
+  # specified or if it doesn't match anything, because the
+  # error-handling code is in Repository...
+  rep = ( repositories[cfu.repository] or repositories.values[0] )
+  rep.add(debianUpload, options[:email])
+end
 
 def processLocation(location, repositories, options)
-  
   if File.directory?(location)
     Dir["#{location}/*.changes"].each { |file|
-      cfu = ChangeFileUpload.new(file, options[:moveFiles])
-
-      # FIXME: nasty; we just pick the 1st distribution if none is specified,
-      # because the error-handling code is in Repository
-      rep = ( repositories[cfu.repository] or repositories.values[0] )
-      rep.add(cfu, options[:email])
+      processChangeFile(file, repositories, options)
     }
 
-#     Dir["#{location}/*.deb"].each { |file|
-#       if not File.file?(location + "/" + file.sub(/_.?\.deb/, ".dsc")) then
-#         # we're good, this wasn't a source pkg upload taking too long to be uploaded...
-#         pu = PackageUpload.new(file, options[:moveFiles])
-#         pu.addToRepository
-#       end
-#     }
+    Dir["#{location}/*.manifest"].each { |file|
+      processManifestFile(file, repositories, options)
+    }
   else
     if location =~ /\.changes$/
-      cfu = ChangeFileUpload.new(location, options[:moveFiles])
-      # FIXME: nasty; we just pick the 1st distribution if none is specified,
-      # because the error-handling code is in Repository
-      rep = ( repositories[cfu.repository] or repositories.values[0] )
-      rep.add(cfu, options[:email])
+      processChangeFile(file, repositories, options)
+    elsif location =~ /\.manifest$/
+      processManifestFile(file, repositories, options)
     else
-#       pu = PackageUpload.new(location, options[:moveFiles])
-#       pu.addToRepository
+      logger.error("#{location} is neither a manifest file nor a changes file, giving up.")
     end
   end
 end

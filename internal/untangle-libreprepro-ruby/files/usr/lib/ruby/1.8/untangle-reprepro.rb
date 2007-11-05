@@ -150,7 +150,7 @@ class Distribution < RepreproConfig
     if debianUpload.is_a?(ChangeFileUpload) then # FIXME: refactor commands a bit
       command = "#{@baseCommand} include #{@codename} #{debianUpload.file}"
     else
-      command = "#{@baseCommand} --priority #{debianUpload.priority} --component #{debianUpload.component} includedeb #{@codename} #{debianUpload.file}"
+      command = "#{@baseCommand} --priority #{debianUpload.priority} --component #{debianUpload.component} includedeb #{@codename} #{debianUpload.files[1]}"
     end
 
     rc, output = runCommand(command, @@logger)
@@ -171,13 +171,7 @@ class Distribution < RepreproConfig
       end
     end
   end
-
 end
-
-# Custom exceptions
-
-
-
 
 class DebianPackage
 
@@ -207,6 +201,7 @@ end
 
 
 
+# Custom exceptions
 class UploadFailure < Exception ; end
 class UploadFailureNoRepository < UploadFailure ; end
 class UploadFailureByPolicy < UploadFailure ; end
@@ -271,8 +266,16 @@ class PackageUpload < DebianUpload
 
   def initialize(file, moveFiles)
     super(file, moveFiles)
-    @version                = @file.gsub(/.+?_(.+)_.+.deb$/, '\1')
-    @distribution           = @@DEFAULT_DISTRIBUTION
+
+    if @file =~ /_(\w.+)_(\w.+)\.manifest$/ then # valid 
+      @repository = $1
+      @distribution = $2
+    else # we'll fail this one at processing time
+      @repository = @distribution = nil
+    end
+    @files << @file.sub(/(\w.+)_(\w.+)\.manifest/, ".deb")
+
+    @version                = @files[1].gsub(/.+?_(.+)_.+.deb$/, '\1')
     @component              = @@DEFAULT_COMPONENT
     @priority               = @@DEFAULT_PRIORITY
     @@logger.debug("Initialized #{self.class}: #{self.to_s}")
@@ -326,7 +329,7 @@ class Repository
   attr_reader :distributions, :name
 
   @@DEFAULT_MAIL_RECIPIENTS = [ "rbscott@untangle.com", "seb@untangle.com" ]
-  @@QA_MAIL_RECIPIENTS      = [ "ronni@untangle.com", "ksteele@untangle.com", "fariba@untangle.com" ]
+  @@QA_MAIL_RECIPIENTS      = [ "ronni@untangle.com", "ksteele@untangle.com" ]
   @@MAX_TRIES               = 3
 
   @@logger                   = ( Log4r::Logger["Repository"] or Log4r::Logger.root() )
