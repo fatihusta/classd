@@ -42,7 +42,7 @@ def processDebianUpload(debianUpload, repositories, options)
   # FIXME: nasty; we just pick the 1st distribution if none is
   # specified or if it doesn't match anything, because the
   # error-handling code is in Repository...
-  rep = ( repositories[cfu.repository] or repositories.values[0] )
+  rep = ( repositories[debianUpload.repository] or repositories.values[0] )
   rep.add(debianUpload, options[:email])
 end
 
