@@ -46,18 +46,19 @@ def processDebianUpload(debianUpload, repositories, options)
   rep.add(debianUpload, options[:email])
 end
 
-def processLocation(location, repositories, options)
+def processLocation(location, repositories, options, logger)
   if File.directory?(location)
     Dir["#{location}/*.changes"].each { |file|
       processChangeFile(file, repositories, options)
     }
 
     Dir["#{location}/*.manifest"].each { |file|
-      if File.file?(file.sub(/_\w.+\.manifest/, ".deb")) then
+      debFile = file.sub(/\.[a-z].+\.manifest/, ".deb")
+      if File.file?(debFile) then
         # fine, the .deb file is also here...
         processManifestFile(file, repositories, options)
       else
-        logger.debug("#{file} didn't have a corresponding .deb file alongside it.")
+        logger.debug("#{file} didn't have the corresponding #{debFile} alongside it.")
       end
     }
   else
@@ -131,7 +132,7 @@ begin
       loop do
         begin
           logger.info("Daemon waking up")
-          processLocation(location, repositories, options)
+          processLocation(location, repositories, options, logger)
           logger.info("Daemon going to sleep for #{DELAY} seconds")
           sleep(DELAY)
         rescue Exception => e
@@ -142,7 +143,7 @@ begin
     Process.detach(pid)
   else
     begin
-      processLocation(location, repositories, options)
+      processLocation(location, repositories, options, logger)
     rescue Exception => e
       logger.error("#{e.class}: #{e.message}\n\t" + e.backtrace.join("\n\t"))
     end

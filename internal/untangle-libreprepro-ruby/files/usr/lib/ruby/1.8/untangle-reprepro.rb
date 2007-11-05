@@ -217,7 +217,7 @@ class CopyFailure < Exception ; end
 class DebianUpload # Main base class
 
   attr_reader :file, :files, :name, :distribution, :uploader, :version, \
-              :moveFiles, :dir, :maintainer, :uploader
+              :moveFiles, :dir, :maintainer, :uploader, :repository
   
   @@DEFAULT_DISTRIBUTION    = "chaos"
   @@DEFAULT_COMPONENT       = "upstream"
@@ -267,13 +267,14 @@ class PackageUpload < DebianUpload
   def initialize(file, moveFiles)
     super(file, moveFiles)
 
-    if @file =~ /_(\w.+)_(\w.+)\.manifest$/ then # valid 
+    re = /\.([a-z].+)_([a-z].+)\.manifest$/
+    if @file =~ re then # valid 
       @repository = $1
       @distribution = $2
     else # we'll fail this one at processing time
       @repository = @distribution = nil
     end
-    @files << @file.sub(/(\w.+)_(\w.+)\.manifest/, ".deb")
+    @files << @file.sub(re, ".deb")
 
     @version                = @files[1].gsub(/.+?_(.+)_.+.deb$/, '\1')
     @component              = @@DEFAULT_COMPONENT
