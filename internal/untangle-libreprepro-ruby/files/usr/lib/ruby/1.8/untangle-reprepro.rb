@@ -176,15 +176,16 @@ end
 class DebianPackage
 
   attr_reader :file, :name, :distribution, :version, \
-              :architecture, :component
+              :architecture, :component, :repository
 
   @@logger = ( Log4r::Logger["DebianUpload"] or Log4r::Logger.root() )
   def self.logger=(logger)
     @@logger = logger
   end
 
-  def initialize(file, distribution, component, architecture)
+  def initialize(file, repository, distribution, component, architecture)
     @file           = file
+    @repository     = repository
     @distribution   = distribution
     @component      = component
     @architecture   = architecture
@@ -405,7 +406,7 @@ EOM
     rc, output = runCommand(listAllCommand, @@logger)
     output.split(/\n/).grep(/\.deb$/).each { |line|
       distribution, component, architecture, file = line.split(/[\s|]/)
-      pkg = DebianPackage.new(file, distribution, component, architecture)
+      pkg = DebianPackage.new(file, @name, distribution, component, architecture)
       if pkgs[pkg.name] then
         pkgs[pkg.name] << pkg
       else
