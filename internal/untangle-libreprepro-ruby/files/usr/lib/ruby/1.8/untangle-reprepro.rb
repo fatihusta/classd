@@ -276,7 +276,7 @@ class PackageUpload < DebianUpload
   def initialize(file, moveFiles)
     super(file, moveFiles)
 
-    re = /\.([a-z].+)_([a-z].+)\.manifest$/
+    re = /.+\.([a-z].+?)_([a-z].+?)\.manifest$/
     if @file =~ re then # valid 
       @repository = $1
       @distribution = $2
@@ -285,7 +285,7 @@ class PackageUpload < DebianUpload
     end
     @files << @file.sub(re, ".deb")
 
-    @version                = @files[1].gsub(/.+?_(.+)_.+.deb$/, '\1')
+    @version                = @files[1].gsub(/.+_(.+?)_.+?.deb$/, '\1')
     @component              = @@DEFAULT_COMPONENT
     @priority               = @@DEFAULT_PRIORITY
     @@logger.debug("Initialized #{self.class}: #{self.to_s}")
