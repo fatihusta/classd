@@ -120,6 +120,10 @@ class Distribution < RepreproConfig
     return ( @suite =~ /stable/ and @suite !~ /unstable/ )
   end
 
+  def developerDistribution?
+    return @suite == nil
+  end
+
   def hasPackage?(packageName)
     listCommand = "#{@baseCommand} list #{@codename} #{packageName}"
     rc, output = runCommand(listCommand, @@logger)
@@ -352,8 +356,9 @@ class Repository
     @unlockedDistributions = @distributions.reject { |name, d| d.locked? }
     # FIXME: find some other way...
     @testingDistributions = @distributions.reject { |name, d| d.suite !~ /testing/ }
-    # FIXME: find those how ?
-    @userDistributions = [ ]
+
+    @developerDistributions = @distributions.reject { |name, d| ! d.developerDistribution? }
+
     @baseCommand = "sudo reprepro -V -b #{@basePath}"
     @@logger.debug("Initialized #{self.class}: #{self.to_s}")
   end
@@ -469,7 +474,7 @@ EOM
         raise UploadFailureByPolicy.new(output)
       end
 
-      if @userDistributions.include?(debianUpload.distribution) and not debianUpload.version =~ /\+[a-z]+[0-9]+T[0-9]+/i
+      if @developerDistributions.include?(debianUpload.distribution) and not debianUpload.version =~ /\+[a-z]+[0-9]+T[0-9]+/i
         output = "#{debianUpload.name} was intended for user distribution '#{debianUpload.distribution}', but was not built from a locally modified SVN tree."
         raise UploadFailureNotLocallyModifiedBuild.new(output)
       end
