@@ -117,11 +117,6 @@ class Distribution < RepreproConfig
   end
 
   def <=>(other)
-    if @suite == 'unstable' then
-      return ( other.suite == 'unstable' ? 0 : 1 )
-    else
-      return -1 if other.suite == 'unstable'
-    end
     return (@version or "" ) <=> ( other.version or "" )
   end
 
