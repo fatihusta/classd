@@ -440,7 +440,7 @@ EOM
         raise UploadFailureNoRepository.new("#{debianUpload.name} doesn't specify a repository to be added to:\n#{debianUpload.to_s}")
       end
 
-      if debianUpload.repository != @name or then
+      if debianUpload.repository != @name then
         raise UploadFailureNoRepository.new("#{debianUpload.name} specifies an unknown repository (#{debianUpload.repository}) to be added to:\n#{debianUpload.to_s}")
       end
 
