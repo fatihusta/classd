@@ -116,11 +116,20 @@ class Distribution < RepreproConfig
     @baseCommand = "sudo reprepro -V -b #{@basePath}"
   end
 
+  def <=>(other)
+    if @suite == 'unstable' then
+      return ( other.suite == 'unstable' ? 0 : 1 )
+    else
+      return -1 if other.suite == 'unstable'
+    end
+    return (@version or "" ) <=> ( other.version or "" )
+  end
+
   def locked?
     return ( @suite =~ /stable/ and @suite !~ /unstable/ )
   end
 
-  def developerDistribution?
+  def developer?
     return @suite == nil
   end
 
@@ -357,7 +366,7 @@ class Repository
     # FIXME: find some other way...
     @testingDistributions = @distributions.reject { |name, d| d.suite !~ /testing/ }
 
-    @developerDistributions = @distributions.reject { |name, d| ! d.developerDistribution? }
+    @developerDistributions = @distributions.reject { |name, d| ! d.developer? }
 
     @baseCommand = "sudo reprepro -V -b #{@basePath}"
     @@logger.debug("Initialized #{self.class}: #{self.to_s}")
