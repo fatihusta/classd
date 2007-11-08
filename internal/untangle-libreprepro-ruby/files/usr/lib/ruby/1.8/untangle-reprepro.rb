@@ -213,6 +213,7 @@ end
 # Custom exceptions
 class UploadFailure < Exception ; end
 class UploadFailureNoRepository < UploadFailure ; end
+class UploadFailureUnknownDistribution < UploadFailure ; end
 class UploadFailureByPolicy < UploadFailure ; end
 class UploadFailureNoSection < UploadFailure ; end
 class UploadFailureNoPriority < UploadFailure ; end
@@ -439,8 +440,12 @@ EOM
         raise UploadFailureNoRepository.new("#{debianUpload.name} doesn't specify a repository to be added to:\n#{debianUpload.to_s}")
       end
 
-      if debianUpload.repository != @name then
+      if debianUpload.repository != @name or then
         raise UploadFailureNoRepository.new("#{debianUpload.name} specifies an unknown repository (#{debianUpload.repository}) to be added to:\n#{debianUpload.to_s}")
+      end
+
+      if not @distributions[debianUpload.distribution] then
+        raise UploadFailureUnknownDistribution.new("#{debianUpload.name} specifies an unknown distribution (#{debianUpload.distribution}) to be added to:\n#{debianUpload.to_s}")
       end
 
       if @testingDistributions.include?(debianUpload.distribution) and debianUpload.uploader !~ /(seb|rbscott|jdi)/i
