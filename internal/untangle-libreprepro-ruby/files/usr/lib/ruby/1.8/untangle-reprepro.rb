@@ -172,7 +172,7 @@ class Distribution < RepreproConfig
         raise UploadFailureAlreadyUploaded.new(output)
       elsif output =~ /has md5sum.*while.*was expected/ then
         raise UploadFailureCorruptedUpload.new(output)        
-      elsif output =~ /Cannot find file.*changes'/ then
+      elsif output =~ /(Cannot find file.*changes'|No such file or directory)/ then
         raise UploadFailureFileMissing.new(output)
       else
         raise UploadFailure.new("Something went wrong when adding #{debianUpload.name}\n\n" + output)
@@ -437,15 +437,15 @@ EOM
 
       # FIXME: those next 2 are lame, really; they shouldn't even reach here
       if not debianUpload.repository then
-        raise UploadFailureNoRepository.new("#{debianUpload.name} doesn't specify a repository to be added to:\n#{debianUpload.to_s}")
+        raise UploadFailureNoRepository.new("#{debianUpload.name} doesn't specify a repository to be added to.")
       end
 
       if debianUpload.repository != @name then
-        raise UploadFailureNoRepository.new("#{debianUpload.name} specifies an unknown repository (#{debianUpload.repository}) to be added to:\n#{debianUpload.to_s}")
+        raise UploadFailureNoRepository.new("#{debianUpload.name} specifies an unknown repository (#{debianUpload.repository}) to be added to.")
       end
 
       if not @distributions[debianUpload.distribution] then
-        raise UploadFailureUnknownDistribution.new("#{debianUpload.name} specifies an unknown distribution (#{debianUpload.distribution}) to be added to:\n#{debianUpload.to_s}")
+        raise UploadFailureUnknownDistribution.new("#{debianUpload.name} specifies an unknown distribution (#{debianUpload.distribution}) to be added to.")
       end
 
       if @testingDistributions.include?(debianUpload.distribution) and debianUpload.uploader !~ /(seb|rbscott|jdi)/i
@@ -485,6 +485,7 @@ EOM
 
       if @developerDistributions.include?(debianUpload.distribution) and not debianUpload.version =~ /\+[a-z]+[0-9]+T[0-9]+/i
         output = "#{debianUpload.name} was intended for user distribution '#{debianUpload.distribution}', but was not built from a locally modified SVN tree."
+        
         raise UploadFailureNotLocallyModifiedBuild.new(output)
       end
 
@@ -511,12 +512,19 @@ EOM
       # specific version, or we were the one already having it. Which comes down
       # to the same result anyway.
       success = true
-      body = "This package was already present in the '#{debianUpload.repository}' repository, in distribution #{d.codename}, with version '#{version}', so it was simply copied over: #{debianUpload}"
-    rescue UploadFailureFileMissing # sleep some, then retry
+      body = "This package was already present in the '#{debianUpload.repository}' repository, in distribution #{d.codename}, with version '#{version}', so it was simply copied over."
+    rescue UploadFailureFileMissing => e # sleep some, then retry
       sleep(3)
       tries += 1
       retry if tries < @@MAX_TRIES
-      @@logger.warn("Due to missing file(s), gave up on adding: #{debianUpload}")
+      # FIXME: duplication with the catch-all rescue clause below...
+      subject = "Upload of #{debianUpload.name} to #{debianUpload.repository}/#{debianUpload.distribution} failed (#{e.class})"
+      body = e.message
+      body += "\n\n" + debianUpload.to_s
+      body += "\n\n" + e.backtrace.join("\n") if not e.is_a?(UploadFailure)
+      @@logger.error("#{subject}\n#{body}")
+      @@logger.error(subject)
+      sendEmail(emailRecipients, subject, body) if doEmail
     # Those next 2 should be handled by the override file
     rescue UploadFailureNoSection # force the section, then retry
       # handled by overrides now
@@ -524,17 +532,18 @@ EOM
       # handled by overrides now
     rescue Exception => e # give up, and warn on STDOUT + email
       # dumps error message on stdout, and possibly by email too
-      subject = "Upload of #{debianUpload.name} failed (#{e.class})"
+      subject = "Upload of #{debianUpload.name} to #{debianUpload.repository}/#{debianUpload.distribution} failed (#{e.class})"
       body = e.message
-      body += "\n" + e.backtrace.join("\n") if not e.is_a?(UploadFailure)
+      body += "\n\n" + debianUpload.to_s
+      body += "\n\n" + e.backtrace.join("\n") if not e.is_a?(UploadFailure)
       @@logger.error("#{subject}\n#{body}")
       sendEmail(emailRecipients, subject, body) if doEmail
     ensure
       if success then
         # if we managed to get here, everything went fine
         # FIXME: email + log -> factorize
-        subject = "Upload of #{debianUpload.name} succeeded"
-        body = debianUpload.to_s if not body
+        subject = "Upload of #{debianUpload.name} to #{debianUpload.repository}/#{debianUpload.distribution} succeeded"
+        body += "\n\n" + debianUpload.to_s
         @@logger.info("#{subject}\n#{body}")
         sendEmail(emailRecipients, subject, body) if doEmail
         destination = @processedPath
