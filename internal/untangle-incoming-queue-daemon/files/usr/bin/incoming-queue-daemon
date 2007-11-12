@@ -53,13 +53,7 @@ def processLocation(location, repositories, options, logger)
     }
 
     Dir["#{location}/*.manifest"].each { |file|
-      debFile = file.sub(/\.[a-z].+\.manifest/, ".deb")
-      if File.file?(debFile) then
-        # fine, the .deb file is also here...
-        processManifestFile(file, repositories, options)
-      else
-        logger.debug("#{file} didn't have the corresponding #{debFile} alongside it.")
-      end
+      processManifestFile(file, repositories, options)
     }
   else
     if location =~ /\.changes$/
