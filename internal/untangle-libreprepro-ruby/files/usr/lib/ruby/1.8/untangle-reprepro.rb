@@ -277,7 +277,7 @@ class PackageUpload < DebianUpload
   def initialize(file, moveFiles)
     super(file, moveFiles)
 
-    re = /.+\.([a-z].+?)_([a-z].+?)\.manifest$/
+    re = /\.([a-z][^_]+?)_([a-z][^_]+?)\.manifest$/
     if @file =~ re then # valid 
       @repository = $1
       @distribution = $2
