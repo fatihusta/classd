@@ -543,6 +543,7 @@ EOM
         # if we managed to get here, everything went fine
         # FIXME: email + log -> factorize
         subject = "Upload of #{debianUpload.name} to #{debianUpload.repository}/#{debianUpload.distribution} succeeded"
+        body = "" if not body
         body += "\n\n" + debianUpload.to_s
         @@logger.info("#{subject}\n#{body}")
         sendEmail(emailRecipients, subject, body) if doEmail
