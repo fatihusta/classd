@@ -109,11 +109,12 @@ class Distribution < RepreproConfig
   @@arrayVariables = [ "architectures", "components" ]
   @@otherVariables << "updater"
 
-  def initialize(file, hash, updater = nil)
+  def initialize(file, hash, updater = nil, useSudo = nil)
     @update = nil # this one is not always defined in the conf file
     @updater = updater
     super(file, hash)
-    @baseCommand = "sudo reprepro -V -b #{@basePath}"
+    @baseCommand = useSudo ? "sudo " : ""
+    @baseCommand << "reprepro -V -b #{@basePath}"
   end
 
   def <=>(other)
@@ -348,7 +349,7 @@ class Repository
     @@logger = logger
   end
 
-  def initialize(basePath)
+  def initialize(basePath, useSudo = nil)
     @basePath                 = basePath
     @name                     = File.basename(@basePath)
     @processedPath            = File.join(@basePath, "processed")
@@ -364,7 +365,8 @@ class Repository
 
     @developerDistributions = @distributions.reject { |name, d| ! d.developer? }
 
-    @baseCommand = "sudo reprepro -V -b #{@basePath}"
+    @baseCommand = useSudo ? "sudo " : ""
+    @baseCommand << "reprepro -V -b #{@basePath}"
     @@logger.debug("Initialized #{self.class}: #{self.to_s}")
   end
 
