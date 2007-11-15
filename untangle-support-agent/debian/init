@@ -1,4 +1,4 @@
-#!/bin/sh
+#! /bin/bash
 
 DAEMON=/usr/bin/rbot
 PIDFILE=/var/run/rbot.pid

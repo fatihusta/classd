@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 mkdir -p /home/rbot/.ssh
 chmod 700 /home/rbot/.ssh

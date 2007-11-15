@@ -1,4 +1,4 @@
-#!/bin/sh
+#! /bin/bash
 
 /usr/share/untangle/bin/xpd urap-trial.ulg 0x19f844b9045774eb 3f67d4426005a29d1a1e8a46f5fa02e9
 

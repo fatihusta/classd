@@ -1,4 +1,4 @@
-#!/bin/sh
+#! /bin/bash
 
 /usr/share/untangle/bin/xpd ucb-sub.ulg 0x6c482de73a034406 3e35f1456ae2d6a95844b4d2dd33b185
 

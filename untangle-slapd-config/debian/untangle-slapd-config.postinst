@@ -1,4 +1,4 @@
-#!/bin/sh
+#! /bin/bash
 
 ldapAdmin() {
   grep -A 1 -E '^description: LDAP administrator$' $@
