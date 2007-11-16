@@ -516,7 +516,7 @@ EOM
       # specific version, or we were the one already having it. Which comes down
       # to the same result anyway.
       success = true
-      body = "This package was already present in the '#{debianUpload.repository}' repository, in distribution #{distro.codename}, with version '#{version}', so it was simply copied over."
+      body = "This package was already present in the '#{debianUpload.repository}' repository, in distribution #{distro.codename}, with version '#{debianUpload.version}', so it was simply copied over."
     rescue UploadFailureFileMissing => e # sleep some, then retry
       sleep(3)
       tries += 1
