@@ -498,14 +498,16 @@ EOM
       success = true
     rescue UploadFailureAlreadyUploaded
       # copy it from the first distro that has it
+      distro = ""
       @unlockedDistributions.each_value { |d|
         if d == @distributions[debianUpload.distribution] then
           next # we're not going to copy from ourselves :)
         elsif d.hasPackage?(debianUpload.name) then # this package is present in this distro...
           version = d.getPackageVersion(debianUpload.name)
           if version == debianUpload.version then # ... with the same version -> copy it
-            @@logger.info("Found #{debianUpload.name}, version: #{version}, in distribution #{d.codename}")
-            d.copyTo(@distributions[debianUpload.distribution], debianUpload.name) 
+            distro = d
+            @@logger.info("Found #{debianUpload.name}, version: #{version}, in distribution #{distro.codename}")
+            distro.copyTo(@distributions[debianUpload.distribution], debianUpload.name) 
             break # our job is done
           end
         end
@@ -514,7 +516,7 @@ EOM
       # specific version, or we were the one already having it. Which comes down
       # to the same result anyway.
       success = true
-      body = "This package was already present in the '#{debianUpload.repository}' repository, in distribution #{d.codename}, with version '#{version}', so it was simply copied over."
+      body = "This package was already present in the '#{debianUpload.repository}' repository, in distribution #{distro.codename}, with version '#{version}', so it was simply copied over."
     rescue UploadFailureFileMissing => e # sleep some, then retry
       sleep(3)
       tries += 1
