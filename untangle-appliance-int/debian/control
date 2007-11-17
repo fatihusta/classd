@@ -7,10 +7,6 @@ Standards-Version: 3.7.2
 
 Package: untangle-appliance-int
 Architecture: any
-Essential: yes
-Depends: untangle-vm, untangle-appliance, untangle-client-windows-jre, untangle-bootsplash, atop, untangle-iptables, untangle-nsis-addons, untangle-restore-tools, untangle-dhclient-config, untangle-postgresql-config, untangle-linux-2.6.16-ck11-config
-Conflicts: kiosk-mv, dlocate, slocate, firefox-r-kiosk, jre-mv, urlblacklist.com-mv, untangle-slapd, untangle-libldap-2.2-7, untangle-ldap-utils
-Provides: kiosk-mv
-Replaces: kiosk-mv
+Depends: untangle-vm, untangle-appliance, untangle-kiosk, untangle-client-windows-jre, untangle-bootsplash, atop, untangle-restore-tools, untangle-linux-2.6.16-ck11-config | untangle-linux-2.6.22-config
 Description: The Untangle appliance internal
  The Untangle appliance internal-to-untangle mode.
