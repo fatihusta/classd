@@ -498,7 +498,7 @@ EOM
       success = true
     rescue UploadFailureAlreadyUploaded
       # copy it from the first distro that has it
-      distro = ""
+      distro = @distributions[debianUpload.distribution]
       @unlockedDistributions.each_value { |d|
         if d == @distributions[debianUpload.distribution] then
           next # we're not going to copy from ourselves :)
