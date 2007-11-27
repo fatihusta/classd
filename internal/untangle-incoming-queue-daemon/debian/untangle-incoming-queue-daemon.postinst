@@ -3,7 +3,7 @@
 # kill gpg-agent, then start it
 pkill gpg-agent
 export GPG_TTY=`tty` # FIXME: nastaaay, prolly should use debconf !
-eval `gpg-agent --daemon --homedir /root`
+eval `gpg-agent --homedir /root --daemon`
 
 # trigger passphrase prompt
 echo foo | gpg --sign --use-agent > /dev/null
