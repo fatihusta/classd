@@ -7,6 +7,6 @@ Standards-Version: 3.7.2
 
 Package: untangle-incoming-queue-daemon
 Architecture: any
-Depends: ruby, liblog4r-ruby, untangle-libreprepro-ruby
+Depends: ruby, liblog4r-ruby, untangle-libreprepro-ruby, gnupg, gnupg-agent
 Description: The Untangle Incoming Queue Daemon
  The Untangle Incoming Queue Daemon.
