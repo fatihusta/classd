@@ -349,7 +349,7 @@ class Repository
   @@QA_DISTRIBUTIONS        = [ "daily-dogfood", "qa" ]
   @@MAX_TRIES               = 3
   
-  @@logge                   = ( Log4r::Logger["Repository"] or Log4r::Logger.root() )
+  @@logger                  = ( Log4r::Logger["Repository"] or Log4r::Logger.root() )
   def self.logger=(logger)
     @@logger = logger
   end
