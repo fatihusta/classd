@@ -1,14 +1,5 @@
 #! /bin/bash
 
-# kill gpg-agent, then start it
-pkill gpg-agent
-export GPG_TTY=`tty` # FIXME: nastaaay, prolly should use debconf !
-export GNUPGHOME=/root/.gnupg
-eval `gpg-agent --daemon`
-
-# trigger passphrase prompt
-echo foo | gpg --sign --use-agent > /dev/null
-
 #DEBHELPER#
 
 exit 0

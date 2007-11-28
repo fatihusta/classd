@@ -9,10 +9,23 @@ killDaemon() {
   ps aux | grep " $DAEMON" | awk '{print $2}' | xargs kill -9 2> /dev/null
 }
 
+stopGpgAgent() {
+  pkill gpg-agent
+}
+
+startGpgAgent() {
+  export GPG_TTY=`tty`
+  export GNUPGHOME=/root/.gnupg
+  eval `gpg-agent --daemon`
+  # trigger passphrase prompt
+  echo foo | gpg --sign --use-agent > /dev/null
+}
+
 case "$1" in
   start)
     echo -n "Starting $DAEMON: "
     killDaemon # just to be sure
+    startGpgAgent
     start-stop-daemon --start --quiet --pidfile $PIDFILE \
       --make-pidfile --exec $DAEMON -- -d -m -e
     echo "done"
@@ -23,6 +36,7 @@ case "$1" in
       --exec $DAEMON
     sleep 1
     killDaemon
+    stopGpgAgent
     echo "done"
     ;;
   restart)
