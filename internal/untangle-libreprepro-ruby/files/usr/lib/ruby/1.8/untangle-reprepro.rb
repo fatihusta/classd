@@ -366,16 +366,17 @@ class Repository
     @updatesFiles             = File.join(@basePath, "conf/updates")
     @distributions            = DistributionFactory.parse(@distributionFile,
                                                           @updatesFiles)
-    @lockedDistributions, @unlockedDistributions = [], []
-    @testingDistributions, @developerDistributions = [], []
+    @lockedDistributions, @unlockedDistributions = {}, {}
+    @testingDistributions, @developerDistributions = {}, {}
 
     @distributions.each { |name, d|
+      new = { name => d }
       # locked/unlocked
-      (d.locked? ? @lockedDistributions : @unlockedDistributions) << d
+      (d.locked? ? @lockedDistributions : @unlockedDistributions).merge(new)
       # testing
-      @testingDistributions << d if @@TESTING_DISTRIBUTIONS.include?(d.suite)
+      @testingDistributions.merge(new) if @@TESTING_DISTRIBUTIONS.include?(d.suite)
       # dev
-      @developerDistributions << d if d.developer?      
+      @developerDistributions.merge(new) if d.developer?      
     }
 
     @baseCommand = useSudo ? "sudo " : ""
@@ -464,7 +465,7 @@ EOM
         raise UploadFailureUnknownDistribution.new("#{debianUpload.name} specifies an unknown distribution (#{debianUpload.distribution}) to be added to.")
       end
 
-      if @testingDistributions.include?(debianUpload.distribution) and not @@ADMINS.include?(debianUpload.uploader)
+      if @testingDistributions.keys.include?(debianUpload.distribution) and not @@ADMINS.include?(debianUpload.uploader)
         output = "#{debianUpload.name} was intended for #{debianUpload.distribution}, but you don't have permission to upload there."
         raise UploadFailureByPolicy.new(output)
       end
@@ -474,7 +475,7 @@ EOM
         raise UploadFailureByPolicy.new(output)
       end
 
-      if @lockedDistributions.include?(debianUpload.distribution)
+      if @lockedDistributions.keys.include?(debianUpload.distribution)
         output = "#{debianUpload.name} was intended for #{debianUpload.distribution}, but this distribution is now locked."
         raise UploadFailureByPolicy.new(output)
       end
@@ -494,7 +495,7 @@ EOM
         raise UploadFailureByPolicy.new(output)
       end
 
-      if @developerDistributions.include?(debianUpload.distribution) and not debianUpload.version =~ /\+[a-z]+[0-9]+T[0-9]+/i
+      if @developerDistributions.keys.include?(debianUpload.distribution) and not debianUpload.version =~ /\+[a-z]+[0-9]+T[0-9]+/i
         output = "#{debianUpload.name} was intended for user distribution '#{debianUpload.distribution}', but was not built from a locally modified SVN tree."
         raise UploadFailureNotLocallyModifiedBuild.new(output)
       end
