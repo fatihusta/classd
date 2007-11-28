@@ -540,13 +540,13 @@ EOM
       subject = "Upload of #{debianUpload.name} to #{debianUpload.repository}/#{debianUpload.distribution}"
       if success then
         # if we managed to get here, everything went fine
-        subject << "succeeded"
+        subject << " succeeded"
         body = "" if not body
         body += "\n\n" + debianUpload.to_s
         @@logger.info("#{subject}\n#{body}")
         destination = @processedPath
       else
-        subject << "failed (#{e.class})"
+        subject << " failed (#{e.class})"
         body = e.message
         body += "\n\n" + debianUpload.to_s
         body += "\n\n" + e.backtrace.join("\n") if not e.is_a?(UploadFailure)
