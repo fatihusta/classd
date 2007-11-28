@@ -326,14 +326,15 @@ class ChangeFileUpload < DebianUpload
         break # stop processing
       end
       
-      @uploaderUsername = @uploader.sub(/.*<(.+?)@.*>/, '\1')
-
       if filesSection
         parts = line.split
         @files << File.join(@dir, parts[-1])
         @component = parts[2].split(/\//)[0] if not @component
       end
     }
+    
+    @uploaderUsername = @uploader.sub(/.*<(.+?)@.*>/, '\1') if @uploader
+
     @@logger.debug("Initialized #{self.class}: #{self.to_s}")
   end
 end
