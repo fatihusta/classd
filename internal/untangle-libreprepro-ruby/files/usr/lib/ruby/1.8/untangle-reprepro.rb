@@ -13,6 +13,7 @@ def runCommand(command, log)
   return rc, output
 end
 
+# classes
 class DistributionFactory
   def DistributionFactory.parse(distributionsFile, updatesFile)
     distributions = {}
@@ -175,6 +176,8 @@ class Distribution < RepreproConfig
         raise UploadFailureCorruptedUpload.new(output)        
       elsif output =~ /(Cannot find file.*changes'|No such file or directory)/ then
         raise UploadFailureFileMissing.new(output)
+      elsif output =~ /gpgme/ then
+        raise UploadFailureGPGFailed.new(output)
       else
         raise UploadFailure.new("Something went wrong when adding #{debianUpload.name}\n\n" + output)
       end
@@ -183,7 +186,6 @@ class Distribution < RepreproConfig
 end
 
 class DebianPackage
-
   attr_reader :file, :name, :distribution, :version, \
               :architecture, :component, :repository
 
@@ -208,9 +210,6 @@ class DebianPackage
 
 end
 
-
-
-
 # Custom exceptions
 class UploadFailure < Exception ; end
 class UploadFailureNoRepository < UploadFailure ; end
@@ -222,11 +221,11 @@ class UploadFailureAlreadyUploaded < UploadFailure ; end
 class UploadFailureFileMissing < UploadFailure ; end
 class UploadFailureNotLocallyModifiedBuild < UploadFailure ; end
 class UploadFailureCorruptedUpload < UploadFailure ; end
+class UploadFailureGPGFailed < UploadFailure ; end
 class RemovalFailure < Exception ; end
 class CopyFailure < Exception ; end
 
 class DebianUpload # Main base class
-
   attr_reader :file, :files, :name, :distribution, :uploader, :version, \
               :moveFiles, :dir, :maintainer, :uploader, :repository
   
@@ -334,36 +333,49 @@ class ChangeFileUpload < DebianUpload
     }
     @@logger.debug("Initialized #{self.class}: #{self.to_s}")
   end
-
 end
 
 class Repository
   attr_reader :distributions, :name
 
-  @@DEFAULT_MAIL_RECIPIENTS = [ "rbscott@untangle.com", "seb@untangle.com" ]
-  @@QA_MAIL_RECIPIENTS      = [ "ronni@untangle.com", "ksteele@untangle.com" ]
+  # FIXME: domain/admins/qas by instance
+  @@DOMAIN                  = "untangle.com"
+  @@ADMINS                  = [ "jdi", "rbscott", "seb" ]
+  @@QAS                     = [ "ksteele", "ronni" ]
+  @@QA_UPLOADERS            = [ "buildbot", "qabuildbot" ]
+  @@DEFAULT_MAIL_RECIPIENTS = @@ADMINS.map { |a| "#{a}@#{@@DOMAIN}" }
+  @@QA_MAIL_RECIPIENTS      = @@QAS.map { |q| "#{q}@#{@@DOMAIN}" }
+  @@TESTING_DISTRIBUTIONS   = [ "testing", "alpha" ]
+  @@QA_DISTRIBUTIONS        = [ "daily-dogfood", "qa" ]
   @@MAX_TRIES               = 3
-
-  @@logger                   = ( Log4r::Logger["Repository"] or Log4r::Logger.root() )
+  
+  @@logge                   = ( Log4r::Logger["Repository"] or Log4r::Logger.root() )
   def self.logger=(logger)
     @@logger = logger
   end
 
+  # FIXME: domain/admins/qas by instance
   def initialize(basePath, useSudo = nil)
     @basePath                 = basePath
     @name                     = File.basename(@basePath)
+    # FIMXE: create those 2 directories if they don't exist
     @processedPath            = File.join(@basePath, "processed")
     @failedPath               = File.join(@processedPath, "failed")
     @distributionFile         = File.join(@basePath, "conf/distributions")
     @updatesFiles             = File.join(@basePath, "conf/updates")
     @distributions            = DistributionFactory.parse(@distributionFile,
                                                           @updatesFiles)
-    @lockedDistributions = @distributions.reject { |name, d| ! d.locked? }
-    @unlockedDistributions = @distributions.reject { |name, d| d.locked? }
-    # FIXME: find some other way...
-    @testingDistributions = @distributions.reject { |name, d| d.suite !~ /testing/ }
+    @lockedDistributions, @unlockedDistributions = [], []
+    @testingDistributions, @developerDistributions = [], []
 
-    @developerDistributions = @distributions.reject { |name, d| ! d.developer? }
+    @distributions.each { |name, d|
+      # locked/unlocked
+      (d.locked? ? @lockedDistributions : @unlockedDistributions) << d
+      # testing
+      @testingDistributions << d if @@TESTING_DISTRIBUTIONS.include?(d.suite)
+      # dev
+      @developerDistributions << d if d.developer?      
+    }
 
     @baseCommand = useSudo ? "sudo " : ""
     @baseCommand << "reprepro -V -b #{@basePath}"
@@ -383,9 +395,10 @@ class Repository
   def scrubMailRecipients(list)
     # Remove non-untangle emails; strip names; add default recipients
     # map qa@untangle.com; uniq-ize
-    list.delete_if { |r| not r =~ /@untangle\.com/ }
+    list.delete_if { |r| not r =~ /@#{@@DOMAIN}/ }
     list.concat(@@DEFAULT_MAIL_RECIPIENTS)
     list.map! { |r| r.gsub(/.*?<(.*)>/, '\1') }
+    # change the next grep to: "does list have elements in QA_UPLOADERS"
     if list.grep(/buildbot/) != [] # no qa@untangle.com
       list.delete_if { |r| r =~ /buildbot/ }
       list.concat(@@QA_MAIL_RECIPIENTS)
@@ -396,6 +409,7 @@ class Repository
 
   def sendEmail(recipients, subject, body)
     recipients = scrubMailRecipients(recipients)
+    # FIXME: don't hardcode strings
     myMessage = <<EOM
 From: Incoming Queue Daemon <seb@untangle.com>
 To: #{recipients.join(',')}
@@ -410,7 +424,6 @@ EOM
     @@logger.debug("Sent email to #{recipients.join(',')}")
   end
   private :sendEmail
-
 
   def getAllPackages
     pkgs = {}
@@ -435,13 +448,13 @@ EOM
     tries = 0
 
     begin
-      # first do a few policy checks
+      # first, run all policy checks
 
-      # FIXME: those next 2 are lame, really; they shouldn't even reach here
+      # FIXME: those next 2 are lame, really; we shouldn't even reach
+      # this point in either of those cases
       if not debianUpload.repository then
         raise UploadFailureNoRepository.new("#{debianUpload.name} doesn't specify a repository to be added to.")
       end
-
       if debianUpload.repository != @name then
         raise UploadFailureNoRepository.new("#{debianUpload.name} specifies an unknown repository (#{debianUpload.repository}) to be added to.")
       end
@@ -450,15 +463,12 @@ EOM
         raise UploadFailureUnknownDistribution.new("#{debianUpload.name} specifies an unknown distribution (#{debianUpload.distribution}) to be added to.")
       end
 
-      if @testingDistributions.include?(debianUpload.distribution) and debianUpload.uploader !~ /(seb|rbscott|jdi)/i
+      if @testingDistributions.include?(debianUpload.distribution) and not @@ADMINS.include?(debianUpload.uploader)
         output = "#{debianUpload.name} was intended for #{debianUpload.distribution}, but you don't have permission to upload there."
         raise UploadFailureByPolicy.new(output)
       end
 
-      # FIXME: dir-tay, needs some redesigning with regard to which policy checks apply to
-      # which kind of uploads
-      # FIXME: engineers names ? See FIXME in constructor
-      if debianUpload.is_a?(ChangeFileUpload) and debianUpload.version !~ /svn/ and debianUpload.uploader !~ /(seb|rbscott|jdi)/i
+      if debianUpload.is_a?(ChangeFileUpload) and debianUpload.version !~ /svn/ and not @@ADMINS.include?(debianUpload.uploader)
         output = "#{debianUpload.version} doesn't contain 'svn', but you don't have permission to force the version."
         raise UploadFailureByPolicy.new(output)
       end
@@ -469,29 +479,26 @@ EOM
       end
 
       if debianUpload.uploader =~ /root/i
-        output = "#{debianUpload.name} was built by root, not processing"
+        output = "#{debianUpload.name} was built by root, not processing."
         raise UploadFailureByPolicy.new(output)
       end
 
-      # FIXME: QA distros
-      if debianUpload.distribution =~ /(daily-dogfood|qa)/ and debianUpload.uploader !~ /(buildbot|seb|rbscott)/i
+      # QA distros/uploaders
+      if @@QA_DISTRIBUTIONS.include?(debianUpload.distribution) and not (@@QA_UPLOADERS + @@ADMINS).include(debianUpload.uploader)
         output = "#{debianUpload.name} was intended for #{debianUpload.distribution}, but was not built by buildbot or a release master."
         raise UploadFailureByPolicy.new(output)
       end
-
-      # FIXME
-      if debianUpload.uploader =~ /buildbot/i and debianUpload.distribution !~ /(daily-dogfood|qa)/
+      if (@@QA_UPLOADERS + @@ADMINS).include(debianUpload.uploader) and not @@QA_DISTRIBUTIONS.include?(debianUpload.distribution)
         output = "#{debianUpload.name} was build by buildbot, but was intended for neither daily-dogfood nor qa."
         raise UploadFailureByPolicy.new(output)
       end
 
       if @developerDistributions.include?(debianUpload.distribution) and not debianUpload.version =~ /\+[a-z]+[0-9]+T[0-9]+/i
         output = "#{debianUpload.name} was intended for user distribution '#{debianUpload.distribution}', but was not built from a locally modified SVN tree."
-        
         raise UploadFailureNotLocallyModifiedBuild.new(output)
       end
 
-      # then try to actually add the package
+      # all checks passed, now try to actually add the package
       @distributions[debianUpload.distribution].add(debianUpload)
 
       # if we arrive here, we have success (TM)
@@ -513,7 +520,7 @@ EOM
         end
       }
       # At this point, either we successfully copied from a distro that had this
-      # specific version, or we were the one already having it. Which comes down
+      # specific version, or we were the one already having it, which comes down
       # to the same result anyway.
       success = true
       body = "This package was already present in the '#{debianUpload.repository}' repository, in distribution #{distro.codename}, with version '#{debianUpload.version}', so it was simply copied over."
@@ -522,41 +529,32 @@ EOM
       tries += 1
       retry if tries < @@MAX_TRIES
       # FIXME: duplication with the catch-all rescue clause below...
-      subject = "Upload of #{debianUpload.name} to #{debianUpload.repository}/#{debianUpload.distribution} failed (#{e.class})"
-      body = e.message
-      body += "\n\n" + debianUpload.to_s
-      body += "\n\n" + e.backtrace.join("\n") if not e.is_a?(UploadFailure)
-      @@logger.error("#{subject}\n#{body}")
-      @@logger.error(subject)
-      sendEmail(emailRecipients, subject, body) if doEmail
     # Those next 2 should be handled by the override file
     rescue UploadFailureNoSection # force the section, then retry
       # handled by overrides now
     rescue UploadFailureNoPriority # force the priority, then retry
       # handled by overrides now
     rescue Exception => e # give up, and warn on STDOUT + email
-      # dumps error message on stdout, and possibly by email too
-      subject = "Upload of #{debianUpload.name} to #{debianUpload.repository}/#{debianUpload.distribution} failed (#{e.class})"
-      body = e.message
-      body += "\n\n" + debianUpload.to_s
-      body += "\n\n" + e.backtrace.join("\n") if not e.is_a?(UploadFailure)
-      @@logger.error("#{subject}\n#{body}")
-      sendEmail(emailRecipients, subject, body) if doEmail
-    ensure
+      # will be handled in the "ensure" clause
+    ensure # logging + emailing (if need) the result, and moving the files
+      subject = "Upload of #{debianUpload.name} to #{debianUpload.repository}/#{debianUpload.distribution}"
       if success then
         # if we managed to get here, everything went fine
-        # FIXME: email + log -> factorize
-        subject = "Upload of #{debianUpload.name} to #{debianUpload.repository}/#{debianUpload.distribution} succeeded"
+        subject << "succeeded"
         body = "" if not body
         body += "\n\n" + debianUpload.to_s
         @@logger.info("#{subject}\n#{body}")
-        sendEmail(emailRecipients, subject, body) if doEmail
         destination = @processedPath
       else
+        subject << "failed (#{e.class})"
+        body = e.message
+        body += "\n\n" + debianUpload.to_s
+        body += "\n\n" + e.backtrace.join("\n") if not e.is_a?(UploadFailure)
+        @@logger.error("#{subject}\n#{body}")
         destination = @failedPath        
       end
+      sendEmail(emailRecipients, subject, body) if doEmail
       # no matter what, try to remove files at this point
-      tries = 0
       if debianUpload.moveFiles
         debianUpload.files.each { |file|
           begin
