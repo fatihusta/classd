@@ -488,7 +488,7 @@ EOM
         output = "#{debianUpload.name} was intended for #{debianUpload.distribution}, but was not built by buildbot or a release master."
         raise UploadFailureByPolicy.new(output)
       end
-      if (@@QA_UPLOADERS + @@ADMINS).include(debianUpload.uploader) and not @@QA_DISTRIBUTIONS.include?(debianUpload.distribution)
+      if (@@QA_UPLOADERS + @@ADMINS).include?(debianUpload.uploader) and not @@QA_DISTRIBUTIONS.include?(debianUpload.distribution)
         output = "#{debianUpload.name} was build by buildbot, but was intended for neither daily-dogfood nor qa."
         raise UploadFailureByPolicy.new(output)
       end
