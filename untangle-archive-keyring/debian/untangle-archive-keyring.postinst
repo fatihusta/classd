@@ -5,8 +5,10 @@ KEYRINGS_DIR=/usr/share/keyrings
 VALID_KEYS_FILE=${KEYRINGS_DIR}/untangle-archive-keyring.gpg
 REMOVED_KEYS_FILE=${KEYRINGS_DIR}/untangle-archive-removed-keys.gpg
 if [ -x $APT_KEY ]; then
-    $APT_KEY add ${VALID_KEYS_FILE}
-    [ -f ${REMOVED_KEYS_FILE} ] && gpg --with-colons ${REMOVED_KEYS_FILE} | awk '{print $2}' | xargs $APT_KEY del
+    $APT_KEY add ${VALID_KEYS_FILE} > /dev/null
+    [ -f ${REMOVED_KEYS_FILE} ] && for key in `gpg ${REMOVED_KEYS_FILE} | awk '{print $2}'` ; do
+      $APT_KEY del "$key" > /dev/null
+    done
 fi
 
 exit 0
