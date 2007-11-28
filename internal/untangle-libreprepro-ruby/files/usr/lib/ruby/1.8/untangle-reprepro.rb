@@ -372,11 +372,11 @@ class Repository
     @distributions.each { |name, d|
       new = { name => d }
       # locked/unlocked
-      (d.locked? ? @lockedDistributions : @unlockedDistributions).merge(new)
+      (d.locked? ? @lockedDistributions : @unlockedDistributions).merge!(new)
       # testing
-      @testingDistributions.merge(new) if @@TESTING_DISTRIBUTIONS.include?(d.suite)
+      @testingDistributions.merge!(new) if @@TESTING_DISTRIBUTIONS.include?(d.suite)
       # dev
-      @developerDistributions.merge(new) if d.developer?      
+      @developerDistributions.merge!(new) if d.developer?      
     }
 
     @baseCommand = useSudo ? "sudo " : ""
