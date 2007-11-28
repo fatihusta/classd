@@ -227,7 +227,8 @@ class CopyFailure < Exception ; end
 
 class DebianUpload # Main base class
   attr_reader :file, :files, :name, :distribution, :uploader, :version, \
-              :moveFiles, :dir, :maintainer, :uploader, :repository
+              :moveFiles, :dir, :maintainer, :uploader, :repository, \
+              :uploaderUsername
   
   @@DEFAULT_DISTRIBUTION    = "chaos"
   @@DEFAULT_COMPONENT       = "upstream"
@@ -324,6 +325,8 @@ class ChangeFileUpload < DebianUpload
       when /^-----BEGIN PGP SIGNATURE-----/
         break # stop processing
       end
+      
+      @uploaderUsername = @uploader.sub(/.*<(.+?)@.*>/, '\1')
 
       if filesSection
         parts = line.split
@@ -465,12 +468,12 @@ EOM
         raise UploadFailureUnknownDistribution.new("#{debianUpload.name} specifies an unknown distribution (#{debianUpload.distribution}) to be added to.")
       end
 
-      if @testingDistributions.keys.include?(debianUpload.distribution) and not @@ADMINS.include?(debianUpload.uploader)
+      if @testingDistributions.keys.include?(debianUpload.distribution) and not @@ADMINS.include?(debianUpload.uploaderUsername)
         output = "#{debianUpload.name} was intended for #{debianUpload.distribution}, but you don't have permission to upload there."
         raise UploadFailureByPolicy.new(output)
       end
 
-      if debianUpload.is_a?(ChangeFileUpload) and debianUpload.version !~ /svn/ and not @@ADMINS.include?(debianUpload.uploader)
+      if debianUpload.is_a?(ChangeFileUpload) and debianUpload.version !~ /svn/ and not @@ADMINS.include?(debianUpload.uploaderUsername)
         output = "#{debianUpload.version} doesn't contain 'svn', but you don't have permission to force the version."
         raise UploadFailureByPolicy.new(output)
       end
@@ -480,17 +483,17 @@ EOM
         raise UploadFailureByPolicy.new(output)
       end
 
-      if debianUpload.uploader =~ /root/i
+      if debianUpload.uploaderUsername =~ /root/i
         output = "#{debianUpload.name} was built by root, not processing."
         raise UploadFailureByPolicy.new(output)
       end
 
       # QA distros/uploaders
-      if @@QA_DISTRIBUTIONS.include?(debianUpload.distribution) and not (@@QA_UPLOADERS + @@ADMINS).include(debianUpload.uploader)
+      if @@QA_DISTRIBUTIONS.include?(debianUpload.distribution) and not (@@QA_UPLOADERS + @@ADMINS).include(debianUpload.uploaderUsername)
         output = "#{debianUpload.name} was intended for #{debianUpload.distribution}, but was not built by buildbot or a release master."
         raise UploadFailureByPolicy.new(output)
       end
-      if (@@QA_UPLOADERS + @@ADMINS).include?(debianUpload.uploader) and not @@QA_DISTRIBUTIONS.include?(debianUpload.distribution)
+      if (@@QA_UPLOADERS + @@ADMINS).include?(debianUpload.uploaderUsername) and not @@QA_DISTRIBUTIONS.include?(debianUpload.distribution)
         output = "#{debianUpload.name} was build by buildbot, but was intended for neither daily-dogfood nor qa."
         raise UploadFailureByPolicy.new(output)
       end
