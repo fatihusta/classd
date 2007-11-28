@@ -336,7 +336,7 @@ class ChangeFileUpload < DebianUpload
 end
 
 class Repository
-  attr_reader :distributions, :name, :developerDistributions, :testingDistributions, \  
+  attr_reader :distributions, :name, :developerDistributions, :testingDistributions, \
               :lockedDistributions, :unlockedDistributions
 
   # FIXME: domain/admins/qas by instance
