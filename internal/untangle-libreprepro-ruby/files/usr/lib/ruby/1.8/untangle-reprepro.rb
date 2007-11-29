@@ -333,7 +333,7 @@ class ChangeFileUpload < DebianUpload
       end
     }
     
-    @uploaderUsername = @uploader.sub(/.*<(.+?)@.*>/, '\1') if @uploader
+    @uploaderUsername = @uploader ? @uploader.sub(/.*<(.+?)@.*>/, '\1') : nil
 
     @@logger.debug("Initialized #{self.class}: #{self.to_s}")
   end
@@ -469,7 +469,7 @@ EOM
         raise UploadFailureUnknownDistribution.new("#{debianUpload.name} specifies an unknown distribution (#{debianUpload.distribution}) to be added to.")
       end
 
-      if @testingDistributions.keys.include?(debianUpload.distribution) and not @@ADMINS.include?(debianUpload.uploaderUsername)
+      if @testingDistributions.keys.include?(debianUpload.distribution) and debianUpload.uploaderUsername and not @@ADMINS.include?(debianUpload.uploaderUsername)
         output = "#{debianUpload.name} was intended for #{debianUpload.distribution}, but you don't have permission to upload there."
         raise UploadFailureByPolicy.new(output)
       end
