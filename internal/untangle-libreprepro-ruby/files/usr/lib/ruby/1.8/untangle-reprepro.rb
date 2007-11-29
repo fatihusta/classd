@@ -490,7 +490,7 @@ EOM
       end
 
       # QA distros/uploaders
-      if @@QA_DISTRIBUTIONS.include?(debianUpload.distribution) and not (@@QA_UPLOADERS + @@ADMINS).include?(debianUpload.uploaderUsername)
+      if @@QA_DISTRIBUTIONS.include?(debianUpload.distribution) and debianUpload.uploaderUsername and not (@@QA_UPLOADERS + @@ADMINS).include?(debianUpload.uploaderUsername)
         output = "#{debianUpload.name} was intended for #{debianUpload.distribution}, but was not built by buildbot or a release master."
         raise UploadFailureByPolicy.new(output)
       end
