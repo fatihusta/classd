@@ -11,6 +11,14 @@ killDaemon() {
 
 stopGpgAgent() {
   pkill gpg-agent
+  pkill gpg
+  pkill pinentry
+  pkill pinentry-curses
+  sleep 1
+  pkill -9 gpg-agent
+  pkill -9 gpg
+  pkill -9 pinentry
+  pkill -9 pinentry-curses
 }
 
 startGpgAgent() {
@@ -27,7 +35,7 @@ case "$1" in
     killDaemon # just to be sure
     startGpgAgent
     start-stop-daemon --start --quiet --pidfile $PIDFILE \
-      --make-pidfile --exec $DAEMON -- -d -m -e
+      --make-pidfile --exec $DAEMON -- -d -m -e -v
     echo "done"
     ;;
   stop)
