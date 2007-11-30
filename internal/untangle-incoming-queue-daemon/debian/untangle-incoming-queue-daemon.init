@@ -24,7 +24,7 @@ stopGpgAgent() {
 startGpgAgent() {
   export GPG_TTY=`tty`
   export GNUPGHOME=/root/.gnupg
-  eval `gpg-agent --daemon --default-cache-ttl 31536000 --write-env-file $GNUPGHOME/gpg-agent-info --log-file $GNUPGHOME/gpg-agent.log --debug advanced`
+  eval `gpg-agent --daemon --default-cache-ttl 31536000 --write-env-file $GNUPGHOME/gpg-agent-info --log-file $GNUPGHOME/gpg-agent.log --debug advanced --batch`
   # trigger passphrase prompt
   echo foo | gpg --sign --use-agent > /dev/null
 }
