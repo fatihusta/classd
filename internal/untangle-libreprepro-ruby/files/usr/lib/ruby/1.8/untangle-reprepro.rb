@@ -534,12 +534,11 @@ EOM
       sleep(3)
       tries += 1
       retry if tries < @@MAX_TRIES
-      # FIXME: duplication with the catch-all rescue clause below...
-    # Those next 2 should be handled by the override file
-    rescue UploadFailureNoSection # force the section, then retry
-      # handled by overrides now
-    rescue UploadFailureNoPriority # force the priority, then retry
-      # handled by overrides now
+    rescue UploadFailureNoSection, UploadFailureNoPriority => e
+      # we force the section and priority, so this shouldn't ever happen
+      sleep(3)
+      tries += 1
+      retry if tries < @@MAX_TRIES
     rescue Exception => e # give up, and warn on STDOUT + email
       # will be handled in the "ensure" clause
     ensure # logging + emailing (if need) the result, and moving the files
