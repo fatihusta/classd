@@ -72,7 +72,7 @@ Description: Untangle Total Security Bundle
 Package: untangle-libitem-professional-package
 Section: premium
 Architecture: any
-Depends: untangle-libitem-portal, untangle-libitem-boxbackup, untangle-professional-core, untangle-libitem-update-service
+Depends: untangle-libitem-portal, untangle-libitem-boxbackup, untangle-professional-core
 Conflicts: professional-package-disabler, portal-disabler, boxbackup-disabler, professional-package-storeitem
 Replaces: professional-package-storeitem
 Provides: professional-package-storeitem
