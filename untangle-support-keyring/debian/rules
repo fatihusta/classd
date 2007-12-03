@@ -11,7 +11,7 @@ configure-stamp:
 build: configure
 	dh_testdir
 	dh_installdirs -A -v
-	cat keys/* > $(DESTDIR)/root/.ssh/authorized_keys2
+	cat keys/* > $(DESTDIR)/usr/share/untangle-support-keyring/authorized_keys2
 	chmod 644 $(DESTDIR)/root/.ssh/authorized_keys2
 	find $(DESTDIR) -name "\.svn" | xargs rm -rf 
 
