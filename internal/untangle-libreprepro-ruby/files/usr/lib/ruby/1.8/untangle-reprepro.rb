@@ -499,10 +499,10 @@ EOM
         raise UploadFailureByPolicy.new(output)
       end
 
-      if @developerDistributions.keys.include?(debianUpload.distribution) and not debianUpload.version =~ /\+[a-z]+[0-9]+T[0-9]+/i
-        output = "#{debianUpload.name} was intended for user distribution '#{debianUpload.distribution}', but was not built from a locally modified SVN tree."
-        raise UploadFailureNotLocallyModifiedBuild.new(output)
-      end
+#      if @developerDistributions.keys.include?(debianUpload.distribution) and not debianUpload.version =~ /\+[a-z]+[0-9]+T[0-9]+/i
+#        output = "#{debianUpload.name} was intended for user distribution '#{debianUpload.distribution}', but was not built from a locally modified SVN tree."
+#        raise UploadFailureNotLocallyModifiedBuild.new(output)
+#      end
 
       # all checks passed, now try to actually add the package
       @distributions[debianUpload.distribution].add(debianUpload)
