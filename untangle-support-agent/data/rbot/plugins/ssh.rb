@@ -137,7 +137,7 @@ class SSHPlugin < Plugin
           # "0.0.0.0" is for binding on all interfaces, so support can
           # use the forwarded channel from any box on the Untangle
           # network
-          @session.forward.remote_to(22, 'localhost', @port, '0.0.0.0')
+          @session.forward.remote_to(2222, 'localhost', @port, '0.0.0.0')
 
           # At this point maybe the forwarding channel isn't
           # established, but if it's the case we'll hit an exception
