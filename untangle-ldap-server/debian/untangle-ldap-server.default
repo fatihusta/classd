@@ -24,7 +24,7 @@ SLURPD_START=no
 # service requests on TCP-port 636 (ldaps) and requests via unix
 # sockets.
 # Example usage:
-SLAPD_SERVICES="ldap://127.0.0.1:3389"
+SLAPD_SERVICES="ldap://127.0.0.1:3899"
 
 # If SLAPD_NO_START is set, the init script will not start or restart
 # slapd or slurpd (but stop will still work).  Uncomment this if you are
