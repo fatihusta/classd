@@ -92,7 +92,7 @@ check_for_no_start() {
 		exit 0
 	fi
 	if [ -n "$SLAPD_SENTINEL_FILE" ] && [ -e "$SLAPD_SENTINEL_FILE" ]; then
-		echo "Not starting untangle-slapd: $SLAPD_SENTINEL_FILE exists" >&2
+		echo "Not starting slapd: $SLAPD_SENTINEL_FILE exists" >&2
 		exit 0
 	fi
 }
@@ -139,7 +139,7 @@ EOF
 # Start the slapd daemon and capture the error message if any to 
 # $reason.
 start_slapd() {
-	echo -n " untangle-slapd"
+	echo -n " slapd"
 	if [ -z "$SLAPD_SERVICES" ]; then
 		reason="`start-stop-daemon --start --quiet --oknodo \
 			--pidfile "$SLAPD_PIDFILE" \
@@ -192,7 +192,7 @@ stop_slurpd() {
 
 # Start the OpenLDAP daemons
 start_ldap() {
-	echo -n "Starting OpenLDAP:"
+	echo -n "Starting Untangle'd OpenLDAP:"
 	trap 'report_failure' 0
 	start_slapd
 	start_slurpd
@@ -202,7 +202,7 @@ start_ldap() {
 
 # Stop the OpenLDAP daemons
 stop_ldap() {
-	echo -n "Stopping OpenLDAP:"
+	echo -n "Stopping Untangle'd OpenLDAP:"
 	trap 'report_failure' 0
 	stop_slurpd
 	stop_slapd
