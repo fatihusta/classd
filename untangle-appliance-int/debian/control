@@ -7,6 +7,6 @@ Standards-Version: 3.7.2
 
 Package: untangle-appliance-int
 Architecture: any
-Depends: untangle-vm, untangle-appliance, untangle-kiosk, untangle-client-windows-jre, untangle-bootsplash, atop, untangle-restore-tools, untangle-linux-2.6.22-config
+Depends: untangle-vm, untangle-appliance, untangle-kiosk, untangle-client-windows-jre, untangle-bootsplash, atop, untangle-restore-tools, untangle-linux-config
 Description: The Untangle appliance internal
  The Untangle appliance internal-to-untangle mode.
