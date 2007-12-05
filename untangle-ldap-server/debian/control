@@ -8,7 +8,7 @@ Standards-Version: 3.7.2
 Package: untangle-ldap-server
 Architecture: any
 Pre-Depends: debconf (>= 0.5)
-Depends: slapd (= 2.2.23-8), ldap-utils, libldap-2.2-7
+Depends: slapd (>= 2.2.23), ldap-utils
 Conflicts: untangle-slapd, untangle-ldap-utils, untangle-libldap-2.2-7
 Description: Untangle Slapd config package
  The Untangle slapd config for slapd 2.2.23

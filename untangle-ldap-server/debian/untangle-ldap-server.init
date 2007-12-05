@@ -171,11 +171,12 @@ start_slurpd() {
 # $reason.
 stop_slapd() {
 	echo -n " slapd"
-	pid=`cat "$SLAPD_PIDFILE"`
+	[ -f $SLAPD_PIDFILE ] && pid=`cat "$SLAPD_PIDFILE"`
 	reason="`start-stop-daemon --stop --quiet --oknodo --retry 10 \
 		--pidfile "$SLAPD_PIDFILE" \
 		--exec $SLAPD 2>&1`"
-	kill -9 "$pid" 2> /dev/null	
+	[ -n "$pid" ] && ps "$pid" > /dev/null && kill -9 "$pid" 2> /dev/null	
+	return 0
 }
 
 # Stop the slurpd daemon and capture the error message (if any) to

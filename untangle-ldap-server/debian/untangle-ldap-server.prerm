@@ -1,0 +1,17 @@
+#! /bin/bash
+
+SERVICE=untangle-slapd
+
+case "$1" in
+    remove|deconfigure)
+	if [ -x /etc/init.d/$SERVICE ]; then
+		if [ -x /usr/sbin/invoke-rc.d ]; then
+			invoke-rc.d $SERVICE stop
+		else
+			/etc/init.d/$SERVICE stop
+		fi
+	fi
+	;;
+esac
+
+exit 0
