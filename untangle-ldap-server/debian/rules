@@ -13,7 +13,7 @@
 
 MKDIR=/bin/mkdir -p
 
-DESTDIR=debian/untangle-slapd-config
+DESTDIR=debian/untangle-ldap-server
 
 ifneq (,$(findstring debug,$(DEB_BUILD_OPTIONS)))
 	CFLAGS += -g

@@ -1,29 +1,30 @@
 #! /bin/bash
 
+SLAPD_CONFIG=/etc/untangle-ldap/slapd.conf
+SLAPD_LIB_DIR=/var/lib/untangle-slapd
+SLAPD_INITD=/etc/init.d/untangle-slapd
+
+UNTANGLE_SLAPD_CONFIG_DIR=/usr/share/untangle-ldap-server
+
 ldapAdmin() {
   grep -A 1 -E '^description: LDAP administrator$' $@
 }
 
-LDAP_LIB_DIR=/var/lib/ldap
-UNTANGLE_SLAPD_CONFIG_DIR=/usr/share/untangle-slapd-config
-
-theirAdminAccount=`slapcat | ldapAdmin`
+theirAdminAccount=`slapcat -f $SLAPD_CONFIG | ldapAdmin`
 ourAdminAccount=`ldapAdmin ${UNTANGLE_SLAPD_CONFIG_DIR}/initial.ldif`
 
-cp -f ${UNTANGLE_SLAPD_CONFIG_DIR}/slapd.conf /etc/ldap/slapd.conf
+[ ! -f $SLAPD_CONFIG ] && cp ${UNTANGLE_SLAPD_CONFIG_DIR}/slapd.conf $SLAPD_CONFIG
 
 if [ ! "$theirAdminAccount" = "$ourAdminAccount" ] ; then
-  /etc/init.d/slapd stop
-  killall slapd
-  mv ${LDAP_LIB_DIR} /var/backups/ldap-`date -Iseconds`
-  mkdir ${LDAP_LIB_DIR}
-  cp ${UNTANGLE_SLAPD_CONFIG_DIR}/DB_CONFIG ${LDAP_LIB_DIR}/DB_CONFIG
-  slapadd -l ${UNTANGLE_SLAPD_CONFIG_DIR}/initial.ldif
-  slapindex
+  $SLAPD_INIT stop
+  mv ${LDAP_LIB_DIR} /var/backups/untangle-ldap-`date -Iseconds`
+  mkdir ${SLAPD_LIB_DIR}
+  cp ${UNTANGLE_SLAPD_CONFIG_DIR}/DB_CONFIG ${SLAPD_LIB_DIR}/DB_CONFIG
+  slapadd -f $SLAPD_CONFIG -l ${UNTANGLE_SLAPD_CONFIG_DIR}/initial.ldif
+  slapindex -f $SLAPD_CONFIG
 fi
 
-/etc/init.d/slapd stop
-killall slapd
-/etc/init.d/slapd start
+$SLAPD_INIT stop
+$SLAPD_INIT start
 
-true
+exit 0
