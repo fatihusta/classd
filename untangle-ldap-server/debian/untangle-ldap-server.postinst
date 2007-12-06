@@ -20,7 +20,6 @@ fi
 ourAdminAccount=`ldapAdmin ${UNTANGLE_SLAPD_CONFIG_DIR}/initial.ldif`
 
 mkdir -m 0755 -p /var/run/untangle-ldap
-chown openldap /var/run/untangle-ldap
 
 if [ ! "$theirAdminAccount" = "$ourAdminAccount" ] ; then
   /etc/init.d/$SERVICE stop
@@ -30,7 +29,6 @@ if [ ! "$theirAdminAccount" = "$ourAdminAccount" ] ; then
   cp ${UNTANGLE_SLAPD_CONFIG_DIR}/DB_CONFIG ${SLAPD_LIB_DIR}/DB_CONFIG
   slapadd -f $SLAPD_CONFIG -l ${UNTANGLE_SLAPD_CONFIG_DIR}/initial.ldif
   slapindex -f $SLAPD_CONFIG
-  chown -R openldap ${SLAPD_LIB_DIR}
 fi
 
 update-rc.d $SERVICE start 16 2 3 4 5 . stop 84 1 . >/dev/null
