@@ -788,7 +788,7 @@ Description: Untangle Identity Theft Blocker
 
 Package: untangle-libitem-test
 Architecture: any
-Section: qa/admin
+Section: internal/devel
 Depends: untangle-node-test
 Conflicts: test-storeitem
 Replaces: test-storeitem
@@ -1264,7 +1264,7 @@ Description: Untangle Remote Access Portal
  The Untangle Remote Access Portal Store Item.
 
 Package: untangle-libitem-update-service
-Section: qa/premium
+Section: internal/devel
 Architecture: any
 XB-View-Position: 1015
 XB-Display-Name: Premium Signature Service
