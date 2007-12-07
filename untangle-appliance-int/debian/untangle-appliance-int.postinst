@@ -19,7 +19,11 @@ if [ -f "${CRONTAB_FILE}" ] ; then
 fi
 
 # Fix up boxes so they don't fsck after 6 months.  Now only limit is 32 reboots.
-rootdev=`cat /etc/mtab | grep " / " | awk '{print $1}'`
+rootdev=`awk '/ \/ / {print $1}' /etc/mtab`
+if [ -n "$rootdev" -a -f /etc/fstab ]; then
+    # Special handling for install-time when /etc/mtab isn't valid
+    rootdev=`awk '/ \/ / {print $1}' /etc/fstab`
+fi
 tune2fs -i 0 $rootdev
 
 exit 0
