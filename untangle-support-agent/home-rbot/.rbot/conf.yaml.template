@@ -3,7 +3,8 @@ irc.nick: +NAME+
 core.address_prefix: 
 - "!"
 irc.user: +NAME+
-server.name: activation.untangle.com
+server.name: supportsys.untangle.com
+server.port: 443
 auth.password: 
 irc.join_channels: 
 - "+CHANNEL+"
