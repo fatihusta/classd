@@ -323,15 +323,15 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABGdBTUEAANbY1E9YMg
 Description: Untangle Web Content Control
  The Untangle Web Content Control Store Item.
 
-Package: untangle-libitem-hauri
+Package: untangle-libitem-kav
 Section: premium
 Architecture: any
-Depends: untangle-node-hauri
-Conflicts: hauri-disabler, hauri-storeitem
-Provides: untangle-libitem-trial30-hauri, hauri-storeitem
-Replaces: hauri-storeitem
+Depends: untangle-node-kav
+Conflicts: kav-disabler, kav-storeitem
+Provides: untangle-libitem-trial30-kav, kav-storeitem
+Replaces: kav-storeitem
 XB-View-Position: 60
-XB-Display-Name: Dual Virus Blocker
+XB-Display-Name: Kaspersky Virus Blocker
 XB-Untangle-Type: lib_item
 XB-Is-Security: true
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABGdBTUEAANbY1E9YMgAAABl0
@@ -359,8 +359,8 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABGdBTUEAANbY1E9YMg
  bo4dB1m4/4mJCZqZmTkOure3Rw3Moe3tbdrf36epqamhgXK/DDo/P08LCws0NzfXelcoFJTJ
  t7a2iKH5xJlHJgYQTXoFZcjFxUUlDK3e8ZE4m35tbY0cx1GAw4BMUgKhGBh4DPkrH9WzEs1O
  4vuVlZXPTaVhwzLg7OwsLS0t0fLyMq2vryvO/wQYAP5qirM6mBOTAAAAAElFTkSuQmCC
-Description: Untangle Dual Virus Blocker
- The Untangle Dual Virus Blocker Store Item.
+Description: Untangle Kaspersky Virus Blocker
+ The Untangle Kaspersky Virus Blocker Store Item.
 
 Package: untangle-libitem-clam
 Architecture: any
@@ -1384,17 +1384,17 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABGdBTUEAANbY1E9YMg
 Description: Untangle Professional Packages 30-Day Trial
  The Untangle Professional Package 30-Day Trial Store Item.
 
-Package: untangle-libitem-trial30-hauri
+Package: untangle-libitem-trial30-kav
 Section: premium
 Architecture: any
-Depends: untangle-node-hauri
-Conflicts: hauri-trial30-storeitem
-Replaces: hauri-trial30-storeitem
-Provides: hauri-trial30-storeitem
+Depends: untangle-node-kav
+Conflicts: kav-trial30-storeitem
+Replaces: kav-trial30-storeitem
+Provides: kav-trial30-storeitem
 XB-View-Position: 60
-XB-Display-Name: Dual Virus Blocker 30-Day Trial
+XB-Display-Name: Kaspersky Virus Blocker 30-Day Trial
 XB-Untangle-Type: trial
-XB-Untangle-Full-Version: untangle-libitem-hauri
+XB-Untangle-Full-Version: untangle-libitem-kav
 XB-Is-Security: true
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABGdBTUEAANbY1E9YMgAAABl0
  RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAATVSURBVHjazJhLbxxFEMerZ2Yd
@@ -1421,8 +1421,8 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABGdBTUEAANbY1E9YMg
  bo4dB1m4/4mJCZqZmTkOure3Rw3Moe3tbdrf36epqamhgXK/DDo/P08LCws0NzfXelcoFJTJ
  t7a2iKH5xJlHJgYQTXoFZcjFxUUlDK3e8ZE4m35tbY0cx1GAw4BMUgKhGBh4DPkrH9WzEs1O
  4vuVlZXPTaVhwzLg7OwsLS0t0fLyMq2vryvO/wQYAP5qirM6mBOTAAAAAElFTkSuQmCC
-Description: Untangle Dual Virus Blocker 30-Day Trial
- The Untangle Dual Virus Blocker 30-Day Trial Store Item.
+Description: Untangle Kaspersky Virus Blocker 30-Day Trial
+ The Untangle Kaspersky Virus Blocker 30-Day Trial Store Item.
 
 Package: untangle-libitem-trial30-portal
 Section: premium
