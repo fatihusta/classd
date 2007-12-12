@@ -6,7 +6,7 @@ Build-Depends: debhelper (>> 3.0.0)
 Standards-Version: 3.7.2
 
 Package: untangle-fakekdm
-Architecture: any
+Architecture: all
 Conflicts: fakekdm-mv
 Provides: kdm, fakekdm-mv
 Replaces: fakekdm-mv

@@ -7,7 +7,7 @@ Standards-Version: 3.7.2
 
 Package: untangle-support-keyring
 Depends: untangle-openssh-server
-Architecture: any
+Architecture: all
 Description: The Untangle support keyring
   The Untangle support keyring.
 

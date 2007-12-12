@@ -6,7 +6,7 @@ Build-Depends: debhelper (>> 3.0.0)
 Standards-Version: 3.7.2
 
 Package: untangle-libitem-opensource-package
-Architecture: any
+Architecture: all
 Depends: untangle-libitem-shield,untangle-libitem-spyware,untangle-libitem-webfilter,untangle-libitem-clam,untangle-libitem-protofilter,untangle-libitem-router,untangle-libitem-firewall,untangle-libitem-spamassassin,untangle-libitem-phish,untangle-libitem-openvpn,untangle-libitem-ips,untangle-libitem-reporting
 Conflicts: standard-bundle-disabler, spyware-disabler, httpblocker-disabler, protofilter-disabler, spamassassin-disabler, clamphish-disabler, ids-disabler, standard-bundle-storeitem
 Replaces: standard-bundle-storeitem
@@ -71,7 +71,7 @@ Description: Untangle Total Security Bundle
 
 Package: untangle-libitem-professional-package
 Section: premium
-Architecture: any
+Architecture: all
 Depends: untangle-libitem-portal, untangle-libitem-boxbackup, untangle-professional-core
 Conflicts: professional-package-disabler, portal-disabler, boxbackup-disabler, professional-package-storeitem
 Replaces: professional-package-storeitem
@@ -135,7 +135,7 @@ Description: Untangle Professional Package
  The Untangle Professional Package Store Item.
 
 Package: untangle-libitem-shield
-Architecture: any
+Architecture: all
 Depends: untangle-node-shield
 Conflicts: airgap-storeitem
 Replaces: airgap-storeitem
@@ -201,7 +201,7 @@ Description: Untangle Attack Blocker
  The Untangle Attack Blocker Store Item.
 
 Package: untangle-libitem-spyware
-Architecture: any
+Architecture: all
 Depends: untangle-node-spyware
 Conflicts: spyware-disabler, spyware-storeitem
 Provides: untangle-libitem-trial30-spyware, spyware-storeitem
@@ -256,7 +256,7 @@ Description: Untangle Spyware Blocker
  The Untangle Spyware Blocker Store Item.
 
 Package: untangle-libitem-webfilter
-Architecture: any
+Architecture: all
 Depends: untangle-node-webfilter
 Conflicts: httpblocker-disabler, httpblocker-storeitem
 Replaces: httpblocker-storeitem
@@ -325,7 +325,7 @@ Description: Untangle Web Content Control
 
 Package: untangle-libitem-kav
 Section: premium
-Architecture: any
+Architecture: all
 Depends: untangle-node-kav
 Conflicts: kav-disabler, kav-storeitem
 Provides: untangle-libitem-trial30-kav, kav-storeitem
@@ -363,7 +363,7 @@ Description: Untangle Kaspersky Virus Blocker
  The Untangle Kaspersky Virus Blocker Store Item.
 
 Package: untangle-libitem-clam
-Architecture: any
+Architecture: all
 Depends: untangle-node-clam
 Conflicts: clam-storeitem
 Replaces: clam-storeitem
@@ -401,7 +401,7 @@ Description: Untangle Clam Virus Blocker
  The Untangle Clam Virus Blocker Store Item.
 
 Package: untangle-libitem-protofilter
-Architecture: any
+Architecture: all
 Depends: untangle-node-protofilter
 Conflicts: protofilter-disabler, protofilter-storeitem
 Replaces: protofilter-storeitem
@@ -490,7 +490,7 @@ Description: Untangle Protocol Control
  The Untangle Protocol Control Store Item.
 
 Package: untangle-libitem-router
-Architecture: any
+Architecture: all
 Depends: untangle-node-router
 Conflicts: nat-storeitem
 Replaces: nat-storeitem
@@ -552,7 +552,7 @@ Description: Untangle Router
  The Untangle Router Store Item.
 
 Package: untangle-libitem-firewall
-Architecture: any
+Architecture: all
 Depends: untangle-node-firewall
 Conflicts: firewall-storeitem
 Replaces: firewall-storeitem
@@ -607,7 +607,7 @@ Description: Untangle Firewall
  The Untangle Firewall Store Item.
 
 Package: untangle-libitem-spamassassin
-Architecture: any
+Architecture: all
 Depends: untangle-node-spamassassin
 Conflicts: spamassassin-disabler, spamassassin-storeitem
 Replaces: spamassassin-storeitem
@@ -690,7 +690,7 @@ Description: Untangle Spam Blocker
  The Untangle Spam Blocker Store Item.
 
 Package: untangle-libitem-phish
-Architecture: any
+Architecture: all
 Depends: untangle-node-phish
 Conflicts: clamphish-disabler, clamphish-storeitem
 Replaces: clamphish-storeitem
@@ -787,7 +787,7 @@ Description: Untangle Identity Theft Blocker
  The Untangle Identity Theft Blocker Store Item.
 
 Package: untangle-libitem-test
-Architecture: any
+Architecture: all
 Section: internal/devel
 Depends: untangle-node-test
 Conflicts: test-storeitem
@@ -898,7 +898,7 @@ Description: Untangle Test
  The Untangle Test Store Item.
 
 Package: untangle-libitem-openvpn
-Architecture: any
+Architecture: all
 Depends: untangle-node-openvpn
 Conflicts: openvpn-storeitem
 Replaces: openvpn-storeitem
@@ -970,7 +970,7 @@ Description: OpenVPN
  OpenVPN Store Item.
 
 Package: untangle-libitem-ips
-Architecture: any
+Architecture: all
 Depends: untangle-node-ips
 Conflicts: ids-disabler, ids-storeitem
 Replaces: ids-storeitem
@@ -1044,7 +1044,7 @@ Description: Untangle Intrusion Prevention
  The Untangle Intrusion Prevention Store Item.
 
 Package: untangle-libitem-reporting
-Architecture: any
+Architecture: all
 Depends: untangle-node-reporting
 Conflicts: reporting-storeitem
 Replaces: reporting-storeitem
@@ -1099,7 +1099,7 @@ Description: Untangle Reports
 
 Package: untangle-libitem-boxbackup
 Section: premium
-Architecture: any
+Architecture: all
 Depends: untangle-node-boxbackup, untangle-libitem-professional-package
 Conflicts: boxbackup-disabler, boxbackup-storeitem
 Replaces: boxbackup-storeitem
@@ -1188,7 +1188,7 @@ Description: Untangle Configuration Backup
 
 Package: untangle-libitem-portal
 Section: premium
-Architecture: any
+Architecture: all
 Depends: untangle-node-portal, untangle-libitem-professional-package
 Conflicts: portal-disabler, portal-storeitem
 Replaces: portal-storeitem
@@ -1265,7 +1265,7 @@ Description: Untangle Remote Access Portal
 
 Package: untangle-libitem-update-service
 Section: internal/devel
-Architecture: any
+Architecture: all
 XB-View-Position: 1015
 XB-Display-Name: Premium Signature Service
 XB-Untangle-Type: lib_item
@@ -1320,7 +1320,7 @@ Description: Untangle Premium Signature Service
 
 Package: untangle-libitem-trial30-professional-package
 Section: premium
-Architecture: any
+Architecture: all
 Depends: untangle-libitem-trial30-portal,untangle-libitem-trial30-boxbackup, untangle-professional-core
 Conflicts: professional-package-trial30-storeitem
 Replaces: professional-package-trial30-storeitem
@@ -1386,7 +1386,7 @@ Description: Untangle Professional Packages 30-Day Trial
 
 Package: untangle-libitem-trial30-kav
 Section: premium
-Architecture: any
+Architecture: all
 Depends: untangle-node-kav
 Conflicts: kav-trial30-storeitem
 Replaces: kav-trial30-storeitem
@@ -1426,7 +1426,7 @@ Description: Untangle Kaspersky Virus Blocker 30-Day Trial
 
 Package: untangle-libitem-trial30-portal
 Section: premium
-Architecture: any
+Architecture: all
 Depends: untangle-node-portal
 Conflicts: portal-trial30-storeitem
 Replaces: portal-trial30-storeitem
@@ -1504,7 +1504,7 @@ Description: Untangle Remote Access Portal 30-Day Trial
 
 Package: untangle-libitem-trial30-boxbackup
 Section: premium
-Architecture: any
+Architecture: all
 Depends: untangle-node-boxbackup
 Conflicts: boxbackup-trial30-storeitem
 Replaces: boxbackup-trial30-storeitem
