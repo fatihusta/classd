@@ -1,0 +1,11 @@
+Source: untangle-hardware-support
+Section: admin
+Priority: optional
+Maintainer: John Irwin <jdi@untangle.com>
+Build-Depends: debhelper (>> 3.0.0)
+Standards-Version: 3.7.2
+
+Package: untangle-hardware-support
+Architecture: all
+Description: The Untangle hardware support
+ The Untangle hardware support package.  Only loaded on Untangle sourced hardware.
