@@ -24,6 +24,8 @@ if [ -n "$rootdev" -a -f /etc/fstab ]; then
     # Special handling for install-time when /etc/mtab isn't valid
     rootdev=`awk '/ \/ / {print $1}' /etc/fstab`
 fi
-tune2fs -i 0 $rootdev
+if [ -n "$rootdev" ]; then
+    tune2fs -i 0 $rootdev
+fi
 
 exit 0
