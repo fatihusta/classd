@@ -2,10 +2,13 @@ Source: untangle-hardware-support
 Section: admin
 Priority: optional
 Maintainer: John Irwin <jdi@untangle.com>
-Build-Depends: debhelper (>> 3.0.0)
+Build-Depends: debhelper (>> 3.0.0), libssl-dev
 Standards-Version: 3.7.2
 
 Package: untangle-hardware-support
-Architecture: all
+Architecture: any
+Depends: ${shlibs:Depends}
 Description: The Untangle hardware support
- The Untangle hardware support package.  Only loaded on Untangle sourced hardware.
+ The Untangle hardware support package. Only
+ loaded on Untangle sourced hardware
+ .

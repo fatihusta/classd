@@ -1,47 +1,29 @@
 #!/usr/bin/make -f
-# Sample debian/rules that uses debhelper. 
-# GNU copyright 1997 by Joey Hess.
-#
-# This version is for a hypothetical package that builds an
-# architecture-dependant package, as well as an architecture-independent
-# package.
 
-# Uncomment this to turn on verbose mode. 
-# export DH_VERBOSE=1
+INSTALL_PROGRAM := install -s
 
-# This is the debhelper compatibility version to use.
+BINARY_NAME := mvverifykey
+BINARY_INSTALL_DIR := files/usr/share/untangle/conf/etc
 
-MKDIR=/bin/mkdir -p
-
-ifneq (,$(findstring debug,$(DEB_BUILD_OPTIONS)))
-	CFLAGS += -g
-endif
-ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
-	INSTALL_PROGRAM += -s
-endif
-
-configure: configure-stamp
-configure-stamp:
-	dh_testdir
-	touch configure-stamp
-
-build: configure
+build: 
 	dh_testdir
 	rm -rf ./debian/tmp
 	mkdir -p ./debian/tmp
 	dh_installdirs -A -v
+	make INSTALL_PROGRAM="$(INSTALL_PROGRAM)" DESTDIR=../$(BINARY_INSTALL_DIR) -C src install
 	for i in `cat debian/untangle-hardware-support.dirs` ; do mkdir -p debian/tmp/$$i ; done
 	cp -r ./files/* ./debian/tmp
-	find ./debian/tmp -name ".svn" | xargs rm -rf 
+	/usr/bin/find ./debian/tmp -name ".svn" | xargs rm -rf 
 
 clean:
 	dh_testdir
 	dh_testroot
-	rm -f build-arch-stamp build-indep-stamp configure-stamp
-	rm -rf debian/tmp debian/untangle-hardware-support sav-install
+	rm -f build-arch-stamp build-indep-stamp
+	rm -rf debian/tmp debian/untangle-hardware-support sav-install $(BINARY_INSTALL_DIR)/$(BINARY_NAME)
+	make -C src clean
 	dh_clean
 
-binary-indep: build
+binary-arch: build
 	dh_testdir  
 	dh_testroot   
 	dh_movefiles 
@@ -69,10 +51,10 @@ binary-indep: build
 	if [ -f debian/version ] ; then dh_gencontrol -- -v"`cat debian/version`" ; else dh_gencontrol ; fi
 	dh_md5sums     
 
-binary-arch: build 
+binary-indep: build 
 # nothing to do
 
 binary: binary-indep binary-arch
 	dh_builddeb 
 
-.PHONY: build clean binary-indep binary install configure
+.PHONY: build clean binary-indep binary install
