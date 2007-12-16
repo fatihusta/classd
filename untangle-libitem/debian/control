@@ -70,7 +70,7 @@ Description: Untangle Total Security Bundle
  The Untangle Total Security Bundle Store Item.
 
 Package: untangle-libitem-professional-package
-Section: premium
+Section: premium/admin
 Architecture: all
 Depends: untangle-libitem-portal, untangle-libitem-boxbackup, untangle-professional-core
 Conflicts: professional-package-disabler, portal-disabler, boxbackup-disabler, professional-package-storeitem
@@ -324,7 +324,7 @@ Description: Untangle Web Content Control
  The Untangle Web Content Control Store Item.
 
 Package: untangle-libitem-kav
-Section: premium
+Section: premium/admin
 Architecture: all
 Depends: untangle-node-kav
 Conflicts: kav-disabler, kav-storeitem
@@ -1098,7 +1098,7 @@ Description: Untangle Reports
  Untangle Reports Store Item.
 
 Package: untangle-libitem-boxbackup
-Section: premium
+Section: premium/admin
 Architecture: all
 Depends: untangle-node-boxbackup, untangle-libitem-professional-package
 Conflicts: boxbackup-disabler, boxbackup-storeitem
@@ -1187,7 +1187,7 @@ Description: Untangle Configuration Backup
  The Untangle Configuration Backup Store Item.
 
 Package: untangle-libitem-portal
-Section: premium
+Section: premium/admin
 Architecture: all
 Depends: untangle-node-portal, untangle-libitem-professional-package
 Conflicts: portal-disabler, portal-storeitem
@@ -1319,7 +1319,7 @@ Description: Untangle Premium Signature Service
  The Untangle Premium Signature Service Item.
 
 Package: untangle-libitem-trial30-professional-package
-Section: premium
+Section: premium/admin
 Architecture: all
 Depends: untangle-libitem-trial30-portal,untangle-libitem-trial30-boxbackup, untangle-professional-core
 Conflicts: professional-package-trial30-storeitem
@@ -1385,7 +1385,7 @@ Description: Untangle Professional Packages 30-Day Trial
  The Untangle Professional Package 30-Day Trial Store Item.
 
 Package: untangle-libitem-trial30-kav
-Section: premium
+Section: premium/admin
 Architecture: all
 Depends: untangle-node-kav
 Conflicts: kav-trial30-storeitem
@@ -1425,7 +1425,7 @@ Description: Untangle Kaspersky Virus Blocker 30-Day Trial
  The Untangle Kaspersky Virus Blocker 30-Day Trial Store Item.
 
 Package: untangle-libitem-trial30-portal
-Section: premium
+Section: premium/admin
 Architecture: all
 Depends: untangle-node-portal
 Conflicts: portal-trial30-storeitem
@@ -1503,7 +1503,7 @@ Description: Untangle Remote Access Portal 30-Day Trial
  The Untangle Remote Access Portal 30-Day Trial Store Item.
 
 Package: untangle-libitem-trial30-boxbackup
-Section: premium
+Section: premium/admin
 Architecture: all
 Depends: untangle-node-boxbackup
 Conflicts: boxbackup-trial30-storeitem
