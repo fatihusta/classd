@@ -32,10 +32,6 @@ if [ ! "$theirAdminAccount" = "$ourAdminAccount" ] ; then
 fi
 
 update-rc.d $SERVICE start 16 2 3 4 5 . stop 84 1 . >/dev/null
-if [ -x /usr/sbin/invoke-rc.d ]; then
-  invoke-rc.d $SERVICE restart
-else
-  /etc/init.d/$SERVICE restart
-fi
+/etc/init.d/$SERVICE restart
 
 exit 0
