@@ -327,9 +327,9 @@ Package: untangle-libitem-kav
 Section: premium/admin
 Architecture: all
 Depends: untangle-node-kav
-Conflicts: kav-disabler, kav-storeitem
-Provides: untangle-libitem-trial30-kav, kav-storeitem
-Replaces: kav-storeitem
+Conflicts: untangle-libitem-hauri
+Provides: untangle-libitem-trial30-kav, untangle-libitem-hauri
+Replaces: untangle-libitem-hauri
 XB-View-Position: 60
 XB-Display-Name: Kaspersky Virus Blocker
 XB-Untangle-Type: lib_item
@@ -1386,9 +1386,9 @@ Package: untangle-libitem-trial30-kav
 Section: premium/admin
 Architecture: all
 Depends: untangle-node-kav
-Conflicts: kav-trial30-storeitem
-Replaces: kav-trial30-storeitem
-Provides: kav-trial30-storeitem
+Conflicts: untangle-libitem-trial30-hauri
+Replaces: untangle-libitem-trial30-hauri
+Provides: untangle-libitem-trial30-hauri
 XB-View-Position: 60
 XB-Display-Name: Kaspersky Virus Blocker 30-Day Trial
 XB-Untangle-Type: trial
