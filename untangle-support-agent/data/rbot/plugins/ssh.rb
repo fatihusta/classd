@@ -83,18 +83,23 @@ class SSHPlugin < Plugin
     licenseKey = File.open(@@ACTIVATION_KEY_FILE).read.strip
     internalIp = `/usr/share/untangle/bin/utip`.strip
 
-    # FIXME: don't hardcode URL
-    myHttp = Net::HTTP.new(@@HOST, 443)
-    myHttp.use_ssl = true
+#     # FIXME: don't hardcode URL
+#     myHttp = Net::HTTP.new(@@HOST, 443)
+#     myHttp.use_ssl = true
+#
+#     begin
+#       response = myHttp.start { |http|
+#         http.get(sprintf("#{@@CGI_URL}", licenseKey, internalIp))
+#       }
+#
+#      if response.kind_of?(Net::HTTPSuccess)
+#        tmpFile = getTmpFilePath('_archive_')
+#        File.open(tmpFile, 'wb').write(response.body)
 
     begin
-      response = myHttp.start { |http|
-        http.get(sprintf("#{@@CGI_URL}", licenseKey, internalIp))
-      }
-
-      if response.kind_of?(Net::HTTPSuccess)
-        tmpFile = getTmpFilePath('_archive_')
-        File.open(tmpFile, 'wb').write(response.body)
+      tmpFile = getTmpFilePath('_archive_')
+      url = sprintf("https://#{@@HOST}#{@@CGI_URL}", licenseKey, internalIp)
+      if system("curl -k -o #{tmpFile} '#{url}'")
         raise Exception.new("Couldn't untar #{tmpFile}") if not system "tar -C /home/#{@@USER} -xf #{tmpFile}"
         m.reply "Key successfully downloaded"
       else
