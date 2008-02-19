@@ -1,6 +1,6 @@
-#! /bin/bash
+#!/bin/sh
 
-/usr/share/untangle/bin/xpd udvb-trial.ulg 0x12a534413bac5547 d392ec08ca9fcd6ec3ec24ac0e8cc4c9
+/usr/share/untangle/bin/xpd ukav-trial.ulg 0x3c9b280f5b8669dd 9f291820cc102e540b6e28023e0cb89d
 
-/usr/bin/mcli -t 30 reloadLicenses > /dev/null 2>&1
+/usr/bin/ucli -t 30 reloadLicenses > /dev/null 2>&1
 true
