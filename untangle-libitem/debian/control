@@ -1589,3 +1589,69 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABGdBTUEAANbY1E9YMg
  RU5ErkJggg==
 Description: Untangle Configuration Backup 30-Day Trial
  The Untangle Configuration Backup 30-Day Trial Store Item.
+
+Package: untangle-libitem-pcremote
+Section: premium/admin
+Architecture: all
+Depends: untangle-node-pcremote
+Conflicts: untangle-libitem-pcremote
+Provides: untangle-libitem-trial30-pcremote, untangle-libitem-pcremote
+Replaces: untangle-libitem-pcremote
+XB-View-Position: 60
+XB-Display-Name: PC Remote
+XB-Untangle-Type: lib_item
+XB-Is-Security: true
+XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAAAXNSR0IArs4c
+ 6QAAAtRJREFUWMPtmL9L61AcxU8uxKqVVlq3LoIuKqhQNCqFLoJdOkgFFwUR
+ l0yC/4drqQoVpSAt4uQmtENxqkNBqiBOHQQtVMRfaRXPW94LxBiNdXgI98Bd
+ Tr4n95Pc+73DVUgSv0ACv0QSVIJKUAkqQSWoBP0ZqKIoltHV1YWJiQns7e05
+ hguFAmKxGAKBAFRVRW9vL5aWlnB8fOyYaTQa6OnpQSAQgGEY7kn5VwAcx+7u
+ Lt/r4OCAQgjHjJMymYxZs7OzQ7eygf5TrVbjysoKAXBkZMQWHBoaIgDG43Ge
+ nZ3x5eWFNzc3zGazjEajjhNGIhFzrqmpqZ+DkuTt7S0B0OPx2IKqqhIA6/W6
+ 68kqlQoBUNM0Tk5OEgBPT09dZV01k8fjsXmhUAgAkEwmUa/XXW2zjY0NAMDy
+ 8jJ0Xbd4396jHy393Nyc7QvT6bSZURSF/f39nJ+fZyaTYbPZtNU/PT2xu7ub
+ nZ2dvLu74/PzM4PBIP1+Px8fH7+/9O9HOBzm1dXVh+F8Ps94PE6v12vJjI6O
+ 8vr62lK7vb1NAFxcXDS9tbU1AmA6nf4ZqNfr5eHh4ZcveX19ZaVSYSqVYl9f
+ HwFwYWHBUqNpGgGwUCiY3sXFBRVFoaZprTWTYRjMZrNsb29nW1sbS6WS64a5
+ vLwkAAaDQdMrl8ufHn8AWC6XW+/69fV1AuDY2Bjf3t5cgdZqNQKgqqqmp+v6
+ l6C6rrcO2mw2OTAwQABMpVKWZ+Pj40wmkzw/P6dhGGw0Gjw5OeH09DQBcHBw
+ kCR5f39Pn89HIQSr1aoNoFqtUghBn8/Hh4eH1kBJ8ujoiADo9/stTfXZ3xFC
+ cH9/nyS5ublJAIzFYo4QMzMzBMCtra3WQUkykUgQAGdnZ02vVCpxdXWVw8PD
+ 7OjooKqqDIVCTCQSLBaLZl04HCYA5nI5R4hcLmeeME5S5E2JBJWgElSCSlAJ
+ KkElqAT9j/oDhiyARZ4pRggAAAAASUVORK5CYII=
+Description: PC Remote
+ The PC Remote product.
+
+Package: untangle-libitem-trial30-pcremote
+Section: premium/admin
+Architecture: all
+Depends: untangle-node-pcremote
+Conflicts: untangle-libitem-trial30-pcremote
+Replaces: untangle-libitem-trial30-pcremote
+Provides: untangle-libitem-trial30-pcremote
+XB-View-Position: 60
+XB-Display-Name: PC Remote 30-Day Trial
+XB-Untangle-Type: trial
+XB-Untangle-Full-Version: untangle-libitem-pcremote
+XB-Is-Security: true
+XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAAAXNSR0IArs4c
+ 6QAAAtRJREFUWMPtmL9L61AcxU8uxKqVVlq3LoIuKqhQNCqFLoJdOkgFFwUR
+ l0yC/4drqQoVpSAt4uQmtENxqkNBqiBOHQQtVMRfaRXPW94LxBiNdXgI98Bd
+ Tr4n95Pc+73DVUgSv0ACv0QSVIJKUAkqQSWoBP0ZqKIoltHV1YWJiQns7e05
+ hguFAmKxGAKBAFRVRW9vL5aWlnB8fOyYaTQa6OnpQSAQgGEY7kn5VwAcx+7u
+ Lt/r4OCAQgjHjJMymYxZs7OzQ7eygf5TrVbjysoKAXBkZMQWHBoaIgDG43Ge
+ nZ3x5eWFNzc3zGazjEajjhNGIhFzrqmpqZ+DkuTt7S0B0OPx2IKqqhIA6/W6
+ 68kqlQoBUNM0Tk5OEgBPT09dZV01k8fjsXmhUAgAkEwmUa/XXW2zjY0NAMDy
+ 8jJ0Xbd4396jHy393Nyc7QvT6bSZURSF/f39nJ+fZyaTYbPZtNU/PT2xu7ub
+ nZ2dvLu74/PzM4PBIP1+Px8fH7+/9O9HOBzm1dXVh+F8Ps94PE6v12vJjI6O
+ 8vr62lK7vb1NAFxcXDS9tbU1AmA6nf4ZqNfr5eHh4ZcveX19ZaVSYSqVYl9f
+ HwFwYWHBUqNpGgGwUCiY3sXFBRVFoaZprTWTYRjMZrNsb29nW1sbS6WS64a5
+ vLwkAAaDQdMrl8ufHn8AWC6XW+/69fV1AuDY2Bjf3t5cgdZqNQKgqqqmp+v6
+ l6C6rrcO2mw2OTAwQABMpVKWZ+Pj40wmkzw/P6dhGGw0Gjw5OeH09DQBcHBw
+ kCR5f39Pn89HIQSr1aoNoFqtUghBn8/Hh4eH1kBJ8ujoiADo9/stTfXZ3xFC
+ cH9/nyS5ublJAIzFYo4QMzMzBMCtra3WQUkykUgQAGdnZ02vVCpxdXWVw8PD
+ 7OjooKqqDIVCTCQSLBaLZl04HCYA5nI5R4hcLmeeME5S5E2JBJWgElSCSlAJ
+ KkElqAT9j/oDhiyARZ4pRggAAAAASUVORK5CYII=
+Description: PC Remote
+ The PC Remote product.
+
