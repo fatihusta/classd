@@ -1,0 +1,6 @@
+#!/bin/sh
+
+/usr/share/untangle/bin/xpd upcr-trial.ulg 0x47287d5101db38ea ee85cf242431d3ef088cdd60edb559b7
+
+/usr/bin/ucli -t 30 reloadLicenses > /dev/null 2>&1
+true
