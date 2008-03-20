@@ -1593,7 +1593,7 @@ Description: Untangle Configuration Backup 30-Day Trial
 Package: untangle-libitem-pcremote
 Section: premium/admin
 Architecture: all
-Depends: untangle-node-pcremote nmap iputils-ping
+Depends: untangle-node-pcremote
 Conflicts: untangle-libitem-pcremote
 Provides: untangle-libitem-trial30-pcremote, untangle-libitem-pcremote
 Replaces: untangle-libitem-pcremote
