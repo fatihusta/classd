@@ -1,9 +1,6 @@
-#! /bin/bash
+#!/bin/sh
 
-/usr/share/untangle/bin/xpd urap-sub.ulg 0x2c652f1858f472e4 8cbc4e31dd28e3b964dab75ec8834a1d
+/usr/share/untangle/bin/xpd urap-sub.ulg 0x7c1223b86eaf5d41 8cbc4e31dd28e3b964dab75ec8834a1d
 
-/usr/bin/mcli -t 30 reloadLicenses > /dev/null 2>&1
-
-/etc/init.d/untangle-slapd restart
-
-exit 0
+/usr/bin/ucli -t 30 reloadLicenses > /dev/null 2>&1
+true
