@@ -1670,7 +1670,7 @@ Description: PC Remote
 Package: untangle-libitem-trial30-pcremote
 Section: premium/admin
 Architecture: all
-Depends: untangle-node-pcremote
+Depends: untangle-node-pcremote nmap iputils-ping
 Conflicts: untangle-libitem-trial30-pcremote
 Replaces: untangle-libitem-trial30-pcremote
 Provides: untangle-libitem-trial30-pcremote
