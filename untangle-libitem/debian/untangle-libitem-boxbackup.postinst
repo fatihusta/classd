@@ -1,6 +1,6 @@
-#! /bin/bash
+#!/bin/sh
 
-/usr/share/untangle/bin/xpd ucb-sub.ulg 0x6c482de73a034406 3e35f1456ae2d6a95844b4d2dd33b185
+/usr/share/untangle/bin/xpd ucb-sub.ulg 0x3f8207db01593238 3e35f1456ae2d6a95844b4d2dd33b185
 
-/usr/bin/mcli -t 30 reloadLicenses > /dev/null 2>&1
+/usr/bin/ucli -t 30 reloadLicenses > /dev/null 2>&1
 true
