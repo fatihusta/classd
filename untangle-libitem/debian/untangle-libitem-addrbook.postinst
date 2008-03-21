@@ -1,0 +1,7 @@
+#! /bin/bash
+
+/usr/share/untangle/bin/xpd uudi-sub.ulg 0x776207cc45f4225b b4c30f044588c8ae9e6edbdc76622015
+
+/usr/bin/mcli -t 30 reloadLicenses > /dev/null 2>&1
+true
+

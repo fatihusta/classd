@@ -1,0 +1,6 @@
+#! /bin/bash
+
+/usr/share/untangle/bin/xpd uudi-trial.ulg 0x64f51d6e71582461 3023c6a06a7f46f374f3f1ec882a70e9
+
+/usr/bin/mcli -t 30 reloadLicenses > /dev/null 2>&1
+true

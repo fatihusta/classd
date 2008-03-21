@@ -1,0 +1,6 @@
+#! /bin/bash
+
+/usr/share/untangle/bin/xpd upm-trial.ulg 0x5da20cf628ad04bd f17e945442da6dc2a17409f9bf0df0ce
+
+/usr/bin/mcli -t 30 reloadLicenses > /dev/null 2>&1
+true
