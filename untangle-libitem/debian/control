@@ -1456,7 +1456,9 @@ Package: untangle-libitem-pcremote
 Section: premium/admin
 Architecture: all
 Depends: untangle-node-pcremote
-Provides: untangle-libitem-trial14-pcremote
+Conflicts: pcremote-storeitem
+Replaces: pcremote-storeitem
+Provides: pcremote-storeitem, untangle-libitem-trial14-pcremote
 XB-View-Position: 1010
 XB-Display-Name: PC Remote
 XB-Untangle-Type: lib_item
