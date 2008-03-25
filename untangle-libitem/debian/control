@@ -1515,9 +1515,9 @@ Package: untangle-libitem-trial14-professional-package
 Section: premium/admin
 Architecture: all
 Depends: untangle-libitem-trial14-portal, untangle-libitem-trial14-boxbackup, untangle-libitem-trial14-support, untangle-libitem-trial14-adconnector, untangle-libitem-trial14-policy
-Conflicts: professional-package-trial30-storeitem
-Replaces: professional-package-trial30-storeitem
-Provides: professional-package-trial30-storeitem
+Conflicts: professional-package-trial30-storeitem, untangle-libitem-trial30-professional-package
+Replaces: professional-package-trial30-storeitem, untangle-libitem-trial30-professional-package
+Provides: professional-package-trial30-storeitem, untangle-libitem-trial30-professional-package
 XB-View-Position: 10
 XB-Display-Name: Professional Package 14-Day Trial
 XB-Untangle-Type: trial
@@ -1990,4 +1990,3 @@ XB-Desc-Icon: R0lGODlhKgAqAPcAAAsMGpmZmUpFPyUrasXOznZzbhgbQnWa1kpTpU2AxCMnLEdM
  VxEIffKznxLIqEZdAANWrEF1mmCGBjSwu2myoQcWSalKU9qQgSzkpTBNSEMCAgA7
 Description: Untangle PC Remote
  The Untangle PC Remote.
-
