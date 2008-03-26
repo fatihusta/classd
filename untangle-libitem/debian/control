@@ -1788,11 +1788,6 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABGdBTUEAANbY1E9YMg
 Description: Untangle Configuration Backup 14-Day Trial
  The Untangle Configuration Backup 14-Day Trial Store Item.
 
-Package: untangle-libitem-trial30-adconnector
-Section: premium/admin
-Architecture: all
-Depends: untangle-libitem-trial14-adconnector
-
 Package: untangle-libitem-trial14-adconnector
 Section: premium/admin
 Architecture: all
@@ -1848,11 +1843,6 @@ XB-Desc-Icon: R0lGODlhKgAqAPcAAB4SIWClzwA9mt6/VG08aFgyVI1miVCj2MXX6mFYjsZYAMzM
  aEhAAAA7
 Description: Untangle Active Directory (AD) Connector
  The Untangle Active Directory (AD) Connector.
-
-Package: untangle-libitem-trial30-policy
-Section: premium/admin
-Architecture: all
-Depends: untangle-libitem-trial14-policy
 
 Package: untangle-libitem-trial14-policy
 Section: premium/admin
@@ -1968,11 +1958,6 @@ XB-Desc-Icon:  R0lGODlhKgAqAPcAAB4PCJytc32ERl9oHru4u08cCK+tre7u54GHb2ITA4l5NFha
  ZCGgDW1COhsQADs=
 Description: Untangle Support
  The Untangle Support Package.
-
-Package: untangle-libitem-trial30-pcremote
-Section: premium/admin
-Architecture: all
-Depends: untangle-libitem-trial14-pcremote
 
 Package: untangle-libitem-trial14-pcremote
 Section: premium/admin
