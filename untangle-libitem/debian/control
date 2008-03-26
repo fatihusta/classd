@@ -1511,6 +1511,11 @@ XB-Desc-Icon: R0lGODlhKgAqAPcAAAsMGpmZmUpFPyUrasXOznZzbhgbQnWa1kpTpU2AxCMnLEdM
 Description: Untangle PC Remote
  The Untangle PC Remote.
 
+Package: untangle-libitem-trial30-professional-package
+Section: premium/admin
+Architecture: all
+Depends: untangle-libitem-trial14-professional-package
+
 Package: untangle-libitem-trial14-professional-package
 Section: premium/admin
 Architecture: all
@@ -1562,52 +1567,10 @@ XB-Desc-Icon: R0lGODlhKgAqAPcAAAAAALKHAKurtltcVUpKSsLCO5RsADQ2TcbGxmttiHxdGrOt
 Description: Untangle Professional Packages 14-Day Trial
  The Untangle Professional Package 14-Day Trial Store Item.
 
-Package: untangle-libitem-trial30-professional-package
+Package: untangle-libitem-trial30-kav
 Section: premium/admin
 Architecture: all
-Depends: untangle-libitem-trial14-professional-package
-XB-View-Position: 10
-XB-Display-Name: Professional Package 30-Day Trial
-XB-Untangle-Full-Version: untangle-libitem-professional-package
-XB-Is-Bundle: true
-XB-Desc-Icon: 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
-Description: Untangle Professional Packages 30-Day Trial
- The Untangle Professional Package 30-Day Trial Store Item.
+Depends: untangle-libitem-trial14-kav
 
 Package: untangle-libitem-trial14-kav
 Section: premium/admin
@@ -1646,6 +1609,11 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAAAXNSR0IArs4c
  oRBkWYYsyxgfH4cgCP0vAfn5oDLGa82iAAAAAElFTkSuQmCC
 Description: Untangle Kaspersky Virus Blocker 14-Day Trial
  The Untangle Kaspersky Virus Blocker 14-Day Trial Store Item.
+
+Package: untangle-libitem-trial30-portal
+Section: premium/admin
+Architecture: all
+Depends: untangle-libitem-trial14-portal
 
 Package: untangle-libitem-trial14-portal
 Section: premium/admin
@@ -1724,6 +1692,11 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAIAAABKoV4MAAAABGdBTUEAANbY1E9YMg
  gAEA/vR7Rb8zHBYAAAAASUVORK5CYII=
 Description: Untangle Remote Access Portal 14-Day Trial
  The Untangle Remote Access Portal 14-Day Trial Store Item.
+
+Package: untangle-libitem-trial30-boxbackup
+Section: premium/admin
+Architecture: all
+Depends: untangle-libitem-trial14-boxbackup
 
 Package: untangle-libitem-trial14-boxbackup
 Section: premium/admin
@@ -1815,6 +1788,11 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABGdBTUEAANbY1E9YMg
 Description: Untangle Configuration Backup 14-Day Trial
  The Untangle Configuration Backup 14-Day Trial Store Item.
 
+Package: untangle-libitem-trial30-adconnector
+Section: premium/admin
+Architecture: all
+Depends: untangle-libitem-trial14-adconnector
+
 Package: untangle-libitem-trial14-adconnector
 Section: premium/admin
 Architecture: all
@@ -1871,6 +1849,11 @@ XB-Desc-Icon: R0lGODlhKgAqAPcAAB4SIWClzwA9mt6/VG08aFgyVI1miVCj2MXX6mFYjsZYAMzM
 Description: Untangle Active Directory (AD) Connector
  The Untangle Active Directory (AD) Connector.
 
+Package: untangle-libitem-trial30-policy
+Section: premium/admin
+Architecture: all
+Depends: untangle-libitem-trial14-policy
+
 Package: untangle-libitem-trial14-policy
 Section: premium/admin
 Architecture: all
@@ -1919,6 +1902,11 @@ XB-Desc-Icon: R0lGODlhKgAqAPcAAAAAAMVrB2SOABJEeV2KuFxlASAyU8WDa1I0Eoi2CI9XBfmW
  bJFLVch4n/zmp78CGtB+/NuCS4ZhkQY6sIENGchCJkjBhDQkIAA7
 Description: Untangle Policy Manager
  The Untangle Policy Manager.
+
+Package: untangle-libitem-trial30-support
+Section: premium/admin
+Architecture: all
+Depends: untangle-libitem-trial14-support
 
 Package: untangle-libitem-trial14-support
 Section: premium/admin
@@ -1980,6 +1968,11 @@ XB-Desc-Icon:  R0lGODlhKgAqAPcAAB4PCJytc32ERl9oHru4u08cCK+tre7u54GHb2ITA4l5NFha
  ZCGgDW1COhsQADs=
 Description: Untangle Support
  The Untangle Support Package.
+
+Package: untangle-libitem-trial30-pcremote
+Section: premium/admin
+Architecture: all
+Depends: untangle-libitem-trial14-pcremote
 
 Package: untangle-libitem-trial14-pcremote
 Section: premium/admin
