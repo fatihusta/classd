@@ -7,10 +7,7 @@ Standards-Version: 3.7.2
 
 Package: untangle-libitem-opensource-package
 Architecture: all
-Depends: untangle-libitem-shield,untangle-libitem-spyware,untangle-libitem-webfilter,untangle-libitem-clam,untangle-libitem-protofilter,untangle-libitem-router,untangle-libitem-firewall,untangle-libitem-spamassassin,untangle-libitem-phish,untangle-libitem-openvpn,untangle-libitem-ips,untangle-libitem-reporting
-Conflicts: standard-bundle-disabler, spyware-disabler, httpblocker-disabler, protofilter-disabler, spamassassin-disabler, clamphish-disabler, ids-disabler, standard-bundle-storeitem
-Replaces: standard-bundle-storeitem
-Provides: standard-bundle-storeitem
+Depends: untangle-libitem-shield,untangle-libitem-spyware,untangle-libitem-webfilter,untangle-libitem-clam,untangle-libitem-protofilter,untangle-libitem-firewall,untangle-libitem-spamassassin,untangle-libitem-phish,untangle-libitem-openvpn,untangle-libitem-ips,untangle-libitem-reporting
 XB-View-Position: 10
 XB-Display-Name: Open Source Package
 XB-Untangle-Type: lib_item
@@ -58,9 +55,6 @@ Package: untangle-libitem-professional-package
 Section: premium/admin
 Architecture: all
 Depends: untangle-libitem-portal, untangle-libitem-boxbackup, untangle-libitem-support, untangle-libitem-adconnector, untangle-libitem-policy
-Conflicts: professional-package-disabler, portal-disabler, boxbackup-disabler, professional-package-storeitem
-Replaces: professional-package-storeitem
-Provides: professional-package-storeitem
 XB-View-Position: 20
 XB-Display-Name: Professional Package
 XB-Untangle-Type: lib_item
@@ -107,9 +101,6 @@ Description: Untangle Professional Package
 Package: untangle-libitem-shield
 Architecture: all
 Depends: untangle-node-shield
-Conflicts: airgap-storeitem
-Replaces: airgap-storeitem
-Provides: airgap-storeitem
 XB-View-Position: 1010
 XB-Display-Name: Attack Blocker
 XB-Untangle-Type: lib_item
@@ -172,9 +163,6 @@ Description: Untangle Attack Blocker
 
 Package: untangle-libitem-spyware
 Architecture: all
-Depends: untangle-node-spyware
-Conflicts: spyware-disabler, spyware-storeitem
-Provides: untangle-libitem-trial30-spyware, spyware-storeitem
 Replaces: spyware-storeitem
 XB-View-Position: 20
 XB-Display-Name: Spyware Blocker
@@ -228,9 +216,6 @@ Description: Untangle Spyware Blocker
 Package: untangle-libitem-webfilter
 Architecture: all
 Depends: untangle-node-webfilter
-Conflicts: httpblocker-disabler, httpblocker-storeitem
-Replaces: httpblocker-storeitem
-Provides: untangle-libitem-trial30-httpblocker, httpblocker-storeitem
 XB-View-Position: 30
 XB-Display-Name: Web Filter
 XB-Untangle-Type: lib_item
@@ -333,9 +318,6 @@ Description: Untangle Kaspersky Virus Blocker
 Package: untangle-libitem-clam
 Architecture: all
 Depends: untangle-node-clam
-Conflicts: clam-storeitem
-Replaces: clam-storeitem
-Provides: clam-storeitem
 XB-View-Position: 70
 XB-Display-Name: Virus Blocker
 XB-Untangle-Type: lib_item
@@ -371,9 +353,6 @@ Description: Untangle Clam Virus Blocker
 Package: untangle-libitem-protofilter
 Architecture: all
 Depends: untangle-node-protofilter
-Conflicts: protofilter-disabler, protofilter-storeitem
-Replaces: protofilter-storeitem
-Provides: untangle-libitem-trial30-protofilter, protofilter-storeitem
 XB-View-Position: 80
 XB-Display-Name: Protocol Control
 XB-Untangle-Type: lib_item
@@ -460,9 +439,6 @@ Description: Untangle Protocol Control
 Package: untangle-libitem-router
 Architecture: all
 Depends: untangle-node-router
-Conflicts: nat-storeitem
-Replaces: nat-storeitem
-Provides: nat-storeitem
 XB-View-Position: 1000
 XB-Display-Name: Router
 XB-Untangle-Type: lib_item
@@ -522,9 +498,6 @@ Description: Untangle Router
 Package: untangle-libitem-firewall
 Architecture: all
 Depends: untangle-node-firewall
-Conflicts: firewall-storeitem
-Replaces: firewall-storeitem
-Provides: firewall-storeitem
 XB-View-Position: 90
 XB-Display-Name: Firewall
 XB-Untangle-Type: lib_item
@@ -577,9 +550,6 @@ Description: Untangle Firewall
 Package: untangle-libitem-spamassassin
 Architecture: all
 Depends: untangle-node-spamassassin
-Conflicts: spamassassin-disabler, spamassassin-storeitem
-Replaces: spamassassin-storeitem
-Provides: untangle-libitem-trial30-spamassassin, spamassassin-storeitem
 XB-View-Position: 15
 XB-Display-Name: Spam Blocker
 XB-Untangle-Type: lib_item
@@ -660,9 +630,6 @@ Description: Untangle Spam Blocker
 Package: untangle-libitem-phish
 Architecture: all
 Depends: untangle-node-phish
-Conflicts: clamphish-disabler, clamphish-storeitem
-Replaces: clamphish-storeitem
-Provides: untangle-libitem-trial30-clamphish, clamphish-storeitem
 XB-View-Position: 17
 XB-Display-Name: Phish Blocker
 XB-Untangle-Type: lib_item
@@ -758,9 +725,6 @@ Package: untangle-libitem-test
 Architecture: all
 Section: internal/devel
 Depends: untangle-node-test
-Conflicts: test-storeitem
-Replaces: test-storeitem
-Provides: test-storeitem
 XB-View-Position: 2002
 XB-Display-Name: Test
 XB-Untangle-Type: lib_item
@@ -868,9 +832,6 @@ Description: Untangle Test
 Package: untangle-libitem-openvpn
 Architecture: all
 Depends: untangle-node-openvpn
-Conflicts: openvpn-storeitem
-Replaces: openvpn-storeitem
-Provides: openvpn-storeitem
 XB-View-Position: 1003
 XB-Display-Name: OpenVPN
 XB-Untangle-Type: lib_item
@@ -940,9 +901,6 @@ Description: OpenVPN
 Package: untangle-libitem-ips
 Architecture: all
 Depends: untangle-node-ips
-Conflicts: ids-disabler, ids-storeitem
-Replaces: ids-storeitem
-Provides: untangle-libitem-trial30-ids, ids-storeitem
 XB-View-Position: 75
 XB-Display-Name: Intrusion Prevention
 XB-Untangle-Type: lib_item
@@ -1014,9 +972,6 @@ Description: Untangle Intrusion Prevention
 Package: untangle-libitem-reporting
 Architecture: all
 Depends: untangle-node-reporting
-Conflicts: reporting-storeitem
-Replaces: reporting-storeitem
-Provides: reporting-storeitem
 XB-View-Position: 1020
 XB-Display-Name: Untangle Reports
 XB-Untangle-Type: lib_item
@@ -1069,9 +1024,7 @@ Package: untangle-libitem-boxbackup
 Section: premium/admin
 Architecture: all
 Depends: untangle-node-boxbackup
-Conflicts: boxbackup-disabler, boxbackup-storeitem
-Replaces: boxbackup-storeitem
-Provides: untangle-libitem-trial30-boxbackup, untangle-libitem-trial14-boxbackup, boxbackup-storeitem
+Provides: untangle-libitem-trial30-boxbackup, untangle-libitem-trial14-boxbackup
 XB-View-Position: 1015
 XB-Display-Name: Configuration Backup
 XB-Untangle-Type: lib_item
@@ -1158,9 +1111,7 @@ Package: untangle-libitem-portal
 Section: premium/admin
 Architecture: all
 Depends: untangle-node-portal
-Conflicts: portal-disabler, portal-storeitem
-Replaces: portal-storeitem
-Provides: untangle-libitem-trial30-portal, untangle-libitem-trial14-portal, portal-storeitem
+Provides: untangle-libitem-trial30-portal, untangle-libitem-trial14-portal
 XB-View-Position: 1015
 XB-Display-Name: Remote Access Portal
 XB-Untangle-Type: lib_item
@@ -1456,9 +1407,7 @@ Package: untangle-libitem-pcremote
 Section: premium/admin
 Architecture: all
 Depends: untangle-node-pcremote
-Conflicts: pcremote-storeitem
-Replaces: pcremote-storeitem
-Provides: pcremote-storeitem, untangle-libitem-trial14-pcremote
+Provides: untangle-libitem-trial14-pcremote
 XB-View-Position: 1010
 XB-Display-Name: PC Remote
 XB-Untangle-Type: lib_item
@@ -1520,9 +1469,6 @@ Package: untangle-libitem-trial14-professional-package
 Section: premium/admin
 Architecture: all
 Depends: untangle-libitem-trial14-portal, untangle-libitem-trial14-boxbackup, untangle-libitem-trial14-support, untangle-libitem-trial14-adconnector, untangle-libitem-trial14-policy
-Conflicts: professional-package-trial30-storeitem
-Replaces: professional-package-trial30-storeitem
-Provides: professional-package-trial30-storeitem
 XB-View-Position: 10
 XB-Display-Name: Professional Package 14-Day Trial
 XB-Untangle-Type: trial
@@ -1571,14 +1517,14 @@ Package: untangle-libitem-trial30-kav
 Section: premium/admin
 Architecture: all
 Depends: untangle-libitem-trial14-kav
+Conflicts: untangle-libitem-trial30-hauri
+Replaces: untangle-libitem-trial30-hauri
+Provides: untangle-libitem-trial30-hauri
 
 Package: untangle-libitem-trial14-kav
 Section: premium/admin
 Architecture: all
 Depends: untangle-node-kav
-Conflicts: untangle-libitem-trial30-hauri
-Replaces: untangle-libitem-trial30-hauri
-Provides: untangle-libitem-trial30-hauri
 XB-View-Position: 60
 XB-Display-Name: Kaspersky Virus Blocker 14-Day Trial
 XB-Untangle-Type: trial
@@ -1619,9 +1565,6 @@ Package: untangle-libitem-trial14-portal
 Section: premium/admin
 Architecture: all
 Depends: untangle-node-portal
-Conflicts: portal-trial30-storeitem
-Replaces: portal-trial30-storeitem
-Provides: portal-trial30-storeitem
 XB-View-Position: 75
 XB-Display-Name: Remote Access Portal 14-Day Trial
 XB-Untangle-Type: trial
@@ -1702,9 +1645,6 @@ Package: untangle-libitem-trial14-boxbackup
 Section: premium/admin
 Architecture: all
 Depends: untangle-node-boxbackup
-Conflicts: boxbackup-trial30-storeitem
-Replaces: boxbackup-trial30-storeitem
-Provides: boxbackup-trial30-storeitem
 XB-View-Position: 1015
 XB-Display-Name: Configuration Backup 14-Day Trial
 XB-Untangle-Type: trial
