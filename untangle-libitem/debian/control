@@ -1893,11 +1893,6 @@ XB-Desc-Icon: R0lGODlhKgAqAPcAAAAAAMVrB2SOABJEeV2KuFxlASAyU8WDa1I0Eoi2CI9XBfmW
 Description: Untangle Policy Manager
  The Untangle Policy Manager.
 
-Package: untangle-libitem-trial30-support
-Section: premium/admin
-Architecture: all
-Depends: untangle-libitem-trial14-support
-
 Package: untangle-libitem-trial14-support
 Section: premium/admin
 Architecture: all
