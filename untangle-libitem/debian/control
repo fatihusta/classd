@@ -1464,6 +1464,8 @@ Package: untangle-libitem-trial30-professional-package
 Section: premium/admin
 Architecture: all
 Depends: untangle-libitem-trial14-professional-package
+Description: foo
+ foo.
 
 Package: untangle-libitem-trial14-professional-package
 Section: premium/admin
@@ -1520,6 +1522,8 @@ Depends: untangle-libitem-trial14-kav
 Conflicts: untangle-libitem-trial30-hauri
 Replaces: untangle-libitem-trial30-hauri
 Provides: untangle-libitem-trial30-hauri
+Description: foo
+ foo.
 
 Package: untangle-libitem-trial14-kav
 Section: premium/admin
@@ -1560,6 +1564,8 @@ Package: untangle-libitem-trial30-portal
 Section: premium/admin
 Architecture: all
 Depends: untangle-libitem-trial14-portal
+Description: foo
+ foo.
 
 Package: untangle-libitem-trial14-portal
 Section: premium/admin
@@ -1640,6 +1646,8 @@ Package: untangle-libitem-trial30-boxbackup
 Section: premium/admin
 Architecture: all
 Depends: untangle-libitem-trial14-boxbackup
+Description: foo
+ foo.
 
 Package: untangle-libitem-trial14-boxbackup
 Section: premium/admin
