@@ -49,7 +49,7 @@ XB-Desc-Icon:  R0lGODlhKgAqAPcAAAAAAKx9ALS0tFhYWERHZZJqANDHGjQ2TcXFx2ttiH9eFrev
  VelFCBqoD+6BIa33MEMhQvExxO/ABy/88MMTQAAHi4wFzfI9uH7AXdBHL/300ws1
  REytL3/AYjNQ7/330F/AB0wtZWLR+eif39BAC7XvfkINBQQAOw==
 Description: Untangle Total Security Bundle
- The Untangle Total Security Bundle Store Item.
+ The Untangle Total Security Bundle Library Item.
 
 Package: untangle-libitem-professional-package
 Section: premium/admin
@@ -96,7 +96,7 @@ XB-Desc-Icon: R0lGODlhKgAqAPcAAAAAALKHAKurtltcVUpKSsLCO5RsADQ2TcbGxmttiHxdGrOt
  mmgy1gEHDMVZGjls5jpyHvgxOxCccCAUGT0Ub/zxyCefvEZejVXN80DQfkBe1Fdv
  /fXXC9VDTLM/f4BjnGAv/vjUJ0IGTC3hYtH67K/f0EALxS9/Qg0FBAA7
 Description: Untangle Professional Package
- The Untangle Professional Package Store Item.
+ The Untangle Professional Package Library Item.
 
 Package: untangle-libitem-shield
 Architecture: all
@@ -159,11 +159,11 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAJmklEQVRYhcWZWYwb
  vP7azx4a3Gbzer3rvz5XUeHYN7/l5HLd99IPy2KxGNGYn0hsnOMnX+D5E08L/wGb
  wTyTRTkfugAAAABJRU5ErkJggg==
 Description: Untangle Attack Blocker
- The Untangle Attack Blocker Store Item.
+ The Untangle Attack Blocker Library Item.
 
 Package: untangle-libitem-spyware
 Architecture: all
-Replaces: spyware-storeitem
+Depends: untangle-node-spyware
 XB-View-Position: 20
 XB-Display-Name: Spyware Blocker
 XB-Untangle-Type: lib_item
@@ -211,7 +211,7 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABGdBTUEAANbY1E9YMg
  73LcRSZkLGKH/REnyfG0lONnPR/5uuRksvDJPrb/abw/B5zrN+guuOXxZRNDd9Zq1QnYEOXj71ey
  +PfGcHg3h7iLr16RWb+Q1R/2aQ8mqjheqF8wvO3WUPf+R4ABACEcfkAFMtTiAAAAAElFTkSuQmCC
 Description: Untangle Spyware Blocker
- The Untangle Spyware Blocker Store Item.
+ The Untangle Spyware Blocker Library Item.
 
 Package: untangle-libitem-webfilter
 Architecture: all
@@ -276,7 +276,7 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABGdBTUEAANbY1E9YMg
  +1nH0ufnBbLGWduFUqXpn6ZVni9WNfB/TqKdLXQoddk5/ipGzKowLKETWaMN5ivbxR/E/ifA
  ACBNCbEqfhTsAAAAAElFTkSuQmCC
 Description: Untangle Web Content Control
- The Untangle Web Content Control Store Item.
+ The Untangle Web Content Control Library Item.
 
 Package: untangle-libitem-kav
 Section: premium/admin
@@ -313,7 +313,7 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAAAXNSR0IArs4c
  U4WWSiVYloWxsTFQSlt+lvSrCYKAQCCw/TMMo3p9dHS04YNYe3v7kUKDwSBC
  oRBkWYYsyxgfH4cgCP0vAfn5oDLGa82iAAAAAElFTkSuQmCC
 Description: Untangle Kaspersky Virus Blocker
- The Untangle Kaspersky Virus Blocker Store Item.
+ The Untangle Kaspersky Virus Blocker Library Item.
 
 Package: untangle-libitem-clam
 Architecture: all
@@ -348,7 +348,7 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABGdBTUEAANbY1E9YMg
  t7a2iKH5xJlHJgYQTXoFZcjFxUUlDK3e8ZE4m35tbY0cx1GAw4BMUgKhGBh4DPkrH9WzEs1O
  4vuVlZXPTaVhwzLg7OwsLS0t0fLyMq2vryvO/wQYAP5qirM6mBOTAAAAAElFTkSuQmCC
 Description: Untangle Clam Virus Blocker
- The Untangle Clam Virus Blocker Store Item.
+ The Untangle Clam Virus Blocker Library Item.
 
 Package: untangle-libitem-protofilter
 Architecture: all
@@ -434,7 +434,7 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABGdBTUEAANbY1E9YMg
  2tifbwr1VLtn9G935xN+znHG/arjXPYPRVt53HzZvynJzzTaKFBpwLTxwIsWGlcGHRei85f/
  /qR+EPs/AQYALpz0b9lClG4AAAAASUVORK5CYII=
 Description: Untangle Protocol Control
- The Untangle Protocol Control Store Item.
+ The Untangle Protocol Control Library Item.
 
 Package: untangle-libitem-router
 Architecture: all
@@ -493,7 +493,7 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAACXBIWXMAAAsTAAALEw
  zYu28/m48eumeSM2sZU0C0mzhm1HVVVisRiaplFeXv71g9wrRRzHIZVKkUqlBkfjLq5wOcej
  +/fvv9Ix0wA4V/LlOA7/GQCfi3hGQX94NwAAAABJRU5ErkJggg==
 Description: Untangle Router
- The Untangle Router Store Item.
+ The Untangle Router Library Item.
 
 Package: untangle-libitem-firewall
 Architecture: all
@@ -545,7 +545,7 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAACXBIWXMAAAsTAAALEw
  zc2FabY4d/MK1zzQlDRpVyz53X379hnAfCLf07SOhrSOXtye9ILVeHNzM//v50Axw74c1xjD
  fwYAMCLoUqhkh6IAAAAASUVORK5CYII=
 Description: Untangle Firewall
- The Untangle Firewall Store Item.
+ The Untangle Firewall Library Item.
 
 Package: untangle-libitem-spamassassin
 Architecture: all
@@ -625,7 +625,7 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABGdBTUEAANbY1E9YMg
  7ecbjiWKg52kQksZPHS58yyBNmiZiJP+/Re/svPTyfv0y81tv46IkqxIuSdiaPf5D4YGWh7D
  zpbjLtD367cmAc5kRUrTokJw339vj/xB7P8FGACNK2N4xeErDQAAAABJRU5ErkJggg==
 Description: Untangle Spam Blocker
- The Untangle Spam Blocker Store Item.
+ The Untangle Spam Blocker Library Item.
 
 Package: untangle-libitem-phish
 Architecture: all
@@ -719,7 +719,7 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAACXBIWXMAAAsTAAALEw
  k2CFwI0uw5UGmqYjhJgEO3kPJb3c0CFdxgf60NxeIoGxv9v3NzTIj0BpAdTEYcMHgTVS/M8A
  nY2oOxX/HXgAAAAASUVORK5CYII=
 Description: Untangle Identity Theft Blocker
- The Untangle Identity Theft Blocker Store Item.
+ The Untangle Identity Theft Blocker Library Item.
 
 Package: untangle-libitem-test
 Architecture: all
@@ -827,7 +827,7 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAACXBIWXMAAAsTAAALEw
  E9ORyFBgWpqgJbAcTRReOMoIhCGIDAGhxnAgkGBYAkMYpG2HrmyCrkSaf79yEVc/9Kj4/wMA
  IXmY0MNCBksAAAAASUVORK5CYII=
 Description: Untangle Test
- The Untangle Test Store Item.
+ The Untangle Test Library Item.
 
 Package: untangle-libitem-openvpn
 Architecture: all
@@ -896,7 +896,7 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAACXBIWXMAAAsTAAALEw
  p9MbC7m3s67neaFcbRjGLbJ4cIQI3Na9vwzq41aZ3W2cWq1GrVa7VRr/dUfwokDY+r8et1j0
  xIkT/LaPNzYtgL8l0/d9/mcAXb1X7pR/ZiwAAAAASUVORK5CYII=
 Description: OpenVPN
- OpenVPN Store Item.
+ OpenVPN Library Item.
 
 Package: untangle-libitem-ips
 Architecture: all
@@ -967,7 +967,7 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAACXBIWXMAAAsTAAALEw
  dt1hz+oW0X4R2L/+xQ72f/+aKQFxz7/f+fpfFP00yKQAP7JF/ft5GLHDLCq9/aj7R7+mbO3J
  3QCjv/Lrm/0vGAYPf3Cgs7LEXqJSDBdeyxQVZw9vy/8MAIKemQqNP8+BAAAAAElFTkSuQmCC
 Description: Untangle Intrusion Prevention
- The Untangle Intrusion Prevention Store Item.
+ The Untangle Intrusion Prevention Library Item.
 
 Package: untangle-libitem-reporting
 Architecture: all
@@ -1018,7 +1018,7 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABGdBTUEAANbY1E9YMg
  Gwe/++1vGj/fcKBvrfF6FVHvq8rfvQzlN83+/j9Ov3D2DdYAKX9oYI1fKPoxJMDBwSCGhg9j
  9KkxvPWjn6ofxP4nwAB2T5Rklk6b3gAAAABJRU5ErkJggg==
 Description: Untangle Reports
- Untangle Reports Store Item.
+ Untangle Reports Library Item.
 
 Package: untangle-libitem-boxbackup
 Section: premium/admin
@@ -1105,7 +1105,7 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABGdBTUEAANbY1E9YMg
  AWk1QmLfV3ukhaYK9I4Wfe83CCwb8LTUuhOUECxqyCoy+D/E/leAAQDhy3XsyDOL8wAAAABJ
  RU5ErkJggg==
 Description: Untangle Configuration Backup
- The Untangle Configuration Backup Store Item.
+ The Untangle Configuration Backup Library Item.
 
 Package: untangle-libitem-portal
 Section: premium/admin
@@ -1180,7 +1180,7 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAIAAABKoV4MAAAABGdBTUEAANbY1E9YMg
  mExNXuhQ/BtEgBH2fmScSohAwURrcxNoxyhJknjKMYj2QfR48tXf/Y78W45z586Rf9OBcv9D
  gAEA/vR7Rb8zHBYAAAAASUVORK5CYII=
 Description: Untangle Remote Access Portal
- The Untangle Remote Access Portal Store Item.
+ The Untangle Remote Access Portal Library Item.
 
 Package: untangle-libitem-update-service
 Section: internal/devel
@@ -1513,7 +1513,7 @@ XB-Desc-Icon: R0lGODlhKgAqAPcAAAAAALKHAKurtltcVUpKSsLCO5RsADQ2TcbGxmttiHxdGrOt
  mmgy1gEHDMVZGjls5jpyHvgxOxCccCAUGT0Ub/zxyCefvEZejVXN80DQfkBe1Fdv
  /fXXC9VDTLM/f4BjnGAv/vjUJ0IGTC3hYtH67K/f0EALxS9/Qg0FBAA7
 Description: Untangle Professional Packages 14-Day Trial
- The Untangle Professional Package 14-Day Trial Store Item.
+ The Untangle Professional Package 14-Day Trial Library Item.
 
 Package: untangle-libitem-trial30-kav
 Section: premium/admin
@@ -1558,7 +1558,7 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAAAXNSR0IArs4c
  U4WWSiVYloWxsTFQSlt+lvSrCYKAQCCw/TMMo3p9dHS04YNYe3v7kUKDwSBC
  oRBkWYYsyxgfH4cgCP0vAfn5oDLGa82iAAAAAElFTkSuQmCC
 Description: Untangle Kaspersky Virus Blocker 14-Day Trial
- The Untangle Kaspersky Virus Blocker 14-Day Trial Store Item.
+ The Untangle Kaspersky Virus Blocker 14-Day Trial Library Item.
 
 Package: untangle-libitem-trial30-portal
 Section: premium/admin
@@ -1640,7 +1640,7 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAIAAABKoV4MAAAABGdBTUEAANbY1E9YMg
  mExNXuhQ/BtEgBH2fmScSohAwURrcxNoxyhJknjKMYj2QfR48tXf/Y78W45z586Rf9OBcv9D
  gAEA/vR7Rb8zHBYAAAAASUVORK5CYII=
 Description: Untangle Remote Access Portal 14-Day Trial
- The Untangle Remote Access Portal 14-Day Trial Store Item.
+ The Untangle Remote Access Portal 14-Day Trial Library Item.
 
 Package: untangle-libitem-trial30-boxbackup
 Section: premium/admin
@@ -1734,7 +1734,7 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABGdBTUEAANbY1E9YMg
  AWk1QmLfV3ukhaYK9I4Wfe83CCwb8LTUuhOUECxqyCoy+D/E/leAAQDhy3XsyDOL8wAAAABJ
  RU5ErkJggg==
 Description: Untangle Configuration Backup 14-Day Trial
- The Untangle Configuration Backup 14-Day Trial Store Item.
+ The Untangle Configuration Backup 14-Day Trial Library Item.
 
 Package: untangle-libitem-trial14-adconnector
 Section: premium/admin
