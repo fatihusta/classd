@@ -6,7 +6,7 @@ Build-Depends: debhelper (>> 3.0.0), libssl-dev
 Standards-Version: 3.7.2
 
 Package: untangle-hardware-support
-Architecture: any
+Architecture: i386
 Depends: ${shlibs:Depends}
 Description: The Untangle hardware support
  The Untangle hardware support package. Only
