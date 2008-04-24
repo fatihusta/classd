@@ -1,15 +1,14 @@
 #! /bin/bash
 
-DISABLERS=/tmp/disablers
-TRIALS=/tmp/trials
+## Delete all of the expired keys
+rm -f /usr/share/untangle/conf/licenses/*-trial.ulf
 
-dpkg --get-selections "*disabler*" | awk '{print $1}' > ${DISABLERS}
-cat ${DISABLERS} | xargs apt-get remove --purge --yes
+## Run all of the generators
+for t in /usr/share/untangle/bin/rup-* ; do
+  bash $t
+done
 
-dpkg --get-selections "*trial30*" | awk '{print $1}' > ${TRIALS}
-rm -f /usr/share/untangle/conf/trials/*.expired
-cat ${TRIALS} | xargs apt-get install --yes
-
-/etc/init.d/untangle-vm restart
-
-rm -f ${DISABLERS} ${TRIALS}
+## Run all of the libitems to decompress the keys, this will also reload the licenses.
+for t in /var/lib/dpkg/info/untangle-libitem-trial{14,30}-*.postinst ; do
+  bash $t
+done
