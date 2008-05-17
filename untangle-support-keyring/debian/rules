@@ -1,25 +1,22 @@
 #!/usr/bin/make -f
 
-
 DESTDIR=$(CURDIR)/debian/untangle-support-keyring
 
-configure: configure-stamp
-configure-stamp:
-	dh_testdir
-	touch configure-stamp
-
-build: configure
+build:
 	dh_testdir
 	dh_installdirs -A -v
-	cat keys/* > $(DESTDIR)/usr/share/untangle-support-keyring/authorized_keys2
+	rm -f  $(DESTDIR)/usr/share/untangle-support-keyring/authorized_keys2
+	for key in keys/* ; do \
+          wc -l $(DESTDIR)/usr/share/untangle-support-keyring/authorized_keys2 ; \
+          perl -pe 's/(\n)*$$/\n/' $$key >> $(DESTDIR)/usr/share/untangle-support-keyring/authorized_keys2 ; \
+        done
 	chmod 644 $(DESTDIR)/usr/share/untangle-support-keyring/authorized_keys2
 	find $(DESTDIR) -name "\.svn" | xargs rm -rf 
 
 clean:
 	dh_testdir
 	dh_testroot
-	rm -f build-arch-stamp build-indep-stamp configure-stamp
-	rm -rf debian/untangle-support-keyring sav-install
+	rm -rf $(DESTDIR) sav-install build-stamp
 	dh_clean
 
 binary-indep: build
@@ -50,10 +47,10 @@ binary-indep: build
 	if [ -f debian/version ] ; then dh_gencontrol -- -v"`cat debian/version`" ; else dh_gencontrol ; fi
 	dh_md5sums     
 
-binary-arch: build 
+binary-arch:
 # nothing to do
 
 binary: binary-indep binary-arch
 	dh_builddeb 
 
-.PHONY: build clean binary-indep binary install configure
+.PHONY: build clean binary-indep binary binary-indep binary-arch install configure
