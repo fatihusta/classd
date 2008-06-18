@@ -1472,7 +1472,7 @@ Section: premium/admin
 Architecture: all
 Depends: untangle-libitem-trial14-portal, untangle-libitem-trial14-boxbackup, untangle-libitem-trial14-support, untangle-libitem-trial14-adconnector, untangle-libitem-trial14-policy
 XB-View-Position: 10
-XB-Display-Name: Professional Package 14-Day Trial
+XB-Display-Name: Professional Package
 XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-professional-package
 XB-Is-Bundle: true
@@ -1530,7 +1530,7 @@ Section: premium/admin
 Architecture: all
 Depends: untangle-node-kav
 XB-View-Position: 60
-XB-Display-Name: Kaspersky Virus Blocker 14-Day Trial
+XB-Display-Name: Kaspersky Virus Blocker
 XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-kav
 XB-Is-Security: true
@@ -1572,7 +1572,7 @@ Section: premium/admin
 Architecture: all
 Depends: untangle-node-portal
 XB-View-Position: 75
-XB-Display-Name: Remote Access Portal 14-Day Trial
+XB-Display-Name: Remote Access Portal
 XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-portal
 XB-Is-Security: true
@@ -1654,7 +1654,7 @@ Section: premium/admin
 Architecture: all
 Depends: untangle-node-boxbackup
 XB-View-Position: 1015
-XB-Display-Name: Configuration Backup 14-Day Trial
+XB-Display-Name: Configuration Backup
 XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-boxbackup
 XB-Is-Core: true
@@ -1741,7 +1741,7 @@ Section: premium/admin
 Architecture: all
 Depends: untangle-node-adconnector
 XB-View-Position: 1015
-XB-Display-Name: Active Directory (AD) Connector 14-Day Trial
+XB-Display-Name: Active Directory (AD) Connector
 XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-adconnector
 XB-Is-Core: true
@@ -1797,7 +1797,7 @@ Section: premium/admin
 Architecture: all
 Depends: untangle-node-policy
 XB-View-Position: 1015
-XB-Display-Name: Policy Manager 14-Day Trial
+XB-Display-Name: Policy Manager
 XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-policy
 XB-Is-Core: true
@@ -1907,7 +1907,7 @@ Section: premium/admin
 Architecture: all
 Depends: untangle-node-pcremote
 XB-View-Position: 1010
-XB-Display-Name: PC Remote 14 Day Trial
+XB-Display-Name: PC Remote
 XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-pcremote
 XB-Is-Core: true
