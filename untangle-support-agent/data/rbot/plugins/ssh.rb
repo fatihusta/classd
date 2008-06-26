@@ -3,6 +3,7 @@ require 'net/ssh/util/prompter'
 require 'net/ssh/service/forward/remote-network-handler'
 require 'net/ssh/transport/ossl/key-factory'
 require 'net/https'
+require 'open3'
 require 'tempfile'
 require 'uri'
 
@@ -39,7 +40,7 @@ class Net::SSH::Service::Forward::RemoteNetworkHandler
   end
 
   def on_close( channel )
-    @@m.reply "SSH connection closed -> tearing down the forwarding channel"
+    @@m.reply "SSH connection closed, tearing down the forwarding channel"
     @@sshplugin.close
   end
 end
@@ -61,7 +62,8 @@ class SSHPlugin < Plugin
     @publicKey = nil
     @port = nil
     @thread = nil
-#    @needToStop = false
+    @session = nil
+    @needToStop = false
     @isEstablished = false
     @portAttempts = 0
   end
@@ -116,17 +118,63 @@ class SSHPlugin < Plugin
     end
   end
 
-  def enable(m, params)
+  def doChecks(m)
     if @isEstablished
       m.reply "The forwarding channel is already enabled on port #{@port}"
-      return
+      return false
     end
 
     if not File.file?(@@PRIVATE_KEY_FILE)
       m.reply "Key not found, call 'ssh download_key'"
-      return
+      return false
     end
 
+    return true
+  end
+  
+  def enable2(m, params)
+    return if not doChecks(m)
+
+    @thread = Thread.new do
+      begin
+        pickRandomPort
+        fh = Tempfile.new('_blah_')
+        tmpName = fh.path
+        system "chmod 700 #{tmpName}"
+        fh.puts('#!/bin/bash')
+        fh.puts("/bin/echo #{params[:passphrase]}")
+        fh.close
+        command = "DISPLAY=:0 SSH_ASKPASS='#{tmpName}' ssh -v -n -R #{@port}:localhost:2222 -o StrictHostKeyChecking=no -i #{@@PRIVATE_KEY_FILE} #{@@USER}@#{@@HOST} < /dev/null"
+        
+        Open3.popen3(command) { |stdin, stdout, stderr|
+#          m.reply "Executing #{command}"
+          while line = stderr.gets do
+#            m.reply "STDERR: #{line}"
+            if line =~ /^debug1: remote forward success/ then
+              m.reply "Forwarding channel established on port #{@port}"
+              @isEstablished = true
+              @portAttempts = 0
+              while not @needToStop do end
+              raise "NeedToStop"
+            end
+          end
+        }
+      rescue Exception => e
+        handleException m, e if not e.message =~ /NeedToStop/
+      ensure
+        File.delete(tmpName)
+        cleanupCommand = "ps aux | awk '/#{File.basename(tmpName)}/ {print $2}' | xargs kill"
+        system cleanupCommand
+        @isEstablished = false
+        @portAttempts = 0
+        m.reply "SSH connection closed, tearing down the forwarding channel"
+      end
+    end
+  end
+  
+  def enable(m, params)
+    return if not doChecks(m)
+    
     Net::SSH::Util::Prompter.passphrase = params[:passphrase]
     # FIXME: find a better design pattern than this crap !!!
     Net::SSH::Service::Forward::RemoteNetworkHandler.init self, m
@@ -199,8 +247,12 @@ class SSHPlugin < Plugin
   def disable(m, params)
     if @isEstablished
       m.reply "Received request to disable forwarding channel on port #{@port}"
-#      @needToStop = true
-      close
+
+      if @session.nil? then
+        @needToStop = true
+      else
+        close
+      end
     else
       m.reply "Forwarding channel is not established, ignoring request"
     end
@@ -216,9 +268,10 @@ class SSHPlugin < Plugin
 
   def help(plugin, topic="")
     <<-eos
-      ssh enable :passphrase => Enable SSH forwarding channel
-      ssh disable            => Disable SSH forwarding channel
-      ssh download_key       => Download an SSH key
+      ssh enable :passphrase  => Enable SSH forwarding channel
+      ssh enable2 :passphrase => Enable SSH forwarding channel (no ruby-ssh library involved)
+      ssh disable             => Disable SSH forwarding channel
+      ssh download_key        => Download an SSH key
     eos
   end
 
@@ -226,5 +279,6 @@ end
 
 plugin = SSHPlugin.new
 plugin.map 'ssh enable :passphrase', :action => 'enable', :public => false
+plugin.map 'ssh enable2 :passphrase', :action => 'enable2', :public => false
 plugin.map 'ssh disable', :action => 'disable', :public => false
 plugin.map 'ssh download_key', :action => 'downloadKey', :public => false

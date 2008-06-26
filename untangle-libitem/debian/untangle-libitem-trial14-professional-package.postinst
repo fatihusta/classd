@@ -1,0 +1,6 @@
+#!/bin/sh
+
+/usr/share/untangle/bin/xpd ubm-trial.ulg 0x778e54a1667b4c42 77856c05517a47bf9d9ba5c0498e7b66
+
+/usr/bin/ucli -t 30 reloadLicenses > /dev/null 2>&1
+true
