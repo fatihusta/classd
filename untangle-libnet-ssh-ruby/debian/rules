@@ -66,9 +66,7 @@ install: build
 	  $(CURDIR)/debian/untangle-libnet-ssh-ruby1.8/usr/share/doc/untangle-libnet-ssh-ruby1.8
 	rm \
 	  $(CURDIR)/debian/untangle-libnet-ssh-ruby1.8/usr/share/doc/untangle-libnet-ssh-ruby1.8/doc/LICENSE-*
-
-	find $(CURDIR)/debian/untangle-libnet-ssh-ruby1.8 -name .svn -exec rm -fr "{}" \;
-
+	find $(CURDIR)/debian/untangle-libnet-ssh-ruby1.8 -name .svn | xargs rm -fr
 
 # Build architecture-independent files here.
 binary-arch: build install
