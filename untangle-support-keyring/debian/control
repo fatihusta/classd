@@ -10,5 +10,5 @@ Package: untangle-support-keyring
 Depends: untangle-openssh-server
 Architecture: all
 Description: The Untangle support keyring
-  The Untangle support keyring, allowing for remote support.
+ The Untangle support keyring, allowing for remote support.
 
