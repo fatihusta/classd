@@ -3,7 +3,7 @@
 INSTALL_PROGRAM := install -s
 
 BINARY_NAME := utverifykey
-BINARY_INSTALL_DIR := files/usr/bin/
+BINARY_INSTALL_DIR := files/usr/bin
 
 build: 
 	dh_testdir
