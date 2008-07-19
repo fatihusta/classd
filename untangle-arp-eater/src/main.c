@@ -24,8 +24,16 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/socket.h>
 
 #include <syslog.h>
+
+#include <pcap.h>
+#include <arpa/inet.h>
+#include <linux/if.h>
+#include <linux/netdevice.h>
+#include <linux/if_arp.h>
+#include <linux/if_ether.h>
 
 #include <libmvutil.h>
 
@@ -33,6 +41,7 @@
 #include <mvutil/errlog.h>
 #include <mvutil/uthread.h>
 #include <mvutil/utime.h>
+#include <mvutil/unet.h>
 
 #include <microhttpd.h>
 
@@ -43,7 +52,7 @@
 #define DEFAULT_CONFIG_FILE  "/etc/arpeater.conf"
 #define DEFAULT_DEBUG_LEVEL  5
 #define DEFAULT_BIND_PORT 3002
-
+#define DEFAULT_INTERFACE "eth0"
 
 #define FLAG_ALIVE      0x543D00D
 
@@ -61,6 +70,7 @@ static struct
     pthread_t scheduler_thread;
     json_server_t json_server;
     struct MHD_Daemon *daemon;
+    char* sniff_intf;
 } _globals = {
     .is_running = 0,
     .scheduler_thread = 0,
@@ -72,7 +82,16 @@ static struct
     .std_err = -1,
     .std_out_filename = NULL,
     .std_out = -1,
-    .debug_level = DEFAULT_DEBUG_LEVEL
+    .debug_level = DEFAULT_DEBUG_LEVEL,
+    .sniff_intf = DEFAULT_INTERFACE
+};
+
+struct arp_eth_payload
+{
+	unsigned char		ar_sha[ETH_ALEN];	/* sender hardware address	*/
+	unsigned char		ar_sip[4];		/* sender IP address		*/
+	unsigned char		ar_tha[ETH_ALEN];	/* target hardware address	*/
+	unsigned char		ar_tip[4];		/* target IP address		*/
 };
 
 static int _parse_args( int argc, char** argv );
@@ -83,6 +102,9 @@ static int _setup_output( void );
 
 static void _signal_term( int sig );
 static int _set_signals( void );
+
+static void* _arp_listener( void* arg );
+static void _arp_listener_handler ( u_char* args, const struct pcap_pkthdr* header, const u_char* pkt);
 
 /* This is defined inside of functions.c */
 extern int barfight_functions_init( char *config_file );
@@ -164,7 +186,7 @@ static int _parse_args( int argc, char** argv )
 {
     int c = 0;
     
-    while (( c = getopt( argc, argv, "dhp:c:o:e:l:" ))  != -1 ) {
+    while (( c = getopt( argc, argv, "dhp:c:o:e:l:i:" ))  != -1 ) {
         switch( c ) {
         case 'd':
             _globals.daemonize = 1;
@@ -192,6 +214,10 @@ static int _parse_args( int argc, char** argv )
         case 'l':
             _globals.debug_level = atoi( optarg );
             break;
+
+        case 'i':
+            _globals.sniff_intf = optarg;
+            break;
             
         case '?':
             return -1;
@@ -211,6 +237,7 @@ static int _usage( char *name )
     fprintf( stderr, "\t-o <log-file>: File to place standard output(more useful with -d).\n" );
     fprintf( stderr, "\t-e <log-file>: File to place standard error(more useful with -d).\n" );
     fprintf( stderr, "\t-l <debug-level>: Debugging level.\n" );    
+    fprintf( stderr, "\t-i <interface>: Interface to sniff for arps.\n" );    
     fprintf( stderr, "\t-h: Halp (show this message)\n" );
     return -1;
 }
@@ -239,6 +266,12 @@ static int _init( int argc, char** argv )
         return perrlog( "pthread_create" );
     }
     
+    /* Donate a thread to start the arp listener. */
+    if ( pthread_create( &_globals.scheduler_thread, &uthread_attr.other.medium,
+                         _arp_listener, NULL )) {
+        return perrlog( "pthread_create" );
+    }
+    
     /* Create a JSON server */
     if ( barfight_functions_init( _globals.config_file ) < 0 ) {
         return errlog( ERR_CRITICAL, "barfight_functions_init\n" );
@@ -255,7 +288,7 @@ static int _init( int argc, char** argv )
                                         &_globals.json_server, MHD_OPTION_END );
 
     if ( _globals.daemon == NULL ) return errlog( ERR_CRITICAL, "MHD_start_daemon\n" );
-    
+
     return 0;
 }
 
@@ -335,4 +368,95 @@ static int _set_signals( void )
     sigaction( SIGPIPE, &signal_action, NULL );
     
     return 0;
+}
+
+static void _arp_listener_handler ( u_char* args, const struct pcap_pkthdr* header, const u_char* pkt)
+{
+    struct ethhdr* eth_hdr;
+    struct arphdr* arp_hdr;
+    struct arp_eth_payload* arp_payload;
+   
+    debug( 2,"SNIFF: got packet: len:%i required:%i\n",header->len,(sizeof(struct ethhdr) + sizeof(struct arphdr) + 20));
+
+    /* min size ethhdr + arphdr + arp payload */
+    if ( header->len < (sizeof(struct ethhdr) + sizeof(struct arphdr) + sizeof(struct arp_eth_payload)) ) {
+        errlog( ERR_WARNING, "arp_handler: discarding pkt - ignoring short packet, got %i, expected %i",
+                header->len, (sizeof(struct ethhdr) + sizeof(struct arphdr) + sizeof(struct arp_eth_payload)) );
+        return;
+    }
+
+    eth_hdr = (struct ethhdr*) pkt;
+    arp_hdr = (struct arphdr*) (pkt + sizeof(struct ethhdr));
+    arp_payload = (struct arp_eth_payload*) (pkt + sizeof(struct ethhdr) + sizeof(struct arphdr));
+    
+    /* check to verify its an arp packet */
+    if ( ntohs(eth_hdr->h_proto) != 0x0806 ) {
+        errlog(ERR_WARNING,"arp_handler: discarding pkt - wrong packet type: %04x",ntohs(eth_hdr->h_proto));
+        return;
+    }
+
+    debug (2,"SNIFF: (hardware: 0x%04x) (protocol: 0x%04x) (hardware len: %i) (protocol len: %i) (op: 0x%04x)\n",
+           ntohs(arp_hdr->ar_hrd),ntohs(arp_hdr->ar_pro),
+           arp_hdr->ar_hln,arp_hdr->ar_pln,
+           ntohs(arp_hdr->ar_op));
+
+    /* check lengths */
+    if ( arp_hdr->ar_hln != 6 || arp_hdr->ar_pln != 4 ) {
+        errlog(ERR_WARNING,"arp_handler: discarding pkt - wrong length in packet, got (%i,%i), expected (6,4)\n",
+               arp_hdr->ar_hln,arp_hdr->ar_pln);
+        return;
+    }
+
+    /* only parse arp requests */
+    if ( ntohs(arp_hdr->ar_op) != 0x0001 ) {
+        return;
+    }
+
+    debug( 1,"SNIFF: (%02x:%02x:%02x:%02x:%02x:%02x -> %02x:%02x:%02x:%02x:%02x:%02x) arp who has %s tell %s \n",
+           eth_hdr->h_source[0], eth_hdr->h_source[1],
+           eth_hdr->h_source[2], eth_hdr->h_source[3],
+           eth_hdr->h_source[4], eth_hdr->h_source[5],
+           eth_hdr->h_dest[0], eth_hdr->h_dest[1],
+           eth_hdr->h_dest[2], eth_hdr->h_dest[3],
+           eth_hdr->h_dest[4], eth_hdr->h_dest[5],
+           unet_next_inet_ntoa(*(in_addr_t*)&arp_payload->ar_tip),
+           unet_next_inet_ntoa(*(in_addr_t*)&arp_payload->ar_sip));
+    
+    return;
+}
+
+static void* _arp_listener( void* arg )
+{
+    pcap_t* handle;
+    char pcap_errbuf[PCAP_ERRBUF_SIZE];
+    struct bpf_program filter;
+    
+    debug( 1, "SNIFF: Setting up arp listener.\n" );
+    debug( 1, "SNIFF: Listening on %s.\n", _globals.sniff_intf);
+
+    /* open interface for listening */
+    if ( (handle = pcap_open_live(_globals.sniff_intf, BUFSIZ, 1, 0, pcap_errbuf)) == NULL ) {
+        errlog( ERR_CRITICAL, "pcap_open_live: %s\n", pcap_errbuf );
+        return NULL; /* XXX exit here? */
+    }
+
+    /* compile rule/filter to only listen to arp */
+    if ( pcap_compile(handle, &filter, "arp", 1, 0) < 0 ) {
+        errlog( ERR_CRITICAL, "pcap_compile: %s\n", pcap_geterr(handle));
+        return NULL; /* XXX exit here? */
+    }
+
+    /* apply rule/filter */
+    if ( pcap_setfilter(handle, &filter) < 0 ) {
+        errlog( ERR_CRITICAL, "pcap_setfilter: %s\n", pcap_geterr(handle));
+        return NULL; /* XXX exit here? */
+    }
+
+    /* start capturing */
+    if ( pcap_loop(handle, -1, _arp_listener_handler, NULL) < 0 ) {
+        errlog( ERR_CRITICAL, "pcap_loop: %s\n", pcap_geterr(handle));
+        return NULL; /* XXX exit here? */
+    }
+   
+    return NULL;
 }
