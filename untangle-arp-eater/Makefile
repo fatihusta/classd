@@ -35,17 +35,17 @@ mvutil_source=libmvutil/src/debug.c libmvutil/src/errlog.c libmvutil/src/hash.c 
 	libmvutil/src/uthread.c libmvutil/src/utime.c
 
 ## ARP Eater source
-bf_source=src/utils/sched.c src/utils/lru.c src/json/server.c src/json/object_utils.c \
-	src/functions.c src/main.c ${mvutil_source}
+ae_source=src/utils/sched.c src/utils/lru.c src/json/server.c src/json/object_utils.c \
+	src/functions.c src/main.c src/ae/config.c ${mvutil_source}
 
-bf_objects=$(patsubst %.c,${object_dir}/%.o, ${bf_source})
-bf_binary=shield
+ae_objects=$(patsubst %.c,${object_dir}/%.o, ${ae_source})
+ae_binary=arp_eater
 
-default: ${object_dir} mvutil_includes ${bf_binary}
+default: ${object_dir} mvutil_includes ${ae_binary}
 
-${bf_binary}: ${bf_objects} ${mvutil_source}
-	@echo "==> gcc ${bf_objects} -> $@"
-	@${CC} ${CFLAGS} ${LIBS_FLAGS} ${bf_objects} -o $@
+${ae_binary}: ${ae_objects} ${mvutil_source}
+	@echo "==> gcc ${ae_objects} -> $@"
+	@${CC} ${CFLAGS} ${LIBS_FLAGS} ${ae_objects} -o $@
 
 ${object_dir}/%.o: %.c
 	@if [ ! -d `dirname $@` ] ; then echo "==> mkdir `dirname $@`" ; mkdir -p `dirname $@` ; fi
@@ -63,7 +63,7 @@ mvutil_includes:
 clean:
 	@echo "==> Removing object files in ${object_dir}"
 	@rm -rf ${object_dir}
-	@rm -f ${bf_binary}
+	@rm -f ${ae_binary}
 
 install:
 	@echo "Installing"
