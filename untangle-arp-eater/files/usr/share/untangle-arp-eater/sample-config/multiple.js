@@ -2,7 +2,7 @@
  * This is a sample designed to take over two specific subnets (The default is to NOT Spoof),
  */
 {
-  gateway : "disabled",
+  gateway : "automatic",
 
   /* By default, spoof a host for 5 seconds after not seeing any traffic */
   timeout : 5.0,

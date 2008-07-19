@@ -37,7 +37,8 @@ mvutil_source=libmvutil/src/debug.c libmvutil/src/errlog.c libmvutil/src/hash.c 
 
 ## ARP Eater source
 ae_source=src/utils/sched.c src/utils/lru.c src/json/server.c src/json/object_utils.c \
-	src/functions.c src/main.c src/ae/config.c ${mvutil_source}
+	src/json/serializer.c src/functions.c src/main.c src/ae/config.c ${mvutil_source}
+
 
 ae_objects=$(patsubst %.c,${object_dir}/%.o, ${ae_source})
 ae_binary=arp_eater
