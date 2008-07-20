@@ -1,5 +1,5 @@
 /*
- * $HeadURL: svn://chef/work/src/libnetcap/src/barfight_lru.c $
+ * $HeadURL: svn://chef/work/src/libnetcap/src/arpeater_lru.c $
  * Copyright (c) 2003-2008 Untangle, Inc. 
  *
  * This program is free software; you can redistribute it and/or modify
@@ -41,7 +41,7 @@
 #define _CHECK_AND_UNLOCK( mutex ) \
   if (((mutex) != NULL ) && ( pthread_mutex_unlock((mutex)) < 0 )) return perrlog( "pthread_mutex_unlock\n" )
 
-static int _lru_remove( barfight_lru_t* lru, barfight_lru_node_t* node );
+static int _lru_remove( arpeater_lru_t* lru, arpeater_lru_node_t* node );
 
 static __inline__ int _validate_args( int high_water, int low_water, int sieve_size )
 {
@@ -54,7 +54,7 @@ static __inline__ int _validate_args( int high_water, int low_water, int sieve_s
     return 0;
 }
 
-static __inline__ int _validate_lru( barfight_lru_t* lru )
+static __inline__ int _validate_lru( arpeater_lru_t* lru )
 {
     if ( _validate_args( lru->high_water, lru->low_water, lru->sieve_size ) < 0 ) {
         return errlog( ERR_CRITICAL, "_validate_args\n" );
@@ -66,8 +66,8 @@ static __inline__ int _validate_lru( barfight_lru_t* lru )
 }
 
 
-int barfight_lru_init( barfight_lru_t* lru, int high_water, int low_water, int sieve_size, 
-                     barfight_lru_check_t* is_deletable, barfight_lru_remove_t* remove )
+int arpeater_lru_init( arpeater_lru_t* lru, int high_water, int low_water, int sieve_size, 
+                     arpeater_lru_check_t* is_deletable, arpeater_lru_remove_t* remove )
 {
     if ( lru == NULL || remove == NULL ) return errlogargs();
 
@@ -92,7 +92,7 @@ int barfight_lru_init( barfight_lru_t* lru, int high_water, int low_water, int s
     return 0;
 }
 
-int barfight_lru_config( barfight_lru_t* lru, int high_water, int low_water, int sieve_size, 
+int arpeater_lru_config( arpeater_lru_t* lru, int high_water, int low_water, int sieve_size, 
                        pthread_mutex_t* mutex )
 {
     if ( lru == NULL ) return errlogargs();
@@ -114,7 +114,7 @@ int barfight_lru_config( barfight_lru_t* lru, int high_water, int low_water, int
 }
 
 /* Add a node to the front of the LRU, node is updated to contain the necessary information for the LRU */
-int barfight_lru_add( barfight_lru_t* lru, barfight_lru_node_t* node, void* data, pthread_mutex_t* mutex )
+int arpeater_lru_add( arpeater_lru_t* lru, arpeater_lru_node_t* node, void* data, pthread_mutex_t* mutex )
 {
     if ( lru == NULL || node == NULL || data == NULL ) return errlogargs();
 
@@ -146,7 +146,7 @@ int barfight_lru_add( barfight_lru_t* lru, barfight_lru_node_t* node, void* data
     return ret;
 }
 
-int barfight_lru_permanent_add( barfight_lru_t* lru, barfight_lru_node_t* node, void* data, 
+int arpeater_lru_permanent_add( arpeater_lru_t* lru, arpeater_lru_node_t* node, void* data, 
                               pthread_mutex_t* mutex  )
 {
     if ( lru == NULL || node == NULL || data == NULL ) return errlogargs();
@@ -200,7 +200,7 @@ int barfight_lru_permanent_add( barfight_lru_t* lru, barfight_lru_node_t* node, 
 }
 
 /* Remove all of the nodes on the permanent list and add them to the LRU */
-int barfight_lru_permanent_clear( barfight_lru_t* lru, pthread_mutex_t* mutex )
+int arpeater_lru_permanent_clear( arpeater_lru_t* lru, pthread_mutex_t* mutex )
 {
     if ( lru == NULL ) return errlogargs();
     
@@ -214,7 +214,7 @@ int barfight_lru_permanent_clear( barfight_lru_t* lru, pthread_mutex_t* mutex )
         }
 
         while ( length-- > 0 ) {
-            barfight_lru_node_t* node;
+            arpeater_lru_node_t* node;
             
             node = NULL;
             /* Move the node off the permanent */
@@ -246,7 +246,7 @@ int barfight_lru_permanent_clear( barfight_lru_t* lru, pthread_mutex_t* mutex )
 
 /* Move a node to the front of the LRU, node should be a value returned from a previous
  * execution of lru_add */
-int barfight_lru_move_front( barfight_lru_t* lru, barfight_lru_node_t* node, pthread_mutex_t* mutex )
+int arpeater_lru_move_front( arpeater_lru_t* lru, arpeater_lru_node_t* node, pthread_mutex_t* mutex )
 {
     if ( lru == NULL || node == NULL ) return errlogargs();
 
@@ -285,7 +285,7 @@ int barfight_lru_move_front( barfight_lru_t* lru, barfight_lru_node_t* node, pth
 
 
 /* Cut any excessive nodes, and place the results into the node_array */
-int barfight_lru_cut( barfight_lru_t* lru, barfight_lru_node_t** node_array, int node_array_size, 
+int arpeater_lru_cut( arpeater_lru_t* lru, arpeater_lru_node_t** node_array, int node_array_size, 
                     pthread_mutex_t* mutex )
 {
     if ( lru == NULL || node_array_size < 0 ) return errlogargs();
@@ -318,7 +318,7 @@ int barfight_lru_cut( barfight_lru_t* lru, barfight_lru_node_t** node_array, int
             
             for ( ; c-- > 0 ; ) {
                 int is_deletable;
-                barfight_lru_node_t* node;
+                arpeater_lru_node_t* node;
 
                 if (( node = list_tail_val( &lru->lru_list )) == NULL ) {
                     return errlog( ERR_CRITICAL, "list_tail_val\n" );
@@ -343,7 +343,7 @@ int barfight_lru_cut( barfight_lru_t* lru, barfight_lru_node_t** node_array, int
             debug ( _LRU_DEBUG_LOW, "TRIE: LRU Update - cutting %d items\n", c );
             
             for (  ; c-- > 0 ; ) {
-                barfight_lru_node_t* node;
+                arpeater_lru_node_t* node;
                 
                 if (( node = list_tail_val( &lru->lru_list )) == NULL ) {
                     return errlog( ERR_CRITICAL, "list_tail_val\n" ); 
@@ -365,7 +365,7 @@ int barfight_lru_cut( barfight_lru_t* lru, barfight_lru_node_t** node_array, int
     if ( node_array != NULL ) bzero( node_array, node_array_size );
     
     /* convert from bytes to words */
-    node_array_size = node_array_size / sizeof( barfight_lru_node_t* );
+    node_array_size = node_array_size / sizeof( arpeater_lru_node_t* );
 
     int ret = 0;
     
@@ -376,7 +376,7 @@ int barfight_lru_cut( barfight_lru_t* lru, barfight_lru_node_t** node_array, int
     return ret;
 }
 
-static int _lru_remove( barfight_lru_t* lru, barfight_lru_node_t* node )
+static int _lru_remove( arpeater_lru_t* lru, arpeater_lru_node_t* node )
 {
     list_node_t* list_node = node->list_node;
     

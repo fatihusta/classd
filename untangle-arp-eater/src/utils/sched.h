@@ -1,5 +1,5 @@
 /*
- * $HeadURL: svn://chef/work/src/libnetcap/src/barfight_sched.h $
+ * $HeadURL: svn://chef/work/src/libnetcap/src/arpeater_sched.h $
  * Copyright (c) 2003-2008 Untangle, Inc. 
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,38 +19,38 @@
 #ifndef __BARFIGHT_SCHED_H_
 #define __BARFIGHT_SCHED_H_
 
-typedef void  (barfight_sched_func_t)    ( void* arg );
+typedef void  (arpeater_sched_func_t)    ( void* arg );
 
-typedef void  (barfight_sched_func_z_t)  ( void );
+typedef void  (arpeater_sched_func_z_t)  ( void );
 
 /* Initialize the scheduler, call this function before calling donate */
-int barfight_sched_init( void );
+int arpeater_sched_init( void );
 
 /**
- * barfight_sched_donate: Donate a thread to the scheduler.
+ * arpeater_sched_donate: Donate a thread to the scheduler.
  */
-void* barfight_sched_donate( void* arg );
+void* arpeater_sched_donate( void* arg );
 
 /* Schedule an event with an argumuent */
-int barfight_sched_event( barfight_sched_func_t* func, void* arg, int usec );
+int arpeater_sched_event( arpeater_sched_func_t* func, void* arg, int usec );
 
 /* Schedule an event without an argumuent */
-int barfight_sched_event_z( barfight_sched_func_z_t* func, int usec );
+int arpeater_sched_event_z( arpeater_sched_func_z_t* func, int usec );
 
 /* Schedule a cleanup event with an argumuent */
-int barfight_sched_cleanup( barfight_sched_func_t* func, void* arg );
+int arpeater_sched_cleanup( arpeater_sched_func_t* func, void* arg );
 
 /* Schedule a cleanup event without an argumuent */
-int barfight_sched_cleanup_z( barfight_sched_func_z_t* func );
+int arpeater_sched_cleanup_z( arpeater_sched_func_z_t* func );
 
 /* -RBS XXX - These functions are in the case where you want to have multiple schedulers */
-/* barfight_sched_t* barfight_sched_malloc     ( void ); */
-/* int             barfight_sched_init       ( barfight_sched_t* sched ); */
-/* barfight_sched_t* barfight_sched_create     ( void ); */
+/* arpeater_sched_t* arpeater_sched_malloc     ( void ); */
+/* int             arpeater_sched_init       ( arpeater_sched_t* sched ); */
+/* arpeater_sched_t* arpeater_sched_create     ( void ); */
 
-/* int             barfight_sched_free       ( barfight_sched_t* sched ); */
-/* int             barfight_sched_destroy    ( barfight_sched_t* sched ); */
-/* int             barfight_sched_raze       ( barfight_sched_t* sched ); */
+/* int             arpeater_sched_free       ( arpeater_sched_t* sched ); */
+/* int             arpeater_sched_destroy    ( arpeater_sched_t* sched ); */
+/* int             arpeater_sched_raze       ( arpeater_sched_t* sched ); */
 
 #endif // __BARFIGHT_SCHED_H_
 

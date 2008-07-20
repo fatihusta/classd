@@ -1,5 +1,5 @@
 /*
- * $HeadURL: svn://chef/work/src/libnetcap/src/barfight_sched.c $
+ * $HeadURL: svn://chef/work/src/libnetcap/src/arpeater_sched.c $
  * Copyright (c) 2003-2008 Untangle, Inc. 
  *
  * This program is free software; you can redistribute it and/or modify
@@ -87,8 +87,8 @@ typedef enum
 
 typedef union 
 {
-    barfight_sched_func_t*   func;
-    barfight_sched_func_z_t* func_z;
+    arpeater_sched_func_t*   func;
+    arpeater_sched_func_z_t* func_z;
 } _sched_func_t;
 
 typedef struct 
@@ -142,7 +142,7 @@ static int           _sched_msg_free    ( _sched_msg_t* msg );
 
 static int           _wait_exit         ( void );
 
-int   barfight_sched_init      ( void )
+int   arpeater_sched_init      ( void )
 {
     /* Initialize the mailbox and the list */
     if ( mailbox_init ( &_sched.mailbox ) < 0 ) return errlog ( ERR_CRITICAL, "mailbox_init\n" );
@@ -157,7 +157,7 @@ int   barfight_sched_init      ( void )
     return 0;
 }
 
-int   barfight_sched_event     ( barfight_sched_func_t* func, void* arg, int usec )
+int   arpeater_sched_event     ( arpeater_sched_func_t* func, void* arg, int usec )
 {
     if ( func == NULL ) return errlogargs();
 
@@ -172,7 +172,7 @@ int   barfight_sched_event     ( barfight_sched_func_t* func, void* arg, int use
     return 0;
 }
 
-int   barfight_sched_event_z   ( barfight_sched_func_z_t* func, int usec )
+int   arpeater_sched_event_z   ( arpeater_sched_func_z_t* func, int usec )
 {
     if ( func == NULL ) return errlogargs();
 
@@ -188,7 +188,7 @@ int   barfight_sched_event_z   ( barfight_sched_func_z_t* func, int usec )
 
 }
 
-int   barfight_sched_cleanup   ( barfight_sched_func_t* func, void* arg )
+int   arpeater_sched_cleanup   ( arpeater_sched_func_t* func, void* arg )
 {
     if ( _sched_mailbox_put ( _CLEANUP, 0, (_sched_func_t)func, arg ) < 0 ) {
         return errlog ( ERR_CRITICAL, "_sched_mailbox_put\n");
@@ -201,7 +201,7 @@ int   barfight_sched_cleanup   ( barfight_sched_func_t* func, void* arg )
     return 0;    
 }
 
-int   barfight_sched_cleanup_z ( barfight_sched_func_z_t* func )
+int   arpeater_sched_cleanup_z ( arpeater_sched_func_z_t* func )
 {
     if ( _sched_mailbox_put ( _CLEANUP_Z, 0, (_sched_func_t)func, NULL ) < 0 ) {
         return errlog ( ERR_CRITICAL, "_sched_mailbox_put\n");
@@ -214,7 +214,7 @@ int   barfight_sched_cleanup_z ( barfight_sched_func_z_t* func )
     return 0;    
 }
 
-void* barfight_sched_donate    ( void* arg )
+void* arpeater_sched_donate    ( void* arg )
 {
     _sched_msg_t* msg;
     struct timespec ts;

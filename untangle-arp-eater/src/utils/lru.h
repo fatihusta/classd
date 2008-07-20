@@ -1,5 +1,5 @@
 /*
- * $HeadURL: svn://chef/work/src/libnetcap/src/barfight_lru.h $
+ * $HeadURL: svn://chef/work/src/libnetcap/src/arpeater_lru.h $
  * Copyright (c) 2003-2008 Untangle, Inc. 
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,8 +23,8 @@
 
 #define NC_LRU_DONT_DELETE 0x202A5D72
 
-typedef int  (barfight_lru_check_t)  ( void* data );
-typedef int  (barfight_lru_remove_t) ( void* data );
+typedef int  (arpeater_lru_check_t)  ( void* data );
+typedef int  (arpeater_lru_remove_t) ( void* data );
 
 typedef struct
 {
@@ -47,11 +47,11 @@ typedef struct
     int sieve_size;
     
     /* A function that determines whether or not an item is deletable */
-    barfight_lru_check_t* is_deletable;
+    arpeater_lru_check_t* is_deletable;
 
     /* A function to call !before removing the node from the LRU */
-    barfight_lru_remove_t* remove;
-} barfight_lru_t;
+    arpeater_lru_remove_t* remove;
+} arpeater_lru_t;
 
 typedef struct
 {
@@ -68,30 +68,30 @@ typedef struct
 
     /* Data associated with this node */
     void* data;
-} barfight_lru_node_t;
+} arpeater_lru_node_t;
 
-int barfight_lru_init( barfight_lru_t* lru, int high_water, int low_water, int sieve_size, 
-                     barfight_lru_check_t* is_deletable, barfight_lru_remove_t* remove );
+int arpeater_lru_init( arpeater_lru_t* lru, int high_water, int low_water, int sieve_size, 
+                     arpeater_lru_check_t* is_deletable, arpeater_lru_remove_t* remove );
 
-int barfight_lru_config( barfight_lru_t* lru, int high_water, int low_water, int sieve_size, 
+int arpeater_lru_config( arpeater_lru_t* lru, int high_water, int low_water, int sieve_size, 
                        pthread_mutex_t* mutex );
 
 /* Add a node to the front of the LRU, node is updated to contain the necessary information for the LRU */
-int barfight_lru_add( barfight_lru_t* lru, barfight_lru_node_t* node, void* data, pthread_mutex_t* mutex );
+int arpeater_lru_add( arpeater_lru_t* lru, arpeater_lru_node_t* node, void* data, pthread_mutex_t* mutex );
 
 /* Add a node to the permanent list, if node */
-int barfight_lru_permanent_add   ( barfight_lru_t* lru, barfight_lru_node_t* node, void* data,
+int arpeater_lru_permanent_add   ( arpeater_lru_t* lru, arpeater_lru_node_t* node, void* data,
                                  pthread_mutex_t* mutex );
 
 /* Remove all of the nodes on the permanent list and add them to the LRU */
-int barfight_lru_permanent_clear ( barfight_lru_t* lru, pthread_mutex_t* mutex );
+int arpeater_lru_permanent_clear ( arpeater_lru_t* lru, pthread_mutex_t* mutex );
 
 /* Move a node to the front of the LRU, node should be a value returned from a previous
  * execution of lru_add */
-int barfight_lru_move_front( barfight_lru_t* lru, barfight_lru_node_t* node, pthread_mutex_t* mutex );
+int arpeater_lru_move_front( arpeater_lru_t* lru, arpeater_lru_node_t* node, pthread_mutex_t* mutex );
 
 /* Cut any excessive nodes, and place the results into the node_array if it is not null */
-int barfight_lru_cut( barfight_lru_t* lru, barfight_lru_node_t** node_array, int node_array_size, 
+int arpeater_lru_cut( arpeater_lru_t* lru, arpeater_lru_node_t** node_array, int node_array_size, 
                     pthread_mutex_t* mutex );
 
 #endif // _NETCAP_LRU_H_

@@ -1,5 +1,5 @@
 /*
- * $HeadURL: svn://chef/work/src/libnetcap/src/barfight_shield.c $
+ * $HeadURL: svn://chef/work/src/libnetcap/src/arpeater_shield.c $
  * Copyright (c) 2003-2008 Untangle, Inc. 
  *
  * This program is free software; you can redistribute it and/or modify

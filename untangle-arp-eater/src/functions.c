@@ -55,13 +55,13 @@ static struct
     }
 };
 
-int barfight_functions_init( char* config_file )
+int arpeater_functions_init( char* config_file )
 {
     _globals.config_file = config_file;
     return 0;
 }
 
-json_server_function_entry_t *barfight_functions_get_json_table()
+json_server_function_entry_t *arpeater_functions_get_json_table()
 {
     return _globals.function_table;
 }

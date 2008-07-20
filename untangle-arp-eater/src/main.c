@@ -113,8 +113,8 @@ static int _init_arp_socket (void);
 static int _test_arp (void);
 
 /* This is defined inside of functions.c */
-extern int barfight_functions_init( char *config_file );
-extern json_server_function_entry_t *barfight_functions_get_json_table( void );
+extern int arpeater_functions_init( char *config_file );
+extern json_server_function_entry_t *arpeater_functions_get_json_table( void );
 
 /**
  * Simple little test binary, it just queues the packet, adds it to a
@@ -269,11 +269,11 @@ static int _init( int argc, char** argv )
     debug_set_mylevel( _globals.debug_level );
     
     /* Initialize the scheduler. */
-    if ( barfight_sched_init() < 0 ) return errlog( ERR_CRITICAL, "barfight_sched_init\n" );
+    if ( arpeater_sched_init() < 0 ) return errlog( ERR_CRITICAL, "arpeater_sched_init\n" );
 
     /* Donate a thread to start the scheduler. */
     if ( pthread_create( &_globals.scheduler_thread, &uthread_attr.other.medium,
-                         barfight_sched_donate, NULL )) {
+                         arpeater_sched_donate, NULL )) {
         return perrlog( "pthread_create" );
     }
     
@@ -284,11 +284,11 @@ static int _init( int argc, char** argv )
     }
     
     /* Create a JSON server */
-    if ( barfight_functions_init( _globals.config_file ) < 0 ) {
-        return errlog( ERR_CRITICAL, "barfight_functions_init\n" );
+    if ( arpeater_functions_init( _globals.config_file ) < 0 ) {
+        return errlog( ERR_CRITICAL, "arpeater_functions_init\n" );
     }
     
-    json_server_function_entry_t* function_table = barfight_functions_get_json_table();
+    json_server_function_entry_t* function_table = arpeater_functions_get_json_table();
     
     if ( json_server_init( &_globals.json_server, function_table ) < 0 ) {
         return errlog( ERR_CRITICAL, "json_server_init\n" );
@@ -305,7 +305,7 @@ static int _init( int argc, char** argv )
 
 static void _destroy( void )
 {    
-    if ( barfight_sched_cleanup_z( NULL ) < 0 ) errlog( ERR_CRITICAL, "barfight_sched_cleanup_z\n" );
+    if ( arpeater_sched_cleanup_z( NULL ) < 0 ) errlog( ERR_CRITICAL, "arpeater_sched_cleanup_z\n" );
     
     MHD_stop_daemon( _globals.daemon );
     
