@@ -25,15 +25,16 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
+#include <sys/ioctl.h>
 
 #include <syslog.h>
 
 #include <pcap.h>
 #include <arpa/inet.h>
-#include <linux/if.h>
-#include <linux/netdevice.h>
-#include <linux/if_arp.h>
-#include <linux/if_ether.h>
+#include <net/if.h>
+#include <net/ethernet.h>
+#include <netinet/ether.h>
+#include <linux/if_packet.h>
 
 #include <libmvutil.h>
 
@@ -70,7 +71,9 @@ static struct
     pthread_t scheduler_thread;
     json_server_t json_server;
     struct MHD_Daemon *daemon;
-    char* sniff_intf;
+    char* interface;
+    int sock_raw;
+    struct sockaddr_ll device;
 } _globals = {
     .is_running = 0,
     .scheduler_thread = 0,
@@ -83,7 +86,7 @@ static struct
     .std_out_filename = NULL,
     .std_out = -1,
     .debug_level = DEFAULT_DEBUG_LEVEL,
-    .sniff_intf = DEFAULT_INTERFACE
+    .interface = DEFAULT_INTERFACE
 };
 
 struct arp_eth_payload
@@ -105,6 +108,9 @@ static int _set_signals( void );
 
 static void* _arp_listener( void* arg );
 static void _arp_listener_handler ( u_char* args, const struct pcap_pkthdr* header, const u_char* pkt);
+static int _arp_send(int op, u_char *sha, in_addr_t sip, u_char *tha, in_addr_t tip);
+static int _init_arp_socket (void);
+static int _test_arp (void);
 
 /* This is defined inside of functions.c */
 extern int barfight_functions_init( char *config_file );
@@ -169,14 +175,19 @@ int main( int argc, char** argv )
     }
 
     _globals.is_running = FLAG_ALIVE;
+
+    if ( _init_arp_socket() < 0 )
+        return perrlog("_init_arp_socket");
+
+    //_test_arp();
     
     debug( 1, "MAIN: Setting up signal handlers.\n" );
     _set_signals();
-
+    
     /* An awesome way to wait for a shutdown signal. */
     while ( _globals.is_running == FLAG_ALIVE ) sleep( 1 );
 
-    /* Destroy the shield */
+    /* Destroy the arp eater */
     _destroy();
     
     return 0;
@@ -216,7 +227,7 @@ static int _parse_args( int argc, char** argv )
             break;
 
         case 'i':
-            _globals.sniff_intf = optarg;
+            _globals.interface = optarg;
             break;
             
         case '?':
@@ -370,13 +381,187 @@ static int _set_signals( void )
     return 0;
 }
 
+static int _process_arp( void )
+{
+    return 0;
+}
+
+static int _arp_lookup(struct ether_addr *dest, in_addr_t ip)
+{
+	int sock;
+	struct arpreq ar;
+	struct sockaddr_in *sin;
+	
+	memset( (char *)&ar, 0, sizeof(ar) );
+	strncpy( ar.arp_dev, _globals.interface, sizeof(ar.arp_dev) );   
+	sin = (struct sockaddr_in *)&ar.arp_pa;
+	sin->sin_family = AF_INET;
+	sin->sin_addr.s_addr = ip;
+	
+	if ( (sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) {
+        return perrlog("socket");
+	}
+
+	if ( ioctl(sock, SIOCGARP, (caddr_t)&ar) < 0) {
+		if (close(sock) < 0)
+            perrlog("close");
+		return perrlog("ioctl");
+	}
+
+	if ( close(sock) < 0)
+        perrlog("close");
+    
+	memcpy(dest->ether_addr_octet, ar.arp_ha.sa_data, ETHER_ADDR_LEN);
+	
+	return 0;
+}
+
+static int _test_arp (void)
+{
+    int op = ARPOP_REPLY;
+    u_char sha[6];
+    u_char tha[6];
+    u_int8_t tip[4];
+    u_int8_t sip[4];
+
+    bzero(sha,6);
+    bzero(tha,6);
+    bzero(tip,4);
+    bzero(sip,4);
+
+    sha[0] = 1;
+    sha[1] = 2;
+    sha[2] = 3;
+    sha[3] = 4;
+    sha[4] = 5;
+    sha[5] = 6;
+
+    tip[0] = 10;
+    tip[3] = 44;
+
+    sip[0] = 10;
+    sip[3] = 123;
+
+    /* send to everyone that 10.0.0.123 is at 01:02:03:04:05:06 */
+    if (_arp_send(op, sha, *(in_addr_t*)&sip, NULL, *(in_addr_t*)&tip)<0)
+        perrlog("_arp_send");
+
+    /* send to everyone that 10.0.0.123 is at my mac */
+    if (_arp_send(op, NULL, *(in_addr_t*)&sip, NULL, *(in_addr_t*)&tip)<0)
+        perrlog("_arp_send");
+
+    /* send to 01:02:03:04:05:06 that 10.0.0.123 is at my mac */
+    if (_arp_send(op, NULL, *(in_addr_t*)&sip, sha, *(in_addr_t*)&tip)<0)
+        perrlog("_arp_send");
+    
+    return 0;
+}
+
+static int _init_arp_socket (void)
+{
+    struct ifreq card;
+    int pf;
+    int i;
+    
+    if ( (_globals.sock_raw = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ARP))) < 0 ) 
+        return perrlog("socket");
+  
+    if ((pf = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) < 0) {
+        return errlog(ERR_CRITICAL, "Could not create packet socket");
+    }
+  
+    _globals.device.sll_family = AF_PACKET;
+
+    /**
+     * Find the index
+     */
+    strcpy(card.ifr_name, _globals.interface);
+    if (ioctl(pf, SIOCGIFINDEX, &card) == -1) {
+        return errlog(ERR_CRITICAL,"Could not find device index number for %s", card.ifr_name);
+    }
+
+    _globals.device.sll_ifindex = card.ifr_ifindex;
+    debug(2,"ARP: Spoofing of %s (index %d)\n", _globals.interface, _globals.device.sll_ifindex);
+
+    /**
+     * Find the MAC address
+     */
+    strcpy(card.ifr_name, _globals.interface);
+    if (ioctl(pf, SIOCGIFHWADDR, &card) == -1) {
+        return errlog(ERR_CRITICAL,"Could not mac address for %s", card.ifr_name);
+    }
+
+    debug(2,"ARP: %s is ");
+    _globals.device.sll_halen = htons(6);
+    for (i=0; i<6; i++) {
+        _globals.device.sll_addr[i] = card.ifr_hwaddr.sa_data[i];
+        debug_nodate(2,"%02x%s",_globals.device.sll_addr[i], (i<5 ? ":" : ""));
+    }
+    debug_nodate(2,"\n");
+
+    return 0;
+}
+
+static int _arp_send(int op, u_char *sha, in_addr_t sip, u_char *tha, in_addr_t tip)
+{
+    u_char pkt[(sizeof(struct ethhdr) + sizeof(struct arphdr) + sizeof(struct arp_eth_payload))];
+    struct ethhdr* eth_hdr;
+    struct arphdr* arp_hdr;
+    struct arp_eth_payload* arp_payload;
+    struct sockaddr_ll device;
+      
+    eth_hdr = (struct ethhdr*) pkt;
+    arp_hdr = (struct arphdr*) (pkt + sizeof(struct ethhdr));
+    arp_payload = (struct arp_eth_payload*) (pkt + sizeof(struct ethhdr) + sizeof(struct arphdr));
+    
+    /* if no target hwaddr supplied use broadcast */
+	if ( tha == NULL ) 
+        tha = (u_char*)"\xff\xff\xff\xff\xff\xff";
+    if ( sha == NULL)
+        sha = (u_char*)_globals.device.sll_addr;
+    
+    /* fill in eth_hdr */
+    memcpy(eth_hdr->h_source,sha,6);
+    memcpy(eth_hdr->h_dest,tha,6);
+    eth_hdr->h_proto = htons(0x0806);
+
+    /* fill in arp_hdr */
+    arp_hdr->ar_hrd = htons(0x0001);
+    arp_hdr->ar_pro = htons(0x0800);
+    arp_hdr->ar_hln = 6; 
+    arp_hdr->ar_pln = 4;
+    arp_hdr->ar_op = htons(op);
+    
+    /* fill in arp payload */
+    memcpy(arp_payload->ar_sha,sha,6);
+    memcpy(arp_payload->ar_tha,tha,6);
+    memcpy(arp_payload->ar_sip,&sip,4);
+    memcpy(arp_payload->ar_tip,&tip,4);
+
+	if (op == ARPOP_REQUEST) {
+		debug(1, "%s 0806 42: arp who-has %s tell %s\n", ether_ntoa((struct ether_addr *)tha), unet_next_inet_ntoa(tip), unet_next_inet_ntoa(sip));
+	}
+	else if (op == ARPOP_REPLY ) {
+		debug(1, "%s 0806 42: arp reply %s is-at ", ether_ntoa((struct ether_addr *)tha), unet_next_inet_ntoa(sip));
+		debug_nodate(1, "%s\n", ether_ntoa((struct ether_addr *)sha));
+	}
+
+    memcpy(&device,&_globals.device,sizeof(struct sockaddr_ll));
+    memcpy(&device.sll_addr, sha, 6);
+    
+    if ( sendto(_globals.sock_raw, pkt, sizeof(pkt), 0,(struct sockaddr *)&device, sizeof(struct sockaddr_ll)) < ((int)sizeof(pkt)) )
+        return perrlog("sendto");
+
+    return 0;
+}
+
 static void _arp_listener_handler ( u_char* args, const struct pcap_pkthdr* header, const u_char* pkt)
 {
     struct ethhdr* eth_hdr;
     struct arphdr* arp_hdr;
     struct arp_eth_payload* arp_payload;
    
-    debug( 2,"SNIFF: got packet: len:%i required:%i\n",header->len,(sizeof(struct ethhdr) + sizeof(struct arphdr) + 20));
+    debug( 2,"SNIFF: got packet: len:%i required:%i\n",header->len,(sizeof(struct ethhdr) + sizeof(struct arphdr) + sizeof(struct arp_eth_payload)));
 
     /* min size ethhdr + arphdr + arp payload */
     if ( header->len < (sizeof(struct ethhdr) + sizeof(struct arphdr) + sizeof(struct arp_eth_payload)) ) {
@@ -432,10 +617,10 @@ static void* _arp_listener( void* arg )
     struct bpf_program filter;
     
     debug( 1, "SNIFF: Setting up arp listener.\n" );
-    debug( 1, "SNIFF: Listening on %s.\n", _globals.sniff_intf);
-
+    debug( 1, "SNIFF: Listening on %s.\n", _globals.interface);
+    
     /* open interface for listening */
-    if ( (handle = pcap_open_live(_globals.sniff_intf, BUFSIZ, 1, 0, pcap_errbuf)) == NULL ) {
+    if ( (handle = pcap_open_live(_globals.interface, BUFSIZ, 1, 0, pcap_errbuf)) == NULL ) {
         errlog( ERR_CRITICAL, "pcap_open_live: %s\n", pcap_errbuf );
         return NULL; /* XXX exit here? */
     }
