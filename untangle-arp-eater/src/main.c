@@ -116,10 +116,6 @@ static int _test_arp (void);
 extern int arpeater_functions_init( char *config_file );
 extern json_server_function_entry_t *arpeater_functions_get_json_table( void );
 
-/**
- * Simple little test binary, it just queues the packet, adds it to a
- * counter, and then reads it
- */
 int main( int argc, char** argv )
 {    
     pid_t pid, sid;
@@ -191,6 +187,11 @@ int main( int argc, char** argv )
     _destroy();
     
     return 0;
+}
+
+void arpeater_main_shutdown( void )
+{
+    _globals.is_running = 0;
 }
 
 static int _parse_args( int argc, char** argv )

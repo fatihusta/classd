@@ -42,6 +42,10 @@ static struct json_object *_get_status( struct json_object* request );
 
 static struct json_object *_set_debug_level( struct json_object* request );
 
+static struct json_object *_shutdown( struct json_object* request );
+
+extern void arpeater_main_shutdown( void );
+
 static struct
 {
     char *config_file;
@@ -51,6 +55,8 @@ static struct
     .function_table = {
         { .name = "hello_world", .function = _hello_world },
         { .name = "set_config", .function = _set_config },
+        { .name = "set_debug_level", .function = _set_debug_level },
+        { .name = "shutdown", .function = _shutdown },
         { .name = NULL, .function = NULL }
     }
 };
@@ -143,3 +149,43 @@ static struct json_object *_set_config( struct json_object* request )
 
     return response;
 }
+
+static struct json_object *_shutdown( struct json_object* request )
+{
+    arpeater_main_shutdown();
+
+    struct json_object* response = NULL;
+    if (( response = json_server_build_response( STATUS_OK, 0, "Shutdown signal sent" )) == NULL ) {
+        return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
+    }
+
+    return response;
+}
+
+static struct json_object *_set_debug_level( struct json_object* request )
+{
+    int debug_level = 0;
+    
+    struct json_object* response = NULL;
+
+    struct json_object* temp = NULL;
+    if (( temp = json_object_object_get( request, "level" )) != NULL ) {
+        debug_level = json_object_get_int( temp );
+    } else {
+        if (( response = json_server_build_response( STATUS_ERR, 0, "Missing level" )) == NULL ) {
+            return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
+        }
+        return response;
+    }
+    
+    /* Configure the debug level */
+    debug_set_mylevel( debug_level );
+
+    if (( response = json_server_build_response( STATUS_OK, 0, "Set debug level to %d", debug_level )) 
+        == NULL ) {
+        return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
+    }
+
+    return response;
+}
+
