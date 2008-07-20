@@ -26,19 +26,17 @@
 #include <mvutil/debug.h>
 #include <mvutil/errlog.h>
 
-
 #include "ae/config.h"
 #include "json/object_utils.h"
 #include "json/serializer.h"
 
 #define _AUTOMATIC_IP "automatic"
 
-static int _config_size( int num_networks );
-
 static int _verify_config( arpeater_ae_config_t* config );
 
-static int _update_ip_string( struct json_object* object, char* key, struct in_addr* address, 
-                              int accept_auto );
+static int _to_c_networks( struct json_object* json_object, json_serializer_field_t* field, void* c_data );
+static int _to_json_networks( struct json_object* json_object, json_serializer_field_t* field,
+                              void* c_data );
 
 static struct
 {
@@ -60,13 +58,19 @@ static json_serializer_t _config_serializer = {
         .to_json = json_serializer_to_json_string,
         .arg = &_globals.interface_string
     },{
+        .name = "gateway",
+        .fetch_arg = 1,
+        .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
+        .to_c = json_serializer_to_c_in_addr,
+        .to_json = json_serializer_to_json_in_addr,
+        .arg = (void*)offsetof( arpeater_ae_config_t, gateway )
+    },{
         .name = "timeout",
         .fetch_arg = 1,
         .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
         .to_c = json_serializer_to_c_int,
         .to_json = json_serializer_to_json_int,
-        .arg = (void*)offsetof( arpeater_ae_config_t, timeout_ms )
-        
+        .arg = (void*)offsetof( arpeater_ae_config_t, timeout_ms )        
     },{
         .name = "rate",
         .fetch_arg = 1,
@@ -76,60 +80,112 @@ static json_serializer_t _config_serializer = {
         .arg = (void*)offsetof( arpeater_ae_config_t, rate_ms )
         
     },{
-        .name = "num_networks",
+        .name = "enabled",
+        .fetch_arg = 1,
+        .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
+        .to_c = json_serializer_to_c_boolean,
+        .to_json = json_serializer_to_json_boolean,
+        .arg = (void*)offsetof( arpeater_ae_config_t, is_enabled )        
+    },{
+        .name = "networks",
+        .fetch_arg = 1,
+        .if_empty = JSON_SERIALIZER_FIELD_EMPTY_ERROR,
+        .to_c = _to_c_networks,
+        .to_json = _to_json_networks,
+        .arg = (void*)offsetof( arpeater_ae_config_t, is_enabled )
+    }, JSON_SERIALIZER_FIELD_TERM}
+};
+
+static json_serializer_t _network_serializer = {
+    .name = "network",
+    .fields = {{
+        .name = "timeout",
         .fetch_arg = 1,
         .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
         .to_c = json_serializer_to_c_int,
         .to_json = json_serializer_to_json_int,
-        .arg = (void*)offsetof( arpeater_ae_config_t, num_networks )
-        
+        .arg = (void*)offsetof( arpeater_ae_config_network_t, timeout_ms )
+    },{
+        .name = "rate",
+        .fetch_arg = 1,
+        .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
+        .to_c = json_serializer_to_c_int,
+        .to_json = json_serializer_to_json_int,
+        .arg = (void*)offsetof( arpeater_ae_config_network_t, rate_ms )
+    },{
+        .name = "ip",
+        .fetch_arg = 1,
+        .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
+        .to_c = json_serializer_to_c_in_addr,
+        .to_json = json_serializer_to_json_in_addr,
+        .arg = (void*)offsetof( arpeater_ae_config_network_t, ip )
+    },{
+        .name = "netmask",
+        .fetch_arg = 1,
+        .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
+        .to_c = json_serializer_to_c_in_addr,
+        .to_json = json_serializer_to_json_in_addr,
+        .arg = (void*)offsetof( arpeater_ae_config_network_t, netmask )
+    },{
+        .name = "target",
+        .fetch_arg = 1,
+        .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
+        .to_c = json_serializer_to_c_in_addr,
+        .to_json = json_serializer_to_json_in_addr,
+        .arg = (void*)offsetof( arpeater_ae_config_network_t, target )
     },{
         .name = "enabled",
         .fetch_arg = 1,
         .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
         .to_c = json_serializer_to_c_boolean,
         .to_json = json_serializer_to_json_boolean,
-        .arg = (void*)offsetof( arpeater_ae_config_t, is_enabled )
-        
+        .arg = (void*)offsetof( arpeater_ae_config_network_t, is_enabled )        
+    },{
+        .name = "spoof",
+        .fetch_arg = 1,
+        .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
+        .to_c = json_serializer_to_c_boolean,
+        .to_json = json_serializer_to_json_boolean,
+        .arg = (void*)offsetof( arpeater_ae_config_network_t, is_spoof_enabled )
+    },{
+        .name = "opportunistic",
+        .fetch_arg = 1,
+        .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
+        .to_c = json_serializer_to_c_boolean,
+        .to_json = json_serializer_to_json_boolean,
+        .arg = (void*)offsetof( arpeater_ae_config_network_t, is_opportunistic )
     }, JSON_SERIALIZER_FIELD_TERM}
 };
 
-arpeater_ae_config_t* arpeater_ae_config_malloc( int num_networks )
+arpeater_ae_config_t* arpeater_ae_config_malloc( void )
 {
-    if ( num_networks < 0 ) return errlog_null( ERR_CRITICAL, "Invalid num_networks: %d\n", num_networks );
-
     arpeater_ae_config_t* config = NULL;
 
-    if (( config = calloc( 1, _config_size( num_networks ))) == NULL ) return errlogmalloc_null();
+    if (( config = calloc( 1, sizeof( arpeater_ae_config_t ))) == NULL ) return errlogmalloc_null();
 
     return config;
 }
 
-int arpeater_ae_config_init( arpeater_ae_config_t* config, int num_networks )
+int arpeater_ae_config_init( arpeater_ae_config_t* config )
 {
-    if ( num_networks < 0 ) return errlog( ERR_CRITICAL, "Invalid size: %d\n", num_networks );
-
     if ( config == NULL ) return errlogargs();
 
-    bzero( config, _config_size( num_networks ));
-    config->num_networks = num_networks;
+    bzero( config, sizeof( arpeater_ae_config_t ));
     
     if ( pthread_mutex_init( &config->mutex, NULL ) < 0 ) return perrlog( "pthread_mutex_init" );
 
     return 0;
 }
 
-arpeater_ae_config_t* arpeater_ae_config_create( int num_networks )
+arpeater_ae_config_t* arpeater_ae_config_create()
 {
-    if ( num_networks < 0 ) return errlog_null( ERR_CRITICAL, "Invalid size: %d\n", num_networks );
-    
     arpeater_ae_config_t* config = NULL;
     
-    if (( config = arpeater_ae_config_malloc( num_networks )) == NULL ) {
+    if (( config = arpeater_ae_config_malloc()) == NULL ) {
         return errlog_null( ERR_CRITICAL, "arpeater_ae_config_malloc\n" );
     }
 
-    if ( arpeater_ae_config_init( config, num_networks ) < 0 ) {
+    if ( arpeater_ae_config_init( config ) < 0 ) {
         return errlog_null( ERR_CRITICAL, "arpeater_ae_config_init\n" );
     }
 
@@ -152,10 +208,8 @@ void arpeater_ae_config_destroy( arpeater_ae_config_t* config )
         errlogargs();
         return;
     }
-
-    int mem_size = _config_size( config->num_networks );
     
-    bzero( config, mem_size );
+    bzero( config, sizeof( arpeater_ae_config_t ));
 }
 
 void arpeater_ae_config_raze( arpeater_ae_config_t* config )
@@ -230,43 +284,103 @@ struct json_object* arpeater_ae_config_to_json( arpeater_ae_config_t* config )
     return json_object;
 }
 
-static int _config_size( int num_networks )
-{
-    if ( num_networks <= 0 ) return sizeof( arpeater_ae_config_t );
-    
-    return sizeof( arpeater_ae_config_t ) + ( num_networks * sizeof( arpeater_ae_config_network_t ));
-}
-
 static int _verify_config( arpeater_ae_config_t* config )
 {
     debug( 0, "Implement verify configuration\n" );
     return 0;
 }
 
-static int _update_ip_string( struct json_object* object, char* key, struct in_addr* address, 
-                              int accept_auto )
+static int _to_c_networks( struct json_object* json_object, json_serializer_field_t* field, void* c_data )
 {
-    char *ip_string = NULL;
+    if ( json_object == NULL ) return errlogargs();
+    if ( field == NULL ) return errlogargs();
+    if ( c_data == NULL ) return errlogargs();
+    if ( field->fetch_arg == 0 ) return errlog( ERR_CRITICAL, "field->fetch_arg must be set\n" );
 
-    bzero( address, sizeof( struct in_addr ));
-    if (( ip_string = json_object_utils_get_string( object, key )) == NULL ) {
-        debug( 7, "The key %s is not present\n", key );
-        return ( accept_auto != 0 ) ? 0 : -1;
+    arpeater_ae_config_t* config = (arpeater_ae_config_t*)c_data;
+
+    if ( json_object_is_type( json_object, json_type_array ) == 0 ) {
+        debug( 9, "The field %s is not an array.\n", field->name );
+        if ( field->if_empty == JSON_SERIALIZER_FIELD_EMPTY_IGNORE ) return 0;
+        return -1;
+    }
+    
+    int length = 0;
+    if (( length = json_object_array_length( json_object )) < 0 ) {
+        return errlog( ERR_CRITICAL, "json_object_array_length\n" );
     }
 
-    if (( accept_auto != 0 ) && strncmp( _AUTOMATIC_IP, ip_string, sizeof( _AUTOMATIC_IP )) == 0 ) {
-        debug( 7, "The key %s is set to %s\n", key, _AUTOMATIC_IP );
-        return 0;
+    if ( length > ARPEATER_AE_CONFIG_NUM_NETWORKS ) {
+        errlog( ERR_WARNING, "Too many networks %d, limiting to %d\n", length, 
+                ARPEATER_AE_CONFIG_NUM_NETWORKS );
+        length = ARPEATER_AE_CONFIG_NUM_NETWORKS;
     }
 
-    if ( inet_aton( ip_string, address ) < 0 ) {
-        debug( 7, "The key %s has an invalid ip %s\n", key, ip_string );
-        bzero( address, sizeof( struct in_addr ));
-        return ( accept_auto != 0 ) ? 0 : -1;
+    config->num_networks = 0;
+    int c = 0;
+    struct json_object* network = NULL;
+    
+    bzero( &config->networks, sizeof( config->networks ));
+
+    for ( c = 0 ; c < length ; c++ ) {
+        if (( network = json_object_array_get_idx( json_object, c )) == NULL ) {
+            return errlog( ERR_CRITICAL, "json_object_array_get_idx\n" );
+        }
+
+        if ( json_serializer_to_c( &_network_serializer, network, &config->networks[c] ) < 0 ) {
+            return errlog( ERR_CRITICAL, "json_serializer_to_c\n" );
+        }
     }
+    
+    config->num_networks = length;
     
     return 0;
 }
 
+static int _to_json_networks( struct json_object* json_object, json_serializer_field_t* field,
+                              void* c_data )
+{
+    if ( json_object == NULL ) return errlogargs();
+    if ( field == NULL ) return errlogargs();
+    if ( c_data == NULL ) return errlogargs();
+    
+    arpeater_ae_config_t* config = (arpeater_ae_config_t*)c_data;
+    
+    if ( config->num_networks < 0 || config->num_networks > ARPEATER_AE_CONFIG_NUM_NETWORKS ) {
+        return errlogargs();
+    }
 
+    struct json_object* networks_json = NULL;
+    struct json_object* network_json = NULL;
+    if (( networks_json = json_object_new_array()) == NULL ) {
+        return errlog( ERR_CRITICAL, "json_object_new_array\n" );
+    }
+    
+    int _critical_section() {
+        int c = 0;
+        for ( c = 0 ; c < config->num_networks ; c++ ) {
+            if (( network_json = json_serializer_to_json( &_network_serializer, &config->networks[c] )) ==
+                NULL ) {
+                return errlog( ERR_CRITICAL, "json_serializer_to_json\n" );
+            }
+
+            if ( json_object_array_add( networks_json, network_json ) < 0 ) {
+                return errlog( ERR_CRITICAL, "json_object_array_add\n" );
+            }
+            
+            network_json = NULL;
+        }
+
+        json_object_object_add( json_object, field->name, networks_json );
+        
+        return 0;
+    }
+
+    if ( _critical_section() < 0 ) {
+        json_object_put( networks_json );
+        if ( network_json != NULL ) json_object_put( network_json );
+        return errlog( ERR_CRITICAL, "_critical_section\n" );
+    }
+    return 0;
+}
 

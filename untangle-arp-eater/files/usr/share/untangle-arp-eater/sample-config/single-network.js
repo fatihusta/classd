@@ -6,26 +6,30 @@
  * (unlikely) it will not be spoofed.
  */
 {
-  gateway : "automatic",
+  gateway : "0.0.0.0",
+  inteface : "eth0",
+      
   hosts : [{
       /* Lie that you are 192.168.1.17 always, regardless of whether
        * or not you see traffic about it. */
       enabled : true,
-      network : "192.168.1.17",
+      ip : "192.168.1.17",
+      netmask : "255.255.255.0",
       spoof : false,
       opportunistic : false,
-      target : "automatic"
+      target : "0.0.0.0"
   },{
       enabled : true,
-      network : "192.168.1.0 / 24",
+      ip : "192.168.1.0",
+      netmask : "255.255.255.0",
       spoof : true,
       opportunistic : true,
-      target : "automatic"
+      target : "0.0.0.0"
   },{
       enabled : true,
       network : "0.0.0.0 / 0",
       spoof : false,
       opportunistic : true,
-      target : "automatic"
+      target : "0.0.0.0"
   }]
 }

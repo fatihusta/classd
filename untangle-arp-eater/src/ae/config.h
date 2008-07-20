@@ -25,8 +25,9 @@
 
 #include <json/json.h>
 
-#define ARPEATER_AE_CONFIG_MIN_TIMEOUT 100
-#define ARPEATER_AE_CONFIG_MIN_RATE    100
+#define ARPEATER_AE_CONFIG_MIN_TIMEOUT   100
+#define ARPEATER_AE_CONFIG_MIN_RATE      100
+#define ARPEATER_AE_CONFIG_NUM_NETWORKS  256
 
 typedef struct
 {
@@ -44,10 +45,10 @@ typedef struct
     int is_enabled;
 
     /* Set to true in order to spoof the network */
-    int spoof_network;
+    int is_spoof_enabled;
     
     /* Set to true if this network is opportunistic */
-    char is_opportunistic;
+    int is_opportunistic;
 } arpeater_ae_config_network_t;
 
 typedef struct
@@ -77,14 +78,14 @@ typedef struct
     int num_networks;
 
     /* Array of all of the configured networks */
-    arpeater_ae_config_network_t networks[];
+    arpeater_ae_config_network_t networks[ARPEATER_AE_CONFIG_NUM_NETWORKS];
 } arpeater_ae_config_t;
 
-arpeater_ae_config_t* arpeater_ae_config_malloc( int num_networks );
+arpeater_ae_config_t* arpeater_ae_config_malloc( void );
 
-int arpeater_ae_config_init( arpeater_ae_config_t* config, int num_networks );
+int arpeater_ae_config_init( arpeater_ae_config_t* config );
 
-arpeater_ae_config_t* arpeater_ae_config_create( int num_networks );
+arpeater_ae_config_t* arpeater_ae_config_create( void );
 
 void arpeater_ae_config_free( arpeater_ae_config_t* config );
 

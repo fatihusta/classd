@@ -119,6 +119,27 @@ char* json_object_utils_get_string( struct json_object* object, char* key )
     return value;
 }
 
+/** Retrieve an array from a JSON Object
+ * Null if the item is not an array.
+ */
+int json_object_utils_get_array( struct json_object* object, char* key, struct json_object** value )
+{
+    if ( object == NULL ) return errlogargs();
+    if ( key == NULL ) return errlogargs();
+    if ( value == NULL ) return errlogargs();
+
+    *value = NULL;
+    
+    if (( *value = json_object_object_get( object, key )) == NULL ) return 0;
+    
+    if ( json_object_is_type( *value, json_type_array ) == 0 ) {
+        *value = NULL;
+        debug( 7, "The field %s is not an array\n", key );
+        return 0;
+    }
+
+    return 0;
+}
 
 int json_object_utils_add_int( struct json_object* object, char* key, int value )
 {

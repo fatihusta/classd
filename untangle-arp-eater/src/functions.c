@@ -80,7 +80,9 @@ static struct json_object *_set_config( struct json_object* request )
     struct json_object* config_json = NULL;
     struct json_object* new_config_json = NULL;
 
-    arpeater_ae_config_t* config = arpeater_ae_config_create( 2 );
+    arpeater_ae_config_t config;
+    
+    arpeater_ae_config_init( &config );
 
     int status = STATUS_ERR;
 
@@ -90,7 +92,7 @@ static struct json_object *_set_config( struct json_object* request )
             return 0;
         }
 
-        if ( arpeater_ae_config_load_json( config, config_json ) < 0 ) {
+        if ( arpeater_ae_config_load_json( &config, config_json ) < 0 ) {
             errlog( ERR_CRITICAL, "arpeater_ae_config_load_json\n" );
             strncpy( message, "Unable to load json configuration.", message_size );
             return 0;
@@ -98,7 +100,7 @@ static struct json_object *_set_config( struct json_object* request )
         
         errlog( ERR_WARNING, "Retrieve the config\n" );
 
-        if (( new_config_json = arpeater_ae_config_to_json( config )) == NULL ) {
+        if (( new_config_json = arpeater_ae_config_to_json( &config )) == NULL ) {
             errlog( ERR_CRITICAL, "arpeater_ae_config_to_json\n" );
             strncpy( message, "Unable to serializer json configuration.", message_size );
             return 0;
@@ -125,8 +127,6 @@ static struct json_object *_set_config( struct json_object* request )
         json_object_put( new_config_json );
         return errlog_null( ERR_CRITICAL, "_critical_section\n" );
     }
-
-    arpeater_ae_config_raze( config );
 
     struct json_object* response = NULL;
 

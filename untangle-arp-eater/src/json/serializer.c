@@ -18,8 +18,14 @@
 
 #include <stdarg.h>
 
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
 #include <mvutil/debug.h>
 #include <mvutil/errlog.h>
+#include <mvutil/unet.h>
+
 
 #include "json/object_utils.h"
 #include "json/serializer.h"
@@ -270,6 +276,59 @@ int json_serializer_to_json_boolean( struct json_object* json_object, json_seria
     if ( offset < 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", offset );
 
     if ( json_object_utils_add_boolean( json_object, field->name, ((int*)c_data)[offset] ) < 0 ) {
+        return errlog( ERR_CRITICAL, "json_object_utils_add_int\n" );
+    }
+
+    return 0;
+}
+
+
+int json_serializer_to_c_in_addr( struct json_object* json_object, json_serializer_field_t* field, 
+                                  void* c_data )
+{
+    if ( json_object == NULL ) return errlogargs();
+    if ( field == NULL ) return errlogargs();
+    if ( c_data == NULL ) return errlogargs();
+    if ( field->fetch_arg == 0 ) return errlog( ERR_CRITICAL, "field->fetch_arg must be set\n" );
+    int offset = (int)field->arg;
+    if ( offset < 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", offset );
+
+    struct in_addr* address = (struct in_addr*)&((char*)c_data)[offset];
+    bzero( address, sizeof( address ));
+
+    if ( json_object_is_type( json_object, json_type_string ) == 0 ) {
+        debug( 9, "The field %s is not a string.\n", field->name );
+        if ( field->if_empty == JSON_SERIALIZER_FIELD_EMPTY_IGNORE ) return 0;
+        return -1;
+    }
+
+    char *ip_string = NULL;
+    if (( ip_string = json_object_get_string( json_object )) == NULL ) {
+        return errlog( ERR_CRITICAL, "json_object_get_string\n" );
+    }
+
+    debug( 9, "Converting the string %s for %s\n", ip_string, field->name );
+
+    if ( inet_aton( ip_string, address ) == 0 ) {
+        return errlog( ERR_WARNING, "Invalid IP Address string %s\n", ip_string );
+    }
+    
+    return 0;
+}
+
+int json_serializer_to_json_in_addr( struct json_object* json_object, json_serializer_field_t* field, 
+                                     void* c_data )
+{
+    if ( json_object == NULL ) return errlogargs();
+    if ( field == NULL ) return errlogargs();
+    if ( c_data == NULL ) return errlogargs();
+    int offset = (int)field->arg;
+    if ( offset < 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", offset );
+
+    struct in_addr* address = (struct in_addr*)&((char*)c_data)[offset];
+
+    if ( json_object_utils_add_string( json_object, field->name,
+                                       unet_next_inet_ntoa( address->s_addr )) < 0 ) {
         return errlog( ERR_CRITICAL, "json_object_utils_add_int\n" );
     }
 

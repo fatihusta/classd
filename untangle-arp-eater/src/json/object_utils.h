@@ -83,6 +83,10 @@ int json_object_utils_array_add_string( struct json_object* object, char* string
  */
 char* json_object_utils_get_string( struct json_object* object, char* key );
 
+/**
+ * Retrieve an array from a JSON Object.
+ */
+int json_object_utils_get_array( struct json_object* object, char* key, struct json_object** value );
 
 /**
  * Create a new int and automatically free the resources if it

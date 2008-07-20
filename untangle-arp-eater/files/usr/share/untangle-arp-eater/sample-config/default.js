@@ -2,7 +2,7 @@
  * This is a sample designed to take over two specific subnets (The default is to NOT Spoof),
  */
 {
-  gateway : "automatic",
+  gateway : "0.0.0.0",
 
   /* By default, spoof a host for 5 seconds after not seeing any traffic */
   timeout : 5.0,
@@ -12,9 +12,10 @@
 
   hosts : [{
       enabled : true,
-      network : "0.0.0.0 / 0",
+      ip : "0.0.0.0",
+      netmask : "0.0.0.0",
       spoof : true,
       opportunistic : true,
-      target : "automatic"
+      target : "0.0.0.0"
   }]
 }
