@@ -139,6 +139,25 @@ int json_object_utils_add_int( struct json_object* object, char* key, int value 
     return 0;
 }
 
+int json_object_utils_add_boolean( struct json_object* object, char* key, int value )
+{
+    struct json_object* json_value = NULL;
+
+    if ( object == NULL ) return errlogargs();
+    if ( key == NULL ) return errlogargs();
+
+    if (( json_value = json_object_new_boolean( value )) == NULL ) {
+        return errlog( ERR_CRITICAL, "json_object_new_string\n" );
+    }
+
+    if ( json_object_utils_add( object, key, json_value ) < 0 ) {
+        json_object_put( json_value );
+        return errlog( ERR_CRITICAL, "json_object_utils_add\n" );
+    }
+    
+    return 0;
+}
+
 int json_object_utils_add_double( struct json_object* object, char* key, double value )
 {
     struct json_object* json_value = NULL;

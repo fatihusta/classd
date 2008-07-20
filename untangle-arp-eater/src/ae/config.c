@@ -83,6 +83,14 @@ static json_serializer_t _config_serializer = {
         .to_json = json_serializer_to_json_int,
         .arg = (void*)offsetof( arpeater_ae_config_t, num_networks )
         
+    },{
+        .name = "enabled",
+        .fetch_arg = 1,
+        .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
+        .to_c = json_serializer_to_c_boolean,
+        .to_json = json_serializer_to_json_boolean,
+        .arg = (void*)offsetof( arpeater_ae_config_t, is_enabled )
+        
     }, JSON_SERIALIZER_FIELD_TERM}
 };
 

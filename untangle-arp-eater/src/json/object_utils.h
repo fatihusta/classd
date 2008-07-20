@@ -55,6 +55,12 @@ int json_object_utils_add_string( struct json_object* object, char* key, char* s
 int json_object_utils_add_int( struct json_object* object, char* key, int value );
 
 /**
+ * Create a new boolean and automatically free the resources if it
+ * cannot be added successfully.
+ */
+int json_object_utils_add_boolean( struct json_object* object, char* key, int value );
+
+/**
  * Create a new double and automatically free the resources if it
  * cannot be added successfully.
  */

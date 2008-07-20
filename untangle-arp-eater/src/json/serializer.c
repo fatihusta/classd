@@ -239,6 +239,43 @@ int json_serializer_to_json_double( struct json_object* json_object, json_serial
     return 0;
 }
 
+int json_serializer_to_c_boolean( struct json_object* json_object, json_serializer_field_t* field, 
+                                  void* c_data )
+{
+    if ( json_object == NULL ) return errlogargs();
+    if ( field == NULL ) return errlogargs();
+    if ( c_data == NULL ) return errlogargs();
+    if ( field->fetch_arg == 0 ) return errlog( ERR_CRITICAL, "field->fetch_arg must be set\n" );
+    int offset = (int)field->arg / sizeof( int );
+    if ( offset < 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", offset );
+
+    if ( json_object_is_type( json_object, json_type_boolean ) == 0 ) {
+        debug( 9, "The field %s is not an double.\n", field->name );
+        if ( field->if_empty == JSON_SERIALIZER_FIELD_EMPTY_IGNORE ) return 0;
+        return -1;
+    }
+    
+    ((int*)c_data)[offset] = json_object_get_boolean( json_object );
+    
+    return 0;
+}
+
+int json_serializer_to_json_boolean( struct json_object* json_object, json_serializer_field_t* field, 
+                                     void* c_data )
+{
+    if ( json_object == NULL ) return errlogargs();
+    if ( field == NULL ) return errlogargs();
+    if ( c_data == NULL ) return errlogargs();
+    int offset = (int)field->arg / sizeof( int );
+    if ( offset < 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", offset );
+
+    if ( json_object_utils_add_boolean( json_object, field->name, ((int*)c_data)[offset] ) < 0 ) {
+        return errlog( ERR_CRITICAL, "json_object_utils_add_int\n" );
+    }
+
+    return 0;
+}
+
 static int _is_terminator( json_serializer_field_t* field )
 {
     if ( field == NULL ) return 1;
