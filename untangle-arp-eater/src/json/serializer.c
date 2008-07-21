@@ -132,7 +132,7 @@ int json_serializer_to_c_string( struct json_object* json_object, json_serialize
 
     json_serializer_string_t* arg = field->arg;
     if ( arg->len <= 0 ) return errlog( ERR_CRITICAL, "Invalid string length %d\n", arg->len );
-    if ( arg->offset <= 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", arg->offset );
+    if ( arg->offset < 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", arg->offset );
 
     if ( json_object_is_type( json_object, json_type_string ) == 0 ) {
         debug( 9, "The field %s is not a string.\n", field->name );
@@ -159,7 +159,7 @@ int json_serializer_to_json_string( struct json_object* json_object, json_serial
 
     json_serializer_string_t* arg = field->arg;
     if ( arg->len <= 0 ) return errlog( ERR_CRITICAL, "Invalid string length %d\n", arg->len );
-    if ( arg->offset <= 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", arg->offset );
+    if ( arg->offset < 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", arg->offset );
 
     char* c_string = &((char*)c_data)[arg->offset];
     if ( strnlen( c_string, arg->len ) >= arg->len ) return errlog( ERR_CRITICAL, "Invalid string\n" );

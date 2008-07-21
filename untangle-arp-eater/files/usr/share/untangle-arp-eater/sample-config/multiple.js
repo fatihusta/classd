@@ -10,7 +10,7 @@
   /* By default spoof a host every 2 seconds */
   "rate" : 2.0,
 
-  "hosts" : [{
+  "networks" : [{
       /* This should tell all hosts on 192.168.1.0 that we are 192.168.1.1, and tell
        * 192.168.1.1 that we are the hosts in our list. */
       "enabled" : true,

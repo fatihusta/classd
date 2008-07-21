@@ -147,17 +147,19 @@ int arpeater_ae_manager_get_ip_settings( struct in_addr* ip, arpeater_ae_manager
         bzero( settings, sizeof( arpeater_ae_manager_settings_t ));
 
         settings->address.s_addr = ip->s_addr;
+        settings->is_opportunistic = 1;
         
         if ( _get_network( &_globals.config, ip, &network ) < 0 ) {
             return errlog( ERR_CRITICAL, "_get_network\n" );
         }
 
-        if (( network == NULL ) || ( network->is_enabled == 0 )) {
+        if (( network == NULL ) || ( network->is_enabled == 0 ) || ( network->is_spoof_enabled == 0 )) {
             settings->is_enabled = 0;
             return 0;
         }
 
         settings->is_enabled = 1;
+        settings->is_opportunistic = network->is_opportunistic;
 
         if ( _is_automatic( &network->target ) == 0 ) {
             settings->target.s_addr = network->target.s_addr;

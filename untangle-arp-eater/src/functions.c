@@ -46,6 +46,8 @@ static struct json_object *_update_network_settings( struct json_object* request
 
 static struct json_object *_get_network_settings( struct json_object* request );
 
+static struct json_object *_get_config( struct json_object* request );
+
 static struct json_object *_set_config( struct json_object* request );
 
 static struct json_object *_get_status( struct json_object* request );
@@ -60,11 +62,15 @@ extern void arpeater_main_shutdown( void );
 static struct
 {
     char *config_file;
+    /* Use this response when there is an internal error */
+    struct json_object* internal_error;
     json_server_function_entry_t function_table[];
 } _globals = {
     .config_file = NULL,
+    .internal_error = NULL,
     .function_table = {
         { .name = "hello_world", .function = _hello_world },
+        { .name = "get_config", .function = _get_config },
         { .name = "set_config", .function = _set_config },
         { .name = "set_debug_level", .function = _set_debug_level },
         { .name = "update_network_settings", .function = _update_network_settings },
@@ -85,6 +91,13 @@ static json_serializer_t _network_settings_serializer = {
         .to_json = json_serializer_to_json_boolean,
         .arg = (void*)offsetof( arpeater_ae_manager_settings_t, is_enabled )
     },{
+        .name = "opportunistic",
+        .fetch_arg = 1,
+        .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
+        .to_c = json_serializer_to_c_boolean,
+        .to_json = json_serializer_to_json_boolean,
+        .arg = (void*)offsetof( arpeater_ae_manager_settings_t, is_opportunistic )
+    },{
         .name = "address",
         .fetch_arg = 1,
         .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
@@ -104,6 +117,12 @@ static json_serializer_t _network_settings_serializer = {
 int arpeater_functions_init( char* config_file )
 {
     _globals.config_file = config_file;
+
+    if (( _globals.internal_error = json_server_build_response( STATUS_ERR, 0, "Internal error occurred" ))
+        == NULL ) {
+        return errlog( ERR_CRITICAL, "json_server_build_response\n" );
+    }
+
     return 0;
 }
 
@@ -132,6 +151,34 @@ static struct json_object* _hello_world( struct json_object* request )
     return response;
 }
 
+static struct json_object *_get_config( struct json_object* request )
+{
+    arpeater_ae_config_t config;
+
+    if ( arpeater_ae_manager_get_config( &config ) < 0 ) {
+        errlog( ERR_CRITICAL, "arpeater_ae_manager_get_config\n" );
+        return json_object_get( _globals.internal_error );
+    }
+
+    struct json_object* response = NULL;
+
+    if (( response = json_server_build_response( STATUS_OK, 0, "Retrieved settings" )) == NULL ) {
+        errlog( ERR_CRITICAL, "json_server_build_response\n" );
+        return json_object_get( _globals.internal_error );
+    }
+
+    struct json_object* config_json = NULL;
+    if (( config_json = arpeater_ae_config_to_json( &config )) == NULL ) {
+        json_object_put( response );
+        errlog( ERR_CRITICAL, "json_server_build_response\n" );
+        return json_object_get( _globals.internal_error );
+    }
+    
+    json_object_object_add( response, "config", config_json );
+
+    return response;
+}
+
 static struct json_object *_set_config( struct json_object* request )
 {
     struct json_object* config_json = NULL;
@@ -154,8 +201,18 @@ static struct json_object *_set_config( struct json_object* request )
             strncpy( message, "Unable to load json configuration.", message_size );
             return 0;
         }
-        
-        errlog( ERR_WARNING, "Retrieve the config\n" );
+
+        if ( arpeater_functions_load_config( &config ) < 0 ) {
+            errlog( ERR_CRITICAL, "arpeater_functions_load_config\n" );
+            strncpy( message, "Unable to load json configuration.", message_size );
+            return 0;
+        }
+
+        if ( arpeater_ae_manager_get_config( &config ) < 0 ) {
+            errlog( ERR_CRITICAL, "arpeater_ae_manager_get_config\n" );
+            strncpy( message, "Unable to get config for reserialization.", message_size );
+            return 0;
+        }
 
         if (( new_config_json = arpeater_ae_config_to_json( &config )) == NULL ) {
             errlog( ERR_CRITICAL, "arpeater_ae_config_to_json\n" );
@@ -246,20 +303,14 @@ static struct json_object *_get_network_settings( struct json_object* request )
     /* This function shouldn't fail as long as a valid IP address is passed in */
     if ( arpeater_ae_manager_get_ip_settings( &ip, &settings ) < 0 ) {
         errlog( ERR_CRITICAL, "arpeater_ae_manager_get_ip_settings\n" );
-        if (( response = json_server_build_response( STATUS_ERR, 0, "Internal error occurred" )) == NULL ) {
-            return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
-        }
-        return response;        
+        return json_object_get( _globals.internal_error );
     }
 
     
     struct json_object* settings_json = NULL;
     if (( settings_json = json_serializer_to_json( &_network_settings_serializer, &settings )) == NULL ) {
         errlog( ERR_CRITICAL, "json_serializer_to_json\n" );
-        if (( response = json_server_build_response( STATUS_ERR, 0, "Internal error occurred" )) == NULL ) {
-            return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
-        }
-        return response;        
+        return json_object_get( _globals.internal_error );
     }
     
     if (( response = json_server_build_response( STATUS_OK, 0, "Successfully retrieved settings" )) == NULL ) {
