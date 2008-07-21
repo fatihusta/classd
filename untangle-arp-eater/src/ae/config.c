@@ -40,10 +40,33 @@ static int _to_json_networks( struct json_object* json_object, json_serializer_f
 static struct
 {
     json_serializer_string_t interface_string;
+    arpeater_ae_config_t default_config;
+    arpeater_ae_config_network_t default_network_config;
 } _globals = {
     .interface_string = { 
         .offset = offsetof( arpeater_ae_config_t, interface ),
         .len = sizeof((( arpeater_ae_config_t *)0)->interface )
+    },
+
+    .default_config = {
+        .interface = "",
+        .gateway = { .s_addr = INADDR_ANY },
+        .timeout_ms = 0,
+        .rate_ms = 0,
+        .is_enabled = 0,
+        .is_broadcast_enabled = 0,
+        .num_networks = 0
+    },
+
+    .default_network_config = {
+        .ip = { .s_addr = INADDR_ANY },
+        .netmask = { .s_addr = INADDR_BROADCAST },
+        .target = { .s_addr = INADDR_ANY },
+        .timeout_ms = 0,
+        .rate_ms = 0,
+        .is_enabled = 0,
+        .is_spoof_enabled = 1,
+        .is_opportunistic = 1
     }
 };
 
@@ -177,6 +200,9 @@ int arpeater_ae_config_init( arpeater_ae_config_t* config )
     if ( config == NULL ) return errlogargs();
 
     bzero( config, sizeof( arpeater_ae_config_t ));
+
+    /* Copy in the default config */
+    memcpy( config, &_globals.default_config, offsetof( arpeater_ae_config_t, networks ));
     
     return 0;
 }
@@ -322,16 +348,20 @@ static int _to_c_networks( struct json_object* json_object, json_serializer_fiel
 
     config->num_networks = 0;
     int c = 0;
-    struct json_object* network = NULL;
+    struct json_object* network_json = NULL;
     
     bzero( &config->networks, sizeof( config->networks ));
 
     for ( c = 0 ; c < length ; c++ ) {
-        if (( network = json_object_array_get_idx( json_object, c )) == NULL ) {
+        if (( network_json = json_object_array_get_idx( json_object, c )) == NULL ) {
             return errlog( ERR_CRITICAL, "json_object_array_get_idx\n" );
         }
 
-        if ( json_serializer_to_c( &_network_serializer, network, &config->networks[c] ) < 0 ) {
+        arpeater_ae_config_network_t* network = &config->networks[c];
+        
+        memcpy( network, &_globals.default_network_config, sizeof( arpeater_ae_config_network_t ));
+
+        if ( json_serializer_to_c( &_network_serializer, network_json, network ) < 0 ) {
             return errlog( ERR_CRITICAL, "json_serializer_to_c\n" );
         }
     }

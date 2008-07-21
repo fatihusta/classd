@@ -27,7 +27,8 @@
       "target" : "0.0.0.0"
   },{
       "enabled" : true,
-      "network" : "0.0.0.0 / 0",
+      "ip" : "0.0.0.0",
+      "netmask" : "0.0.0.0",
       "spoof" : false,
       "opportunistic" : true,
       "target" : "0.0.0.0"
