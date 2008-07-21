@@ -23,6 +23,7 @@
 #include <sys/time.h>
 #include <semaphore.h>
 #include <stdlib.h>
+#include <semaphore.h>
 
 #include "mvutil/errlog.h"
 #include "mvutil/debug.h"

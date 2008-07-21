@@ -34,6 +34,12 @@
 #include <mvutil/unet.h>
 #include <mvutil/hash.h>
 
+#include "arp.h"
+#include "config.h"
+#include "manager.h"
+
+static ht_t  host_handlers;
+static sem_t host_handlers_sem;
 
 static struct
 {
@@ -52,74 +58,99 @@ struct arp_eth_payload
     unsigned char		ar_tip[4];		/* target IP address		*/
 };
 
-static void* _arp_listener( void* arg );
-static void _arp_listener_handler ( u_char* args, const struct pcap_pkthdr* header, const u_char* pkt);
-static int _arp_send(int op, u_char *sha, in_addr_t sip, u_char *tha, in_addr_t tip);
-static int _test_arp (void);
+static void* _arp_listener ( void* arg );
+static void* _arp_broadcaster ( void* arg );
+static void _arp_listener_handler ( u_char* args, const struct pcap_pkthdr* header, const u_char* pkt );
+static int _arp_send ( int op, u_char *sha, in_addr_t sip, u_char *tha, in_addr_t tip );
+static int _test_arp ( void );
 
 
-int arp_init (char* interface)
+int arp_init ( char* interface )
 {
     struct ifreq card;
     int pf;
     int i;
-    pthread_t arp_thread;
+    pthread_t arp_thread; /* XXX should be global? */
+    pthread_t broadcast_thread; /* XXX should be global? */
+    arpeater_ae_config_t config;
+
+    if ( arpeater_ae_manager_get_config( &config ) < 0 ) 
+        return perrlog("arpeater_ae_manager_get_config");
     
-    _globals.interface = interface;
-    
-    if ( (_globals.sock_raw = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ARP))) < 0 ) 
-        return perrlog("socket");
-  
-    if ((pf = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) < 0) {
-        return errlog(ERR_CRITICAL, "Could not create packet socket");
-    }
-  
+    _globals.interface = interface; /* use config instead XXX */
     _globals.device.sll_family = AF_PACKET;
 
     /**
+     * Initialize the socket for sending arps
+     */
+    if ( (_globals.sock_raw = socket( PF_PACKET, SOCK_RAW, htons(ETH_P_ARP) )) < 0 ) 
+        return perrlog("socket");
+  
+    if ( (pf = socket( PF_PACKET, SOCK_RAW, htons(ETH_P_ALL) )) < 0 ) 
+        return errlog(ERR_CRITICAL, "Could not create packet socket");
+  
+    /**
      * Find the index
      */
-    strcpy(card.ifr_name, _globals.interface);
-    if (ioctl(pf, SIOCGIFINDEX, &card) == -1) {
+    strcpy( card.ifr_name, _globals.interface );
+    if ( ioctl( pf, SIOCGIFINDEX, &card) < 0 ) {
         return errlog(ERR_CRITICAL,"Could not find device index number for %s", card.ifr_name);
     }
-
     _globals.device.sll_ifindex = card.ifr_ifindex;
-    debug(2,"ARP: Spoofing of %s (index %d)\n", _globals.interface, _globals.device.sll_ifindex);
 
     /**
      * Find the MAC address
      */
-    strcpy(card.ifr_name, _globals.interface);
-    if (ioctl(pf, SIOCGIFHWADDR, &card) == -1) {
+    strcpy( card.ifr_name, _globals.interface );
+    if ( ioctl( pf, SIOCGIFHWADDR, &card) < 0 ) 
         return errlog(ERR_CRITICAL,"Could not mac address for %s", card.ifr_name);
-    }
-
-    debug(2,"ARP: %s is ");
-    _globals.device.sll_halen = htons(6);
-    for (i=0; i<6; i++) {
+    for (i=0; i<6; i++) 
         _globals.device.sll_addr[i] = card.ifr_hwaddr.sa_data[i];
+    
+    debug( 2, "ARP: Spoofing on %s (index: %d) (mac: ", _globals.interface, _globals.device.sll_ifindex);
+    _globals.device.sll_halen = htons( 6 );
+    for (i=0; i<6; i++) 
         debug_nodate(2,"%02x%s",_globals.device.sll_addr[i], (i<5 ? ":" : ""));
-    }
-    debug_nodate(2,"\n");
+    debug_nodate( 2, ")\n");
 
+    /**
+     * For testing
+     */
     _test_arp();
 
-    /* Donate a thread to start the arp listener. */
-    if ( pthread_create( &arp_thread, &uthread_attr.other.medium,
-                         _arp_listener, NULL )) {
+    /**
+     * Initialize host_handlers table & lock
+     */
+    if ( sem_init( &host_handlers_sem, 0, 1) < 0 )
+        return perrlog( "sem_init" ); 
+    
+    if ( ht_init( &host_handlers, 1337, int_hash_func, int_equ_func, HASH_FLAG_KEEP_LIST) < 0 )
+        return perrlog( "hash_init" );
+                  
+    /**
+     * Donate a thread to start the arp listener.
+     */
+    if ( pthread_create( &arp_thread, &uthread_attr.other.medium, _arp_listener, NULL ) != 0 ) 
         return perrlog( "pthread_create" );
+
+    /**
+     * Donate a thread to start the broadcast arp spoofer. 
+     */
+    if ( 0 /* config.is_broadcast_enabled FIXME */) {
+        if ( pthread_create( &broadcast_thread, &uthread_attr.other.medium, _arp_broadcaster, NULL ) != 0 ) 
+            return perrlog( "pthread_create" );
     }
+
     return 0;
 }
 
 
-static int _process_arp( void )
+static int _process_arp ( void )
 {
     return 0;
 }
 
-static int _arp_lookup(struct ether_addr *dest, in_addr_t ip)
+static int _arp_lookup ( struct ether_addr *dest, in_addr_t ip )
 {
 	int sock;
 	struct arpreq ar;
@@ -149,7 +180,7 @@ static int _arp_lookup(struct ether_addr *dest, in_addr_t ip)
 	return 0;
 }
 
-static int _test_arp (void)
+static int _test_arp ( void )
 {
     int op = ARPOP_REPLY;
     u_char sha[6];
@@ -190,7 +221,7 @@ static int _test_arp (void)
     return 0;
 }
 
-static int _arp_send(int op, u_char *sha, in_addr_t sip, u_char *tha, in_addr_t tip)
+static int _arp_send ( int op, u_char *sha, in_addr_t sip, u_char *tha, in_addr_t tip )
 {
     u_char pkt[(sizeof(struct ethhdr) + sizeof(struct arphdr) + sizeof(struct arp_eth_payload))];
     struct ethhdr* eth_hdr;
@@ -227,11 +258,10 @@ static int _arp_send(int op, u_char *sha, in_addr_t sip, u_char *tha, in_addr_t 
     memcpy(arp_payload->ar_tip,&tip,4);
 
 	if (op == ARPOP_REQUEST) {
-		debug(1, "%s 0806 42: arp who-has %s tell %s\n", ether_ntoa((struct ether_addr *)tha), unet_next_inet_ntoa(tip), unet_next_inet_ntoa(sip));
+		debug(1, "ARP: Sending: arp who-has %s tell %s\n", ether_ntoa((struct ether_addr *)tha), unet_next_inet_ntoa(tip), unet_next_inet_ntoa(sip));
 	}
 	else if (op == ARPOP_REPLY ) {
-		debug(1, "%s 0806 42: arp reply %s is-at ", ether_ntoa((struct ether_addr *)tha), unet_next_inet_ntoa(sip));
-		debug_nodate(1, "%s\n", ether_ntoa((struct ether_addr *)sha));
+		debug(1, "ARP: Sending: arp reply %s is-at %s\n", unet_next_inet_ntoa(sip), ether_ntoa((struct ether_addr *)sha));
 	}
 
     memcpy(&device,&_globals.device,sizeof(struct sockaddr_ll));
@@ -243,13 +273,14 @@ static int _arp_send(int op, u_char *sha, in_addr_t sip, u_char *tha, in_addr_t 
     return 0;
 }
 
-static void _arp_listener_handler ( u_char* args, const struct pcap_pkthdr* header, const u_char* pkt)
+static void _arp_listener_handler ( u_char* args, const struct pcap_pkthdr* header, const u_char* pkt )
 {
     struct ethhdr* eth_hdr;
     struct arphdr* arp_hdr;
     struct arp_eth_payload* arp_payload;
-   
-    debug( 2,"SNIFF: got packet: len:%i required:%i\n",header->len,(sizeof(struct ethhdr) + sizeof(struct arphdr) + sizeof(struct arp_eth_payload)));
+    in_addr_t victim;
+    
+    debug( 2, "SNIFF: got packet: len:%i required:%i\n",header->len,(sizeof(struct ethhdr) + sizeof(struct arphdr) + sizeof(struct arp_eth_payload)));
 
     /* min size ethhdr + arphdr + arp payload */
     if ( header->len < (sizeof(struct ethhdr) + sizeof(struct arphdr) + sizeof(struct arp_eth_payload)) ) {
@@ -268,10 +299,10 @@ static void _arp_listener_handler ( u_char* args, const struct pcap_pkthdr* head
         return;
     }
 
-    debug (2,"SNIFF: (hardware: 0x%04x) (protocol: 0x%04x) (hardware len: %i) (protocol len: %i) (op: 0x%04x)\n",
-           ntohs(arp_hdr->ar_hrd),ntohs(arp_hdr->ar_pro),
-           arp_hdr->ar_hln,arp_hdr->ar_pln,
-           ntohs(arp_hdr->ar_op));
+    /* only parse arp requests */
+    if ( ntohs(arp_hdr->ar_op) != 0x0001 ) {
+        return;
+    }
 
     /* check lengths */
     if ( arp_hdr->ar_hln != 6 || arp_hdr->ar_pln != 4 ) {
@@ -280,12 +311,12 @@ static void _arp_listener_handler ( u_char* args, const struct pcap_pkthdr* head
         return;
     }
 
-    /* only parse arp requests */
-    if ( ntohs(arp_hdr->ar_op) != 0x0001 ) {
-        return;
-    }
+    debug (2, "SNIFF: (hardware: 0x%04x) (protocol: 0x%04x) (hardware len: %i) (protocol len: %i) (op: 0x%04x)\n",
+           ntohs(arp_hdr->ar_hrd),ntohs(arp_hdr->ar_pro),
+           arp_hdr->ar_hln,arp_hdr->ar_pln,
+           ntohs(arp_hdr->ar_op));
 
-    debug( 1,"SNIFF: (%02x:%02x:%02x:%02x:%02x:%02x -> %02x:%02x:%02x:%02x:%02x:%02x) arp who has %s tell %s \n",
+    debug( 1, "SNIFF: (%02x:%02x:%02x:%02x:%02x:%02x -> %02x:%02x:%02x:%02x:%02x:%02x) arp who has %s tell %s \n",
            eth_hdr->h_source[0], eth_hdr->h_source[1],
            eth_hdr->h_source[2], eth_hdr->h_source[3],
            eth_hdr->h_source[4], eth_hdr->h_source[5],
@@ -294,6 +325,14 @@ static void _arp_listener_handler ( u_char* args, const struct pcap_pkthdr* head
            eth_hdr->h_dest[4], eth_hdr->h_dest[5],
            unet_next_inet_ntoa(*(in_addr_t*)&arp_payload->ar_tip),
            unet_next_inet_ntoa(*(in_addr_t*)&arp_payload->ar_sip));
+
+    victim = *(in_addr_t*)&arp_payload->ar_sip;
+
+    if ( ht_lookup(&host_handlers, (void*) victim) == NULL ) {
+        debug( 1, "SNIFF: New host (%s) found. Launching handler.\n",unet_inet_ntoa(victim));
+        /* FIXME continue here, launch new thread*/
+    }
+
     
     return;
 }
@@ -332,4 +371,29 @@ static void* _arp_listener( void* arg )
     }
    
     return NULL;
+}
+
+static void* _arp_broadcaster( void* arg )
+{
+    arpeater_ae_manager_settings_t myconfig;
+    struct in_addr broadcast;
+    broadcast.s_addr = 0xffff;
+    
+    if ( arpeater_ae_manager_get_ip_settings( &broadcast, &myconfig ) < 0)
+        return (void*)perrlog("arpeater_ae_manager_get_ip_settings");
+    
+    debug (1, "BROADCAST: Starting ARP broadcast for %s (enabled: %i) \n", unet_inet_ntoa(myconfig.target.s_addr), myconfig.is_enabled);
+
+    /* FIXME check isenabled */
+    while (1) { /* FIXME select - wait on mailbox */
+
+        /**
+         * send to everyone that gateway is at my mac
+         */
+        if ( _arp_send( ARPOP_REPLY, NULL, myconfig.target.s_addr, NULL, (in_addr_t)0 ) < 0 )
+            perrlog("_arp_send_reply");
+
+        sleep( 3 );
+    }
+    
 }
