@@ -47,10 +47,19 @@ static struct
     pthread_mutex_t mutex;
     arpeater_ae_config_t config;
     struct in_addr gateway;
+    arpeater_ae_config_network_t broadcast_network;
     char gateway_interface[IF_NAMESIZE];
 } _globals = {
     .mutex = PTHREAD_MUTEX_INITIALIZER,
-    .gateway = { .s_addr = INADDR_ANY }
+    .gateway = { .s_addr = INADDR_ANY },
+    .broadcast_network = { 
+        .target = { .s_addr = INADDR_ANY },
+        .rate_ms = 0,
+        .is_enabled = 1,
+        .timeout_ms = 0,
+        .is_spoof_enabled = 1,
+        .is_opportunistic = 0
+    }
 };
 
 static int _get_network( arpeater_ae_config_t* config , struct in_addr* ip, 
@@ -85,6 +94,8 @@ int arpeater_ae_manager_set_config( arpeater_ae_config_t* config )
     int _critical_section() {
         debug( 9, "Loading new config\n" );
         memcpy( &_globals.config, config, sizeof( _globals.config ));
+
+        _globals.broadcast_network.is_enabled = _globals.config.is_broadcast_enabled;
         return 0;
     }
 
@@ -134,6 +145,8 @@ int arpeater_ae_manager_get_ip_settings( struct in_addr* ip, arpeater_ae_manager
         arpeater_ae_config_network_t* network = NULL;
 
         bzero( settings, sizeof( arpeater_ae_manager_settings_t ));
+
+        settings->address.s_addr = ip->s_addr;
         
         if ( _get_network( &_globals.config, ip, &network ) < 0 ) {
             return errlog( ERR_CRITICAL, "_get_network\n" );
@@ -220,7 +233,6 @@ int arpeater_ae_manager_reload_gateway( void )
                            unet_next_inet_ntoa( _globals.gateway.s_addr ));
                     break;
                 }
-
             }
         }
 
@@ -261,6 +273,12 @@ static int _get_network( arpeater_ae_config_t* config , struct in_addr* ip,
     in_addr_t ip_mask = 0;
     in_addr_t network_mask = 0;
     *network = NULL;
+    
+    /* First check if it is the broadcast address */
+    if ( ip->s_addr == INADDR_BROADCAST ) {
+        *network = &_globals.broadcast_network;
+        return 0;
+    }
 
     for ( c = 0 ; c < config->num_networks ; c++ ) {
         l_network = &config->networks[c];

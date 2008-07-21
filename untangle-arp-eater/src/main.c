@@ -90,6 +90,7 @@ static int _set_signals( void );
 
 /* This is defined inside of functions.c */
 extern int arpeater_functions_init( char *config_file );
+extern int arpeater_functions_load_config( arpeater_ae_config_t* config );
 extern json_server_function_entry_t *arpeater_functions_get_json_table( void );
 
 /**
@@ -254,10 +255,10 @@ static int _init( int argc, char** argv )
                          arpeater_sched_donate, NULL )) {
         return perrlog( "pthread_create" );
     }
-    
-    /* Initialize the config manager */
+        
     arpeater_ae_config_t config;
-    arpeater_ae_config_init( &config );
+    if ( arpeater_ae_config_init( &config ) < 0 ) return errlog( ERR_CRITICAL, "arpeater_ae_config_init\n" );
+
     if ( arpeater_ae_manager_init( &config ) < 0 ) {
         return errlog( ERR_CRITICAL, "arpeater_ae_manager_init\n" );
     }
@@ -271,6 +272,24 @@ static int _init( int argc, char** argv )
     
     if ( json_server_init( &_globals.json_server, function_table ) < 0 ) {
         return errlog( ERR_CRITICAL, "json_server_init\n" );
+    }
+
+    struct json_object* config_file_json = NULL;
+    if (( config_file_json = json_object_from_file( _globals.config_file )) == NULL ) {
+        /* Ignore the error, and just load the defaults */
+        errlog( ERR_CRITICAL, "json_object_from_file\n" );
+    } else if ( is_error( config_file_json )) {
+        errlog( ERR_CRITICAL, "json_object_from_file\n" );
+    } else {
+        debug( 10, "MAIN: Loading the config file %s\n", _globals.config_file );
+        /* Initialize the config manager */
+        if ( arpeater_ae_config_load_json( &config, config_file_json ) < 0 ) {
+            errlog( ERR_CRITICAL, "arpeater_ae_config_load_json\n" );
+        } else {
+            if ( arpeater_functions_load_config( &config ) < 0 ) {
+                errlog( ERR_CRITICAL, "barfight_functions_load_config\n" );
+            }
+        }
     }
 
     _globals.daemon = MHD_start_daemon( MHD_USE_THREAD_PER_CONNECTION | MHD_USE_DEBUG,

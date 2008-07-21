@@ -25,6 +25,8 @@
 typedef struct
 {
     int is_enabled;
+    /* This is the address these settings are for. */
+    struct in_addr address;
     struct in_addr target;
 } arpeater_ae_manager_settings_t;
 

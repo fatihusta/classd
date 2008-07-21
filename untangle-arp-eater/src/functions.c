@@ -17,6 +17,11 @@
  */
 
 #include <stdlib.h>
+#include <stddef.h>
+
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include <microhttpd.h>
 
@@ -24,7 +29,9 @@
 #include <mvutil/errlog.h>
 
 #include "json/object_utils.h"
+#include "json/serializer.h"
 #include "json/server.h"
+
 
 #include "ae/config.h"
 #include "ae/manager.h"
@@ -37,6 +44,8 @@ static struct json_object *_hello_world( struct json_object* request );
 
 static struct json_object *_update_network_settings( struct json_object* request );
 
+static struct json_object *_get_network_settings( struct json_object* request );
+
 static struct json_object *_set_config( struct json_object* request );
 
 static struct json_object *_get_status( struct json_object* request );
@@ -44,6 +53,7 @@ static struct json_object *_get_status( struct json_object* request );
 static struct json_object *_set_debug_level( struct json_object* request );
 
 static struct json_object *_shutdown( struct json_object* request );
+
 
 extern void arpeater_main_shutdown( void );
 
@@ -58,14 +68,53 @@ static struct
         { .name = "set_config", .function = _set_config },
         { .name = "set_debug_level", .function = _set_debug_level },
         { .name = "update_network_settings", .function = _update_network_settings },
+        { .name = "get_network_settings", .function = _get_network_settings },
         { .name = "shutdown", .function = _shutdown },
         { .name = NULL, .function = NULL }
     }
 };
 
+/* Serializer for a arpeater_ae_manager_settings_t object */
+static json_serializer_t _network_settings_serializer = {
+    .name = "network_settings",
+    .fields = {{
+        .name = "enabled",
+        .fetch_arg = 1,
+        .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
+        .to_c = json_serializer_to_c_boolean,
+        .to_json = json_serializer_to_json_boolean,
+        .arg = (void*)offsetof( arpeater_ae_manager_settings_t, is_enabled )
+    },{
+        .name = "address",
+        .fetch_arg = 1,
+        .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
+        .to_c = json_serializer_to_c_in_addr,
+        .to_json = json_serializer_to_json_in_addr,
+        .arg = (void*)offsetof( arpeater_ae_manager_settings_t, address )
+    },{
+        .name = "target",
+        .fetch_arg = 1,
+        .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
+        .to_c = json_serializer_to_c_in_addr,
+        .to_json = json_serializer_to_json_in_addr,
+        .arg = (void*)offsetof( arpeater_ae_manager_settings_t, target )
+    }, JSON_SERIALIZER_FIELD_TERM }
+};
+        
 int arpeater_functions_init( char* config_file )
 {
     _globals.config_file = config_file;
+    return 0;
+}
+
+int arpeater_functions_load_config( arpeater_ae_config_t* config )
+{
+    if ( config == NULL ) return errlogargs();
+
+    if ( arpeater_ae_manager_set_config( config ) < 0 ) {
+        return errlog( ERR_CRITICAL, "arpeater_ae_manager_set_config\n" );
+    }
+
     return 0;
 }
 
@@ -168,9 +217,60 @@ static struct json_object *_update_network_settings( struct json_object* request
         return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
     }
 
-    return response;    
+    return response;
 }
 
+static struct json_object *_get_network_settings( struct json_object* request )
+{
+    struct json_object* response = NULL;
+
+    char *ip_string = NULL;
+    if (( ip_string = json_object_utils_get_string( request, "ip" )) == NULL ) {
+        if (( response = json_server_build_response( STATUS_ERR, 0, "Missing ip" )) == NULL ) {
+            return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
+        }
+        return response;
+    }
+
+    struct in_addr ip;
+    if ( inet_aton( ip_string, &ip ) == 0 ) {
+        if (( response = json_server_build_response( STATUS_ERR, 0, "Unable to parse the IP '%s'", 
+                                                     ip_string )) == NULL ) {
+            return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
+        }
+        return response;
+    }
+    
+    arpeater_ae_manager_settings_t settings;
+    
+    /* This function shouldn't fail as long as a valid IP address is passed in */
+    if ( arpeater_ae_manager_get_ip_settings( &ip, &settings ) < 0 ) {
+        errlog( ERR_CRITICAL, "arpeater_ae_manager_get_ip_settings\n" );
+        if (( response = json_server_build_response( STATUS_ERR, 0, "Internal error occurred" )) == NULL ) {
+            return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
+        }
+        return response;        
+    }
+
+    
+    struct json_object* settings_json = NULL;
+    if (( settings_json = json_serializer_to_json( &_network_settings_serializer, &settings )) == NULL ) {
+        errlog( ERR_CRITICAL, "json_serializer_to_json\n" );
+        if (( response = json_server_build_response( STATUS_ERR, 0, "Internal error occurred" )) == NULL ) {
+            return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
+        }
+        return response;        
+    }
+    
+    if (( response = json_server_build_response( STATUS_OK, 0, "Successfully retrieved settings" )) == NULL ) {
+        json_object_put( settings_json );
+        return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
+    }
+
+    json_object_object_add( response, "network_settings", settings_json );
+
+    return response;
+}
 
 static struct json_object *_shutdown( struct json_object* request )
 {
