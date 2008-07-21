@@ -53,12 +53,6 @@ typedef struct
 
 typedef struct
 {        
-    /* A mutex you should own before reading or modifying reference count */
-    pthread_mutex_t mutex;
-
-    /* The number of threads using this resource */
-    int reference_count;
-
     char interface[IF_NAMESIZE];
 
     /* If this value is zero, the gateway is automatically calculated
@@ -73,6 +67,9 @@ typedef struct
     
     /* Set to true if this config should be used. */
     int is_enabled;
+
+    /* Set to true to broadcast that you are the gateway */
+    int is_broadcast_enabled;
 
     /* The number of configured networks */
     int num_networks;

@@ -39,13 +39,15 @@
 #include "json/server.h"
 
 #include "ae/arp.h"
+#include "ae/manager.h"
+
 
 #define DEFAULT_CONFIG_FILE  "/etc/arpeater.conf"
 #define DEFAULT_DEBUG_LEVEL  5
 #define DEFAULT_BIND_PORT 3002
 #define DEFAULT_INTERFACE "eth0"
 
-#define FLAG_ALIVE      0x543D00D
+#define FLAG_ALIVE      0x543F00D
 
 static struct
 {
@@ -253,6 +255,13 @@ static int _init( int argc, char** argv )
         return perrlog( "pthread_create" );
     }
     
+    /* Initialize the config manager */
+    arpeater_ae_config_t config;
+    arpeater_ae_config_init( &config );
+    if ( arpeater_ae_manager_init( &config ) < 0 ) {
+        return errlog( ERR_CRITICAL, "arpeater_ae_manager_init\n" );
+    }
+
     /* Create a JSON server */
     if ( arpeater_functions_init( _globals.config_file ) < 0 ) {
         return errlog( ERR_CRITICAL, "arpeater_functions_init\n" );

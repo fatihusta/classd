@@ -37,7 +37,6 @@ static int _verify_config( arpeater_ae_config_t* config );
 static int _to_c_networks( struct json_object* json_object, json_serializer_field_t* field, void* c_data );
 static int _to_json_networks( struct json_object* json_object, json_serializer_field_t* field,
                               void* c_data );
-
 static struct
 {
     json_serializer_string_t interface_string;
@@ -86,6 +85,13 @@ static json_serializer_t _config_serializer = {
         .to_c = json_serializer_to_c_boolean,
         .to_json = json_serializer_to_json_boolean,
         .arg = (void*)offsetof( arpeater_ae_config_t, is_enabled )        
+    },{
+        .name = "broadcast",
+        .fetch_arg = 1,
+        .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
+        .to_c = json_serializer_to_c_boolean,
+        .to_json = json_serializer_to_json_boolean,
+        .arg = (void*)offsetof( arpeater_ae_config_t, is_broadcast_enabled )
     },{
         .name = "networks",
         .fetch_arg = 1,
@@ -172,8 +178,6 @@ int arpeater_ae_config_init( arpeater_ae_config_t* config )
 
     bzero( config, sizeof( arpeater_ae_config_t ));
     
-    if ( pthread_mutex_init( &config->mutex, NULL ) < 0 ) return perrlog( "pthread_mutex_init" );
-
     return 0;
 }
 

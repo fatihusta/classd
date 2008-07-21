@@ -27,6 +27,7 @@
 #include "json/server.h"
 
 #include "ae/config.h"
+#include "ae/manager.h"
 
 /* ten-4 */
 #define STATUS_OK 104
@@ -56,6 +57,7 @@ static struct
         { .name = "hello_world", .function = _hello_world },
         { .name = "set_config", .function = _set_config },
         { .name = "set_debug_level", .function = _set_debug_level },
+        { .name = "update_network_settings", .function = _update_network_settings },
         { .name = "shutdown", .function = _shutdown },
         { .name = NULL, .function = NULL }
     }
@@ -150,6 +152,26 @@ static struct json_object *_set_config( struct json_object* request )
     return response;
 }
 
+static struct json_object *_update_network_settings( struct json_object* request )
+{
+    struct json_object* response = NULL;
+
+    if ( arpeater_ae_manager_reload_gateway() < 0 ) {
+        if (( response = json_server_build_response( STATUS_ERR, 0, "Unable to update network settings." )) == NULL ) {
+            return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
+        }
+
+        return response;
+    }
+
+    if (( response = json_server_build_response( STATUS_OK, 0, "Updated network settings." )) == NULL ) {
+        return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
+    }
+
+    return response;    
+}
+
+
 static struct json_object *_shutdown( struct json_object* request )
 {
     arpeater_main_shutdown();
@@ -188,4 +210,6 @@ static struct json_object *_set_debug_level( struct json_object* request )
 
     return response;
 }
+
+
 
