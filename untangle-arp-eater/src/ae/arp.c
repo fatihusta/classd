@@ -235,8 +235,8 @@ static void* _host_handler_thread (void* arg)
     if ( arpeater_ae_manager_get_ip_settings( &host->addr, &myconfig ) < 0)
         return (void*)perrlog("arpeater_ae_manager_get_ip_settings");
     
-    debug(1, "HOST: New host handler (%s) (address: %s) (target: %s) \n",
-          unet_inet_ntoa(host->addr.s_addr),
+    debug(1, "HOST: New host handler (%s) (address: %s) (gateway: %s)\n",
+          unet_next_inet_ntoa(host->addr.s_addr),
           unet_next_inet_ntoa(myconfig.address.s_addr),
           unet_next_inet_ntoa(myconfig.target.s_addr));
 
@@ -244,44 +244,30 @@ static void* _host_handler_thread (void* arg)
         /**
          * FIXME - should only re-read config after mailbox message
          * FIXME - should only re-lookup MAC address(s) after mailbox message
-         */
+         * TODO - should wait on mailbox
+         */ 
         if ( arpeater_ae_manager_get_ip_settings( &host->addr, &myconfig ) < 0)
             return (void*)perrlog("arpeater_ae_manager_get_ip_settings");
 
-        if ( _arp_lookup( &host_mac, host->addr.s_addr) < 0 ) 
+        if ( _arp_lookup( &host_mac, myconfig.address.s_addr) < 0 ) 
             errlog(ERR_WARNING, "Failed to lookup MAC of target (%s) (%s)\n",unet_inet_ntoa(host->addr.s_addr),errstr);
         else {
             /**
-             * Lookup gateway MAC FIXME 
+             * Lookup gateway MAC 
              */
-            if ( _arp_lookup( &gateway_mac, myconfig.address.s_addr) < 0 ) 
+            if ( _arp_lookup( &gateway_mac, myconfig.target.s_addr) < 0 ) 
                 errlog(ERR_WARNING, "Failed to lookup MAC of target (%s) (%s)\n",unet_inet_ntoa(host->addr.s_addr),errstr);
             else {
             /**
              * send to victim that gateway is at my mac
              */
-            if ( _arp_send( ARPOP_REPLY, NULL, myconfig.target.s_addr, host_mac.ether_addr_octet, (in_addr_t)0 ) < 0 )
+            if ( _arp_send( ARPOP_REPLY, NULL, myconfig.target.s_addr, host_mac.ether_addr_octet, myconfig.address.s_addr ) < 0 )
                 perrlog("_arp_send");
-
-            debug(1,"HOST: Victim = %02x:%02x:%02x:%02x:%02x:%02x\n",
-                  host_mac.ether_addr_octet[0],
-                  host_mac.ether_addr_octet[1],
-                  host_mac.ether_addr_octet[2],
-                  host_mac.ether_addr_octet[3],
-                  host_mac.ether_addr_octet[4],
-                  host_mac.ether_addr_octet[5]);
-            debug(1,"HOST: Gateway = %02x:%02x:%02x:%02x:%02x:%02x\n",
-                  gateway_mac.ether_addr_octet[0],
-                  gateway_mac.ether_addr_octet[1],
-                  gateway_mac.ether_addr_octet[2],
-                  gateway_mac.ether_addr_octet[3],
-                  gateway_mac.ether_addr_octet[4],
-                  gateway_mac.ether_addr_octet[5]);
                   
             /**
              * send to gateway that victim is at my mac 
              */
-            if ( _arp_send( ARPOP_REPLY, NULL, myconfig.address.s_addr, gateway_mac.ether_addr_octet, (in_addr_t)0 ) < 0 )
+            if ( _arp_send( ARPOP_REPLY, NULL, myconfig.address.s_addr, gateway_mac.ether_addr_octet, myconfig.target.s_addr ) < 0 )
                 perrlog("_arp_send");
 
             }
@@ -321,6 +307,12 @@ static int _host_handler_start ( in_addr_t addr )
 
         if ( pthread_create( &newhost->thread, &uthread_attr.other.medium, _host_handler_thread, (void*)newhost ) != 0 ) {
             ret = perrlog("pthread_create");
+            free(newhost);
+            break;
+        }
+
+        if ( ht_add ( &host_handlers, (void*)addr, (void*)newhost ) < 0 ) {
+            perrlog("ht_add");
             free(newhost);
             break;
         }
@@ -466,10 +458,14 @@ static int _arp_send ( int op, u_char *sha, in_addr_t sip, u_char *tha, in_addr_
     memcpy(arp_payload->ar_tip,&tip,4);
 
 	if (op == ARPOP_REQUEST) {
-		debug(1, "ARP: Sending: arp who-has %s tell %s\n", unet_next_inet_ntoa(tip), unet_next_inet_ntoa(sip));
+		debug(1, "ARP: Sending: (%s) arp who-has %s tell %s\n",
+              ether_ntoa((struct ether_addr *)tha),
+              unet_next_inet_ntoa(tip),
+              unet_next_inet_ntoa(sip));
 	}
 	else if (op == ARPOP_REPLY ) {
-		debug(1, "ARP: Sending: arp reply %s is-at %s\n", unet_next_inet_ntoa(sip), ether_ntoa((struct ether_addr *)sha));
+		debug(1, "ARP: Sending: (%s)", ether_ntoa((struct ether_addr *)tha));
+		debug_nodate(1, " arp reply %s is-at %s\n", unet_next_inet_ntoa(sip), ether_ntoa((struct ether_addr *)sha));
 	}
 
     memcpy(&device,&_globals.device,sizeof(struct sockaddr_ll));
@@ -506,7 +502,7 @@ static void _arp_listener_handler ( u_char* args, const struct pcap_pkthdr* head
     }
 
     /* only parse arp requests */
-    if ( ntohs(arp_hdr->ar_op) != 0x0001 ) 
+    if ( ntohs(arp_hdr->ar_op) != ARPOP_REQUEST ) 
         return;
 
     /* check lengths */
@@ -522,16 +518,15 @@ static void _arp_listener_handler ( u_char* args, const struct pcap_pkthdr* head
         _globals.device.sll_addr[2] == eth_hdr->h_source[2] &&
         _globals.device.sll_addr[3] == eth_hdr->h_source[3] &&
         _globals.device.sll_addr[4] == eth_hdr->h_source[4] &&
-        _globals.device.sll_addr[5] == eth_hdr->h_source[5]) {
+        _globals.device.sll_addr[5] == eth_hdr->h_source[5]) 
         return;
-    }
         
-    debug (2, "SNIFF: (hardware: 0x%04x) (protocol: 0x%04x) (hardware len: %i) (protocol len: %i) (op: 0x%04x)\n",
+    debug (10, "SNIFF: (hardware: 0x%04x) (protocol: 0x%04x) (hardware len: %i) (protocol len: %i) (op: 0x%04x)\n",
            ntohs(arp_hdr->ar_hrd),ntohs(arp_hdr->ar_pro),
            arp_hdr->ar_hln,arp_hdr->ar_pln,
            ntohs(arp_hdr->ar_op));
 
-    debug( 1, "SNIFF: (%02x:%02x:%02x:%02x:%02x:%02x -> %02x:%02x:%02x:%02x:%02x:%02x) arp who has %s tell %s \n",
+    debug( 2, "SNIFF: (%02x:%02x:%02x:%02x:%02x:%02x -> %02x:%02x:%02x:%02x:%02x:%02x) arp who has %s tell %s \n",
            eth_hdr->h_source[0], eth_hdr->h_source[1],
            eth_hdr->h_source[2], eth_hdr->h_source[3],
            eth_hdr->h_source[4], eth_hdr->h_source[5],
