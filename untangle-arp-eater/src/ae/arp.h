@@ -19,6 +19,27 @@
 #ifndef __ARPEATER_AE_ARP_H_
 #define __ARPEATER_AE_ARP_H_
 
+#include <mvutil/mailbox.h>
+#include <net/ethernet.h>
+#include "config.h"
+#include "manager.h"
+
+typedef struct host_handler
+{
+    pthread_t thread;
+    struct in_addr addr;
+    arpeater_ae_manager_settings_t settings;
+    mailbox_t mbox;
+    struct ether_addr host_mac;
+    struct ether_addr gateway_mac;
+} host_handler_t;
+
+enum
+{
+    _HANDLER_MESG_REFRESH_CONFIG =  1,  
+    _HANDLER_MESG_KILL           =  2
+} handler_message_t;
+
 int arp_init (char* interface);
 
 #endif

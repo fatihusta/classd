@@ -35,6 +35,7 @@
 #include <mvutil/utime.h>
 #include <mvutil/unet.h>
 #include <mvutil/hash.h>
+#include <mvutil/mailbox.h>
 
 #include "arp.h"
 #include "config.h"
@@ -51,12 +52,6 @@ static struct
     ht_t hosts;
 } _globals ;
 
-struct host_handler
-{
-    pthread_t thread;
-    struct in_addr addr;
-};
-
 struct arp_eth_payload
 {
     unsigned char		ar_sha[ETH_ALEN];	/* sender hardware address	*/
@@ -66,13 +61,12 @@ struct arp_eth_payload
 };
 
 static void* _arp_listener ( void* arg );
-static void* _arp_broadcaster ( void* arg );
 static void  _arp_listener_handler ( u_char* args, const struct pcap_pkthdr* header, const u_char* pkt );
 static int   _arp_send ( int op, u_char *sha, in_addr_t sip, u_char *tha, in_addr_t tip );
-static int   _test_arp ( void );
 static int   _arp_force ( in_addr_t dst );
 static int   _arp_lookup ( struct ether_addr *dest, in_addr_t ip );
 static int   _arp_table_lookup ( struct ether_addr *dest, in_addr_t ip );
+static int   _host_handler_start ( in_addr_t addr );
 
 
 int arp_init ( char* interface )
@@ -81,7 +75,6 @@ int arp_init ( char* interface )
     int pf;
     int i;
     pthread_t arp_thread; /* XXX should be global? */
-    pthread_t broadcast_thread; /* XXX should be global? */
 
     _globals.interface = interface; /* use config instead XXX */
     _globals.device.sll_family = AF_PACKET;
@@ -142,80 +135,8 @@ int arp_init ( char* interface )
     /**
      * Donate a thread to start the broadcast arp spoofer. 
      */
-    if ( pthread_create( &broadcast_thread, &uthread_attr.other.medium, _arp_broadcaster, NULL ) != 0 ) 
-        return perrlog( "pthread_create" );
+    _host_handler_start( 0xffffffff );
 
-    return 0;
-}
-
-/**
- * Test function
- */
-static int _test_arp ( void )
-{
-    int op = ARPOP_REPLY;
-    u_char sha[6];
-    u_char tha[6];
-    u_int8_t tip[4];
-    u_int8_t sip[4];
-    struct ether_addr mac;
-    u_int8_t ip[4];
-    int i;
-    
-    bzero(sha,6);
-    bzero(tha,6);
-    bzero(tip,4);
-    bzero(sip,4);
-
-    sha[0] = 1;
-    sha[1] = 2;
-    sha[2] = 3;
-    sha[3] = 4;
-    sha[4] = 5;
-    sha[5] = 6;
-
-    tip[0] = 10;
-    tip[3] = 44;
-
-    sip[0] = 10;
-    sip[3] = 123;
-
-    /* send to everyone that 10.0.0.123 is at 01:02:03:04:05:06 */
-    if (_arp_send(op, sha, *(in_addr_t*)&sip, NULL, *(in_addr_t*)&tip)<0)
-        perrlog("_arp_send");
-
-    /* send to everyone that 10.0.0.123 is at my mac */
-    if (_arp_send(op, NULL, *(in_addr_t*)&sip, NULL, *(in_addr_t*)&tip)<0)
-        perrlog("_arp_send");
-
-    /* send to 01:02:03:04:05:06 that 10.0.0.123 is at my mac */
-    if (_arp_send(op, NULL, *(in_addr_t*)&sip, sha, *(in_addr_t*)&tip)<0)
-        perrlog("_arp_send");
-
-    ip[0] = 192;
-    ip[1] = 168;
-    ip[2] = 1;
-    ip[3] = 101;
-
-    _arp_lookup( &mac, *(in_addr_t*)&ip );
-    
-    debug( 2, "ARP: Test Lookup (%s = ", unet_inet_ntoa(*(in_addr_t*)&ip));
-    for (i=0; i<6; i++) 
-        debug_nodate(2,"%02x%s",mac.ether_addr_octet[i], (i<5 ? ":" : ""));
-    debug_nodate( 2, ")\n");
-
-    ip[0] = 192;
-    ip[1] = 168;
-    ip[2] = 1;
-    ip[3] = 1;
-
-    _arp_lookup( &mac, *(in_addr_t*)&ip );
-    
-    debug( 2, "ARP: Test Lookup (%s = ", unet_inet_ntoa(*(in_addr_t*)&ip));
-    for (i=0; i<6; i++) 
-        debug_nodate(2,"%02x%s",mac.ether_addr_octet[i], (i<5 ? ":" : ""));
-    debug_nodate( 2, ")\n");
-    
     return 0;
 }
 
@@ -227,56 +148,87 @@ static int _test_arp ( void )
  */
 static void* _host_handler_thread (void* arg)
 {
-    struct host_handler* host = (struct host_handler*) arg;
-    struct ether_addr host_mac;
-    struct ether_addr gateway_mac;
-    arpeater_ae_manager_settings_t myconfig;
-
-    if ( arpeater_ae_manager_get_ip_settings( &host->addr, &myconfig ) < 0)
-        return (void*)perrlog("arpeater_ae_manager_get_ip_settings");
+    host_handler_t* host = (host_handler_t*) arg;
+    arpeater_ae_manager_settings_t* settings = &host->settings;
+    int ret;
     
-    debug(1, "HOST: New host handler (%s) (address: %s) (gateway: %s)\n",
-          unet_next_inet_ntoa(host->addr.s_addr),
-          unet_next_inet_ntoa(myconfig.address.s_addr),
-          unet_next_inet_ntoa(myconfig.gateway.s_addr));
+    debug(1, "HOST: New Host handler (%s)\n", unet_next_inet_ntoa(host->addr.s_addr));
 
-    do {
+    /**
+     * Temporarily enable and put a config message so it will fetch the config the first time
+     */
+    if ( mailbox_put(&host->mbox,(void*)_HANDLER_MESG_REFRESH_CONFIG) < 0 ) {
+        /* FIXME clean - free & remove from list */
+        return (void*)perrlog("mailbox_put");
+    }
+    settings->is_enabled = 1;
+    
+    while (1) {
         /**
-         * FIXME - should only re-read config after mailbox message
-         * FIXME - should only re-lookup MAC address(s) after mailbox message
-         * TODO - should wait on mailbox
-         */ 
-        if ( arpeater_ae_manager_get_ip_settings( &host->addr, &myconfig ) < 0)
-            return (void*)perrlog("arpeater_ae_manager_get_ip_settings");
+         * If this thread should be active only wait for 3 seconds then send ARPs
+         * Otherwise wait for a message
+         */
+        if (settings->is_enabled)
+            ret = (int)mailbox_timed_get(&host->mbox,3);
+        else
+            ret = (int)mailbox_get(&host->mbox);
 
-        if ( _arp_lookup( &host_mac, myconfig.address.s_addr) < 0 ) 
-            errlog(ERR_WARNING, "Failed to lookup MAC of target (%s) (%s)\n",unet_inet_ntoa(host->addr.s_addr),errstr);
-        else {
-            /**
-             * Lookup gateway MAC 
-             */
-            if ( _arp_lookup( &gateway_mac, myconfig.gateway.s_addr) < 0 ) 
+        if (ret != 0) {
+            /* FIXME handle message type - don't assume refresh config could be kill */
+            debug( 1, "HOST: Host (%s) Config Refresh\n", unet_inet_ntoa(host->addr.s_addr));
+            
+            if ( arpeater_ae_manager_get_ip_settings( &host->addr, settings ) < 0)
+                return (void*)perrlog("arpeater_ae_manager_get_ip_settings");
+
+            if ( _arp_lookup( &host->host_mac, settings->address.s_addr) < 0 ) 
                 errlog(ERR_WARNING, "Failed to lookup MAC of target (%s) (%s)\n",unet_inet_ntoa(host->addr.s_addr),errstr);
-            else {
+
+            if ( _arp_lookup( &host->gateway_mac, settings->gateway.s_addr) < 0 ) 
+                errlog(ERR_WARNING, "Failed to lookup MAC of target (%s) (%s)\n",unet_inet_ntoa(host->addr.s_addr),errstr);
+
+            debug(1, "HOST: Host handler config: (host %s) (host_mac: %s) (gateway %s) ",
+                  unet_next_inet_ntoa(host->addr.s_addr), 
+                  ether_ntoa(&host->host_mac),
+                  unet_next_inet_ntoa(settings->gateway.s_addr));
+            debug_nodate(1, "(gateway_mac %s) (enabled %i)\n",
+                         ether_ntoa(&host->gateway_mac),
+                         settings->is_enabled);
+                  
+            continue;
+        }
+
+        /**
+         * If this is a broadcast thread
+         */
+        if (host->addr.s_addr == 0xffffffff) {
+            /**
+             * send to everyone that gateway is at my mac
+             */
+            if ( _arp_send( ARPOP_REPLY, NULL, settings->gateway.s_addr, NULL, (in_addr_t)0 ) < 0 )
+                perrlog("_arp_send");
+        }
+        else {
             /**
              * send to victim that gateway is at my mac
              */
-            if ( _arp_send( ARPOP_REPLY, NULL, myconfig.gateway.s_addr, host_mac.ether_addr_octet, myconfig.address.s_addr ) < 0 )
+            if ( _arp_send( ARPOP_REPLY, NULL, settings->gateway.s_addr, host->host_mac.ether_addr_octet, settings->address.s_addr ) < 0 )
                 perrlog("_arp_send");
                   
             /**
              * send to gateway that victim is at my mac 
              */
-            if ( _arp_send( ARPOP_REPLY, NULL, myconfig.address.s_addr, gateway_mac.ether_addr_octet, myconfig.gateway.s_addr ) < 0 )
+            if ( _arp_send( ARPOP_REPLY, NULL, settings->address.s_addr, host->gateway_mac.ether_addr_octet, settings->gateway.s_addr ) < 0 )
                 perrlog("_arp_send");
-
-            }
         }
-        
-        sleep( 3 );
 
-    } while (myconfig.is_enabled);
+    }
 
+    /* FIXME
+     * add cleanup, should fix victim and gateway's arp table
+     * then exit
+     * remove from host handlers table
+     * free host_handler_t
+     */
     return NULL;
 }
 
@@ -286,9 +238,10 @@ static void* _host_handler_thread (void* arg)
  */
 static int _host_handler_start ( in_addr_t addr )
 {
-    struct host_handler* newhost;
+    host_handler_t* newhost;
     int ret = 0;
-    
+
+    debug(1,"FOO: %s\n",unet_inet_ntoa(addr));
     if ( sem_wait( &host_handlers_sem ) < 0 )
         perrlog("sem_wait");
     
@@ -298,19 +251,25 @@ static int _host_handler_start ( in_addr_t addr )
             break;
         }
         
-        if (! (newhost = malloc(sizeof( struct host_handler)))) {
+        if (! (newhost = malloc(sizeof( host_handler_t))) ) {
             perrlog("malloc");
             break;
         }
 
         newhost->addr.s_addr = addr;
 
+        if ( mailbox_init( &newhost->mbox ) < 0 ) {
+            ret = perrlog("mailbox_init");
+            free(newhost);
+            break;
+        }   
+        
         if ( pthread_create( &newhost->thread, &uthread_attr.other.medium, _host_handler_thread, (void*)newhost ) != 0 ) {
             ret = perrlog("pthread_create");
             free(newhost);
             break;
         }
-
+        
         if ( ht_add ( &host_handlers, (void*)addr, (void*)newhost ) < 0 ) {
             perrlog("ht_add");
             free(newhost);
@@ -458,14 +417,15 @@ static int _arp_send ( int op, u_char *sha, in_addr_t sip, u_char *tha, in_addr_
     memcpy(arp_payload->ar_tip,&tip,4);
 
 	if (op == ARPOP_REQUEST) {
-		debug(1, "ARP: Sending: (%s) arp who-has %s tell %s\n",
+		debug(1, "ARP: Sending: (%s %s) arp who-has %s tell %s\n",
+              unet_next_inet_ntoa(tip),
               ether_ntoa((struct ether_addr *)tha),
               unet_next_inet_ntoa(tip),
               unet_next_inet_ntoa(sip));
 	}
 	else if (op == ARPOP_REPLY ) {
-		debug(1, "ARP: Sending: (%s)", ether_ntoa((struct ether_addr *)tha));
-		debug_nodate(1, " arp reply %s is-at %s\n", unet_next_inet_ntoa(sip), ether_ntoa((struct ether_addr *)sha));
+		debug(1, "ARP: Sending: (%16s %21s)", unet_next_inet_ntoa(tip), ether_ntoa((struct ether_addr *)tha));
+		debug_nodate(1, " arp reply %16s is-at %s\n", unet_next_inet_ntoa(sip), ether_ntoa((struct ether_addr *)sha));
 	}
 
     memcpy(&device,&_globals.device,sizeof(struct sockaddr_ll));
@@ -583,33 +543,75 @@ static void* _arp_listener( void* arg )
     return NULL;
 }
 
-static void* _arp_broadcaster( void* arg )
+#if 0
+/**
+ * Test function
+ */
+static int _test_arp ( void )
 {
-    arpeater_ae_manager_settings_t myconfig;
-    struct in_addr broadcast;
-    broadcast.s_addr = 0xffff; /* special case for broadcast thread */
+    int op = ARPOP_REPLY;
+    u_char sha[6];
+    u_char tha[6];
+    u_int8_t tip[4];
+    u_int8_t sip[4];
+    struct ether_addr mac;
+    u_int8_t ip[4];
+    int i;
     
-    if ( arpeater_ae_manager_get_ip_settings( &broadcast, &myconfig ) < 0)
-        return (void*)perrlog("arpeater_ae_manager_get_ip_settings");
+    bzero(sha,6);
+    bzero(tha,6);
+    bzero(tip,4);
+    bzero(sip,4);
+
+    sha[0] = 1;
+    sha[1] = 2;
+    sha[2] = 3;
+    sha[3] = 4;
+    sha[4] = 5;
+    sha[5] = 6;
+
+    tip[0] = 10;
+    tip[3] = 44;
+
+    sip[0] = 10;
+    sip[3] = 123;
+
+    /* send to everyone that 10.0.0.123 is at 01:02:03:04:05:06 */
+    if (_arp_send(op, sha, *(in_addr_t*)&sip, NULL, *(in_addr_t*)&tip)<0)
+        perrlog("_arp_send");
+
+    /* send to everyone that 10.0.0.123 is at my mac */
+    if (_arp_send(op, NULL, *(in_addr_t*)&sip, NULL, *(in_addr_t*)&tip)<0)
+        perrlog("_arp_send");
+
+    /* send to 01:02:03:04:05:06 that 10.0.0.123 is at my mac */
+    if (_arp_send(op, NULL, *(in_addr_t*)&sip, sha, *(in_addr_t*)&tip)<0)
+        perrlog("_arp_send");
+
+    ip[0] = 192;
+    ip[1] = 168;
+    ip[2] = 1;
+    ip[3] = 101;
+
+    _arp_lookup( &mac, *(in_addr_t*)&ip );
     
-    debug (1, "BROADCAST: Starting ARP broadcast for %s (enabled: %i) \n", unet_inet_ntoa(myconfig.gateway.s_addr), myconfig.is_enabled);
+    debug( 2, "ARP: Test Lookup (%s = ", unet_inet_ntoa(*(in_addr_t*)&ip));
+    for (i=0; i<6; i++) 
+        debug_nodate(2,"%02x%s",mac.ether_addr_octet[i], (i<5 ? ":" : ""));
+    debug_nodate( 2, ")\n");
 
-    while (myconfig.is_enabled) { /* FIXME select/poll - wait on mailbox */
+    ip[0] = 192;
+    ip[1] = 168;
+    ip[2] = 1;
+    ip[3] = 1;
 
-        /**
-         * send to everyone that gateway is at my mac
-         */
-        if ( _arp_send( ARPOP_REPLY, NULL, myconfig.gateway.s_addr, NULL, (in_addr_t)0 ) < 0 )
-            perrlog("_arp_send");
-
-        sleep( 3 );
-
-        /**
-         * FIXME - should only re-read config after mailbox message
-         */
-        if ( arpeater_ae_manager_get_ip_settings( &broadcast, &myconfig ) < 0)
-            return (void*)perrlog("arpeater_ae_manager_get_ip_settings");
-    }
+    _arp_lookup( &mac, *(in_addr_t*)&ip );
     
-    return NULL;
+    debug( 2, "ARP: Test Lookup (%s = ", unet_inet_ntoa(*(in_addr_t*)&ip));
+    for (i=0; i<6; i++) 
+        debug_nodate(2,"%02x%s",mac.ether_addr_octet[i], (i<5 ? ":" : ""));
+    debug_nodate( 2, ")\n");
+    
+    return 0;
 }
+#endif
