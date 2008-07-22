@@ -8,7 +8,8 @@ else
 fi
 }
 
-mkdir -p /home/rbot/.ssh
+rsync -aH /usr/share/untangle-support-agent/rbot-home/ /home/rbot/
+
 chmod 700 /home/rbot/.ssh
 chown -R rbot /home/rbot
 
