@@ -61,7 +61,7 @@ static struct
     .default_network_config = {
         .ip = { .s_addr = INADDR_ANY },
         .netmask = { .s_addr = INADDR_BROADCAST },
-        .target = { .s_addr = INADDR_ANY },
+        .gateway = { .s_addr = INADDR_ANY },
         .timeout_ms = 0,
         .rate_ms = 0,
         .is_enabled = 0,
@@ -156,12 +156,12 @@ static json_serializer_t _network_serializer = {
         .to_json = json_serializer_to_json_in_addr,
         .arg = (void*)offsetof( arpeater_ae_config_network_t, netmask )
     },{
-        .name = "target",
+        .name = "gateway",
         .fetch_arg = 1,
         .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
         .to_c = json_serializer_to_c_in_addr,
         .to_json = json_serializer_to_json_in_addr,
-        .arg = (void*)offsetof( arpeater_ae_config_network_t, target )
+        .arg = (void*)offsetof( arpeater_ae_config_network_t, gateway )
     },{
         .name = "enabled",
         .fetch_arg = 1,

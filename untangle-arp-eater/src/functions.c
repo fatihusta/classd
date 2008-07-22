@@ -105,12 +105,12 @@ static json_serializer_t _network_settings_serializer = {
         .to_json = json_serializer_to_json_in_addr,
         .arg = (void*)offsetof( arpeater_ae_manager_settings_t, address )
     },{
-        .name = "target",
+        .name = "gateway",
         .fetch_arg = 1,
         .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
         .to_c = json_serializer_to_c_in_addr,
         .to_json = json_serializer_to_json_in_addr,
-        .arg = (void*)offsetof( arpeater_ae_manager_settings_t, target )
+        .arg = (void*)offsetof( arpeater_ae_manager_settings_t, gateway )
     }, JSON_SERIALIZER_FIELD_TERM }
 };
         

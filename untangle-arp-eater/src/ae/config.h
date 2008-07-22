@@ -33,7 +33,7 @@ typedef struct
 {
     struct in_addr ip;
     struct in_addr netmask;
-    struct in_addr target;
+    struct in_addr gateway;
 
     /* The timeout in milliseconds (<1 to use defaults) */
     int timeout_ms;

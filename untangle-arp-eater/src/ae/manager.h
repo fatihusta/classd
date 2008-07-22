@@ -28,7 +28,7 @@ typedef struct
     int is_opportunistic;
     /* This is the address these settings are for. */
     struct in_addr address;
-    struct in_addr target;
+    struct in_addr gateway;
 } arpeater_ae_manager_settings_t;
 
 int arpeater_ae_manager_init( arpeater_ae_config_t* config );

@@ -238,7 +238,7 @@ static void* _host_handler_thread (void* arg)
     debug(1, "HOST: New host handler (%s) (address: %s) (gateway: %s)\n",
           unet_next_inet_ntoa(host->addr.s_addr),
           unet_next_inet_ntoa(myconfig.address.s_addr),
-          unet_next_inet_ntoa(myconfig.target.s_addr));
+          unet_next_inet_ntoa(myconfig.gateway.s_addr));
 
     do {
         /**
@@ -255,19 +255,19 @@ static void* _host_handler_thread (void* arg)
             /**
              * Lookup gateway MAC 
              */
-            if ( _arp_lookup( &gateway_mac, myconfig.target.s_addr) < 0 ) 
+            if ( _arp_lookup( &gateway_mac, myconfig.gateway.s_addr) < 0 ) 
                 errlog(ERR_WARNING, "Failed to lookup MAC of target (%s) (%s)\n",unet_inet_ntoa(host->addr.s_addr),errstr);
             else {
             /**
              * send to victim that gateway is at my mac
              */
-            if ( _arp_send( ARPOP_REPLY, NULL, myconfig.target.s_addr, host_mac.ether_addr_octet, myconfig.address.s_addr ) < 0 )
+            if ( _arp_send( ARPOP_REPLY, NULL, myconfig.gateway.s_addr, host_mac.ether_addr_octet, myconfig.address.s_addr ) < 0 )
                 perrlog("_arp_send");
                   
             /**
              * send to gateway that victim is at my mac 
              */
-            if ( _arp_send( ARPOP_REPLY, NULL, myconfig.address.s_addr, gateway_mac.ether_addr_octet, myconfig.target.s_addr ) < 0 )
+            if ( _arp_send( ARPOP_REPLY, NULL, myconfig.address.s_addr, gateway_mac.ether_addr_octet, myconfig.gateway.s_addr ) < 0 )
                 perrlog("_arp_send");
 
             }
@@ -592,14 +592,14 @@ static void* _arp_broadcaster( void* arg )
     if ( arpeater_ae_manager_get_ip_settings( &broadcast, &myconfig ) < 0)
         return (void*)perrlog("arpeater_ae_manager_get_ip_settings");
     
-    debug (1, "BROADCAST: Starting ARP broadcast for %s (enabled: %i) \n", unet_inet_ntoa(myconfig.target.s_addr), myconfig.is_enabled);
+    debug (1, "BROADCAST: Starting ARP broadcast for %s (enabled: %i) \n", unet_inet_ntoa(myconfig.gateway.s_addr), myconfig.is_enabled);
 
     while (myconfig.is_enabled) { /* FIXME select/poll - wait on mailbox */
 
         /**
          * send to everyone that gateway is at my mac
          */
-        if ( _arp_send( ARPOP_REPLY, NULL, myconfig.target.s_addr, NULL, (in_addr_t)0 ) < 0 )
+        if ( _arp_send( ARPOP_REPLY, NULL, myconfig.gateway.s_addr, NULL, (in_addr_t)0 ) < 0 )
             perrlog("_arp_send");
 
         sleep( 3 );

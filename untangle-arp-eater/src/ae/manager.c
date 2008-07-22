@@ -53,7 +53,7 @@ static struct
     .mutex = PTHREAD_MUTEX_INITIALIZER,
     .gateway = { .s_addr = INADDR_ANY },
     .broadcast_network = { 
-        .target = { .s_addr = INADDR_ANY },
+        .gateway = { .s_addr = INADDR_ANY },
         .rate_ms = 0,
         .is_enabled = 1,
         .timeout_ms = 0,
@@ -161,13 +161,13 @@ int arpeater_ae_manager_get_ip_settings( struct in_addr* ip, arpeater_ae_manager
         settings->is_enabled = 1;
         settings->is_opportunistic = network->is_opportunistic;
 
-        if ( _is_automatic( &network->target ) == 0 ) {
-            settings->target.s_addr = network->target.s_addr;
+        if ( _is_automatic( &network->gateway ) == 0 ) {
+            settings->gateway.s_addr = network->gateway.s_addr;
             return 0;
         }
 
         if ( _is_automatic( &_globals.config.gateway ) == 0 ) {
-            settings->target.s_addr = _globals.config.gateway.s_addr;
+            settings->gateway.s_addr = _globals.config.gateway.s_addr;
             return 0;
         }
             
@@ -177,7 +177,7 @@ int arpeater_ae_manager_get_ip_settings( struct in_addr* ip, arpeater_ae_manager
             return 0;
         }
 
-        settings->target.s_addr = _globals.gateway.s_addr;
+        settings->gateway.s_addr = _globals.gateway.s_addr;
 
         return 0;
     }
@@ -206,7 +206,7 @@ int arpeater_ae_manager_reload_gateway( void )
         int c;
         char interface[IF_NAMESIZE];
 
-        struct in_addr destination, netmask, target;
+        struct in_addr destination, netmask, gateway;
         
         if (( proc_fd = open( _ROUTE_FILE, O_RDONLY )) < 0 ) return perrlog( "open" );
         
@@ -216,7 +216,7 @@ int arpeater_ae_manager_reload_gateway( void )
 
                 /* Kind of unfortunate, but 16 is hardcoded in there. */
                 if ( sscanf( &buffer[c], "%16s\t%x\t%x\t%*d\t%*d\t%*d\t%*d\t%x\t%*d\t%*d%*d",
-                             interface, &destination.s_addr, &target.s_addr, &netmask.s_addr ) < 4 ) {
+                             interface, &destination.s_addr, &gateway.s_addr, &netmask.s_addr ) < 4 ) {
                     if ( strncmp( interface, "Iface", sizeof( interface )) != 0 ) {
                         debug( 4, "Unable to parse the string: %s\n", &buffer[c] );
                     }
@@ -226,11 +226,11 @@ int arpeater_ae_manager_reload_gateway( void )
                 debug( 4, "Parsed the route: %s %s/%s -> %s\n", interface, 
                        unet_next_inet_ntoa( destination.s_addr ), 
                        unet_next_inet_ntoa( netmask.s_addr ), 
-                       unet_next_inet_ntoa( target.s_addr ));
+                       unet_next_inet_ntoa( gateway.s_addr ));
                 
                 if (( destination.s_addr == INADDR_ANY ) && ( netmask.s_addr == INADDR_ANY )) {
                     strncpy( _globals.gateway_interface, interface, sizeof( _globals.gateway_interface ));
-                    memcpy( &_globals.gateway, &target, sizeof( _globals.gateway ));
+                    memcpy( &_globals.gateway, &gateway, sizeof( _globals.gateway ));
                     debug( 4, "Setting the default gateway to %s / %s\n", _globals.gateway_interface, 
                            unet_next_inet_ntoa( _globals.gateway.s_addr ));
                     break;
