@@ -28,6 +28,7 @@
 #include <linux/if_packet.h>
 #include <semaphore.h>
 #include <stdlib.h>
+#include <signal.h>
 
 #include <mvutil/debug.h>
 #include <mvutil/errlog.h>
@@ -50,6 +51,8 @@ static struct
     int sock_raw;
     struct sockaddr_ll device;
     ht_t hosts;
+    pthread_t sniff_thread; 
+    pcap_t* handle;
 } _globals ;
 
 struct arp_eth_payload
@@ -74,17 +77,11 @@ int arp_init ( char* interface )
     struct ifreq card;
     int pf;
     int i;
-    pthread_t arp_thread; /* XXX should be global? */
 
-    _globals.interface = interface; /* use config instead XXX */
+    bzero(&_globals,sizeof(_globals));
+    _globals.interface = interface; 
     _globals.device.sll_family = AF_PACKET;
 
-    /**
-     * Initialize the socket for sending arps
-     */
-    if ( (_globals.sock_raw = socket( PF_PACKET, SOCK_RAW, htons(ETH_P_ARP) )) < 0 ) 
-        return perrlog("socket");
-  
     if ( (pf = socket( PF_PACKET, SOCK_RAW, htons(ETH_P_ALL) )) < 0 ) 
         return errlog(ERR_CRITICAL, "Could not create packet socket");
   
@@ -93,6 +90,7 @@ int arp_init ( char* interface )
      */
     strcpy( card.ifr_name, _globals.interface );
     if ( ioctl( pf, SIOCGIFINDEX, &card) < 0 ) {
+        close (pf);
         return errlog(ERR_CRITICAL,"Could not find device index number for %s", card.ifr_name);
     }
     _globals.device.sll_ifindex = card.ifr_ifindex;
@@ -101,10 +99,15 @@ int arp_init ( char* interface )
      * Find the MAC address
      */
     strcpy( card.ifr_name, _globals.interface );
-    if ( ioctl( pf, SIOCGIFHWADDR, &card) < 0 ) 
+    if ( ioctl( pf, SIOCGIFHWADDR, &card) < 0 ) {
+        close (pf);
         return errlog(ERR_CRITICAL,"Could not mac address for %s", card.ifr_name);
+    }
     for (i=0; i<6; i++) 
         _globals.device.sll_addr[i] = card.ifr_hwaddr.sa_data[i];
+
+    if ( close(pf) < 0)
+        perrlog("close");
     
     debug( 2, "ARP: Spoofing on %s (index: %d) (mac: ", _globals.interface, _globals.device.sll_ifindex);
     _globals.device.sll_halen = htons( 6 );
@@ -113,9 +116,10 @@ int arp_init ( char* interface )
     debug_nodate( 2, ")\n");
 
     /**
-     * For testing
+     * Initialize the socket for sending arps
      */
-    //_test_arp();
+    if ( (_globals.sock_raw = socket( PF_PACKET, SOCK_RAW, htons(ETH_P_ARP) )) < 0 ) 
+        return perrlog("socket");
 
     /**
      * Initialize host_handlers table & lock
@@ -129,7 +133,7 @@ int arp_init ( char* interface )
     /**
      * Donate a thread to start the arp listener.
      */
-    if ( pthread_create( &arp_thread, &uthread_attr.other.medium, _arp_listener, NULL ) != 0 ) 
+    if ( pthread_create( &_globals.sniff_thread, NULL, _arp_listener, NULL ) != 0 ) 
         return perrlog( "pthread_create" );
 
     /**
@@ -139,6 +143,106 @@ int arp_init ( char* interface )
 
     return 0;
 }
+
+int arp_shutdown ( void )
+{
+    list_t* hosts;
+    list_node_t* step;
+    int ret = 0;
+
+    /**
+     * kill sniffer thread
+     */
+    if ( _globals.handle )
+        pcap_breakloop( _globals.handle );
+    if ( pthread_kill(_globals.sniff_thread, SIGINT) < 0)
+        perrlog("pthread_kill");
+    if ( pthread_join(_globals.sniff_thread, (void**)&ret) < 0 )
+        perrlog("pthread_join");
+
+
+    /**
+     * kill all host handlers
+     * and wait for them to die.
+     */
+    if ( (hosts = arp_host_handlers_get_all()) != NULL ) {
+        for (step = list_head(hosts) ; step ; step = list_node_next(step)) {
+            host_handler_t* host = list_node_val(step);
+            arp_host_handler_send_message( host, _HANDLER_MESG_KILL );
+            
+            if ( pthread_join(host->thread, (void**)&ret) < 0 )
+                perrlog("pthread_join");
+        }
+    }
+    else {
+        perrlog("arp_get_host_handlers");
+    }
+    list_raze(hosts);
+    
+    /**
+     * free resources
+     */
+    if ( close(_globals.sock_raw) < 0 )
+        perrlog("close");
+
+    if ( ht_destroy( &host_handlers ) < 0 )
+        perrlog("ht_destroy");
+
+    return 0;
+}
+
+list_t* arp_host_handlers_get_all ( void )
+{
+    return ht_get_content_list( &host_handlers );
+}
+
+int arp_host_handler_add (struct in_addr addr)
+{
+    in_addr_t victim = addr.s_addr;
+
+    if ( ht_lookup( &host_handlers, (void*) victim) == NULL ) {
+        _host_handler_start( victim );
+        return 0;
+    }
+    else {
+        errno = EADDRINUSE;
+        return -1;
+    }
+}
+
+int arp_host_handler_refresh_all ( void )
+{
+    return arp_host_handler_send_message_all ( _HANDLER_MESG_REFRESH_CONFIG );
+}
+
+int arp_host_handler_kill_all ( void )
+{
+    return arp_host_handler_send_message_all ( _HANDLER_MESG_KILL );
+}
+
+int arp_host_handler_send_message_all ( handler_message_t mesg )
+{
+    list_t* hosts = arp_host_handlers_get_all();
+    list_node_t* step;
+
+    if (hosts == NULL)
+        return perrlog("arp_get_host_handlers");
+
+    for (step = list_head(hosts) ; step ; step = list_node_next(step)) {
+        host_handler_t* host = list_node_val(step);
+        arp_host_handler_send_message( host, mesg);
+    }
+    
+    list_raze(hosts);
+
+    return 0;
+}
+
+int arp_host_handler_send_message ( host_handler_t* host, handler_message_t mesg )
+{
+    return mailbox_put (&host->mbox, (void*)mesg);
+}
+
 
 /**
  * This function handles each host
@@ -150,7 +254,7 @@ static void* _host_handler_thread (void* arg)
 {
     host_handler_t* host = (host_handler_t*) arg;
     arpeater_ae_manager_settings_t* settings = &host->settings;
-    int ret;
+    int ret, go = 1;
     
     debug(1, "HOST: New Host handler (%s)\n", unet_next_inet_ntoa(host->addr.s_addr));
 
@@ -158,12 +262,12 @@ static void* _host_handler_thread (void* arg)
      * Temporarily enable and put a config message so it will fetch the config the first time
      */
     if ( mailbox_put(&host->mbox,(void*)_HANDLER_MESG_REFRESH_CONFIG) < 0 ) {
-        /* FIXME clean - free & remove from list */
+        go = 0;
         return (void*)perrlog("mailbox_put");
     }
     settings->is_enabled = 1;
     
-    while (1) {
+    while (go) {
         /**
          * If this thread should be active only wait for 3 seconds then send ARPs
          * Otherwise wait for a message
@@ -173,62 +277,105 @@ static void* _host_handler_thread (void* arg)
         else
             ret = (int)mailbox_get(&host->mbox);
 
-        if (ret != 0) {
-            /* FIXME handle message type - don't assume refresh config could be kill */
-            debug( 1, "HOST: Host (%s) Config Refresh\n", unet_inet_ntoa(host->addr.s_addr));
-            
-            if ( arpeater_ae_manager_get_ip_settings( &host->addr, settings ) < 0)
-                return (void*)perrlog("arpeater_ae_manager_get_ip_settings");
-
-            if ( _arp_lookup( &host->host_mac, settings->address.s_addr) < 0 ) 
-                errlog(ERR_WARNING, "Failed to lookup MAC of target (%s) (%s)\n",unet_inet_ntoa(host->addr.s_addr),errstr);
-
-            if ( _arp_lookup( &host->gateway_mac, settings->gateway.s_addr) < 0 ) 
-                errlog(ERR_WARNING, "Failed to lookup MAC of target (%s) (%s)\n",unet_inet_ntoa(host->addr.s_addr),errstr);
-
-            debug(1, "HOST: Host handler config: (host %s) (host_mac: %s) (gateway %s) ",
-                  unet_next_inet_ntoa(host->addr.s_addr), 
-                  ether_ntoa(&host->host_mac),
-                  unet_next_inet_ntoa(settings->gateway.s_addr));
-            debug_nodate(1, "(gateway_mac %s) (enabled %i)\n",
-                         ether_ntoa(&host->gateway_mac),
-                         settings->is_enabled);
-                  
-            continue;
-        }
-
         /**
-         * If this is a broadcast thread
+         * Message received
          */
-        if (host->addr.s_addr == 0xffffffff) {
-            /**
-             * send to everyone that gateway is at my mac
-             */
-            if ( _arp_send( ARPOP_REPLY, NULL, settings->gateway.s_addr, NULL, (in_addr_t)0 ) < 0 )
-                perrlog("_arp_send");
-        }
-        else {
-            /**
-             * send to victim that gateway is at my mac
-             */
-            if ( _arp_send( ARPOP_REPLY, NULL, settings->gateway.s_addr, host->host_mac.ether_addr_octet, settings->address.s_addr ) < 0 )
-                perrlog("_arp_send");
+        if (ret) {
+            switch (ret) {
+            case _HANDLER_MESG_REFRESH_CONFIG:
+                debug( 1, "HOST: Host (%s) Config Refresh\n", unet_inet_ntoa(host->addr.s_addr));
+            
+                if ( arpeater_ae_manager_get_ip_settings( &host->addr, settings ) < 0)
+                    return (void*)perrlog("arpeater_ae_manager_get_ip_settings");
+
+                if ( _arp_lookup( &host->host_mac, settings->address.s_addr) < 0 ) 
+                    errlog(ERR_WARNING, "Failed to lookup MAC of target (%s) (%s)\n",unet_inet_ntoa(host->addr.s_addr),errstr);
+
+                if ( _arp_lookup( &host->gateway_mac, settings->gateway.s_addr) < 0 ) 
+                    errlog(ERR_WARNING, "Failed to lookup MAC of target (%s) (%s)\n",unet_inet_ntoa(host->addr.s_addr),errstr);
+
+                debug(1, "HOST: Host handler config: (host %s) (host_mac: %s) (gateway %s) ",
+                      unet_next_inet_ntoa(host->addr.s_addr), 
+                      ether_ntoa(&host->host_mac),
+                      unet_next_inet_ntoa(settings->gateway.s_addr));
+                debug_nodate(1, "(gateway_mac %s) (enabled %i)\n",
+                             ether_ntoa(&host->gateway_mac),
+                             settings->is_enabled);
+                break;
+                
+            case _HANDLER_MESG_KILL:
+                debug( 1, "HOST: Host (%s) Kill - Cleaning up\n", unet_inet_ntoa(host->addr.s_addr));
+                /**
+                 * Undo arp spoofing
+                 */
+                for (ret = 0; ret < 3 ;ret++) {
+                    /**
+                     * If this is a broadcast thread
+                     */
+                    if (host->addr.s_addr == 0xffffffff) {
+                        /**
+                         * Send to everyone that the gateway is at the gateway
+                         */
+                        if ( _arp_send( ARPOP_REPLY, host->gateway_mac.ether_addr_octet, settings->gateway.s_addr, NULL, (in_addr_t)0 ) < 0 )
+                            perrlog("_arp_send");
+                    }
+                    else {
+                        /**
+                         * send to victim that gateway is at the gateway
+                         */
+                        if ( _arp_send( ARPOP_REPLY, host->gateway_mac.ether_addr_octet, settings->gateway.s_addr, host->host_mac.ether_addr_octet, settings->address.s_addr ) < 0 )
+                            perrlog("_arp_send");
                   
+                        /**
+                         * send to gateway that victim is at them victim
+                         */
+                        if ( _arp_send( ARPOP_REPLY, host->host_mac.ether_addr_octet, settings->address.s_addr, host->gateway_mac.ether_addr_octet, settings->gateway.s_addr ) < 0 )
+                            perrlog("_arp_send");
+                    }
+
+                    sleep (.2);
+                }
+                go = 0;
+                break;
+            } /* switch (ret)  */
+        } /* if (ret) */
+
+        if (settings->is_enabled) {
             /**
-             * send to gateway that victim is at my mac 
+             * If this is a broadcast thread
              */
-            if ( _arp_send( ARPOP_REPLY, NULL, settings->address.s_addr, host->gateway_mac.ether_addr_octet, settings->gateway.s_addr ) < 0 )
-                perrlog("_arp_send");
+            if (host->addr.s_addr == 0xffffffff) {
+                /**
+                 * send to everyone that gateway is at my mac
+                 */
+                if ( _arp_send( ARPOP_REPLY, NULL, settings->gateway.s_addr, NULL, (in_addr_t)0 ) < 0 )
+                    perrlog("_arp_send");
+            }
+            else {
+                /**
+                 * send to victim that gateway is at my mac
+                 */
+                if ( _arp_send( ARPOP_REPLY, NULL, settings->gateway.s_addr, host->host_mac.ether_addr_octet, settings->address.s_addr ) < 0 )
+                    perrlog("_arp_send");
+                  
+                /**
+                 * send to gateway that victim is at my mac 
+                 */
+                if ( _arp_send( ARPOP_REPLY, NULL, settings->address.s_addr, host->gateway_mac.ether_addr_octet, settings->gateway.s_addr ) < 0 )
+                    perrlog("_arp_send");
+            }
         }
+    } /* while (go) */
 
-    }
+    if ( ht_remove( &host_handlers, (void*)host->addr.s_addr) < 0 )
+        perrlog("ht_remove");
 
-    /* FIXME
-     * add cleanup, should fix victim and gateway's arp table
-     * then exit
-     * remove from host handlers table
-     * free host_handler_t
-     */
+    if ( mailbox_destroy ( &host->mbox ) < 0)
+        perrlog("mailbox_destroy");
+
+    free (host);
+    
+    pthread_exit(NULL);
     return NULL;
 }
 
@@ -241,7 +388,6 @@ static int _host_handler_start ( in_addr_t addr )
     host_handler_t* newhost;
     int ret = 0;
 
-    debug(1,"FOO: %s\n",unet_inet_ntoa(addr));
     if ( sem_wait( &host_handlers_sem ) < 0 )
         perrlog("sem_wait");
     
@@ -264,7 +410,7 @@ static int _host_handler_start ( in_addr_t addr )
             break;
         }   
         
-        if ( pthread_create( &newhost->thread, &uthread_attr.other.medium, _host_handler_thread, (void*)newhost ) != 0 ) {
+        if ( pthread_create( &newhost->thread, NULL, _host_handler_thread, (void*)newhost ) != 0 ) {
             ret = perrlog("pthread_create");
             free(newhost);
             break;
@@ -437,6 +583,9 @@ static int _arp_send ( int op, u_char *sha, in_addr_t sip, u_char *tha, in_addr_
     return 0;
 }
 
+/**
+ * ARP packet handler
+ */
 static void _arp_listener_handler ( u_char* args, const struct pcap_pkthdr* header, const u_char* pkt )
 {
     struct ethhdr* eth_hdr;
@@ -481,11 +630,6 @@ static void _arp_listener_handler ( u_char* args, const struct pcap_pkthdr* head
         _globals.device.sll_addr[5] == eth_hdr->h_source[5]) 
         return;
         
-    debug (10, "SNIFF: (hardware: 0x%04x) (protocol: 0x%04x) (hardware len: %i) (protocol len: %i) (op: 0x%04x)\n",
-           ntohs(arp_hdr->ar_hrd),ntohs(arp_hdr->ar_pro),
-           arp_hdr->ar_hln,arp_hdr->ar_pln,
-           ntohs(arp_hdr->ar_op));
-
     debug( 2, "SNIFF: (%02x:%02x:%02x:%02x:%02x:%02x -> %02x:%02x:%02x:%02x:%02x:%02x) arp who has %s tell %s \n",
            eth_hdr->h_source[0], eth_hdr->h_source[1],
            eth_hdr->h_source[2], eth_hdr->h_source[3],
@@ -507,9 +651,11 @@ static void _arp_listener_handler ( u_char* args, const struct pcap_pkthdr* head
     return;
 }
 
+/**
+ * ARP sniffer thread
+ */
 static void* _arp_listener( void* arg )
 {
-    pcap_t* handle;
     char pcap_errbuf[PCAP_ERRBUF_SIZE];
     struct bpf_program filter;
     
@@ -517,29 +663,33 @@ static void* _arp_listener( void* arg )
     debug( 1, "SNIFF: Listening on %s.\n", _globals.interface);
     
     /* open interface for listening */
-    if ( (handle = pcap_open_live(_globals.interface, BUFSIZ, 1, 0, pcap_errbuf)) == NULL ) {
+    if ( (_globals.handle = pcap_open_live(_globals.interface, BUFSIZ, 1, 0, pcap_errbuf)) == NULL ) {
         errlog( ERR_CRITICAL, "pcap_open_live: %s\n", pcap_errbuf );
-        return NULL; /* XXX exit here? */
+        return NULL; 
     }
 
     /* compile rule/filter to only listen to arp */
-    if ( pcap_compile(handle, &filter, "arp", 1, 0) < 0 ) {
-        errlog( ERR_CRITICAL, "pcap_compile: %s\n", pcap_geterr(handle));
-        return NULL; /* XXX exit here? */
+    if ( pcap_compile(_globals.handle, &filter, "arp", 1, 0) < 0 ) {
+        errlog( ERR_CRITICAL, "pcap_compile: %s\n", pcap_geterr(_globals.handle));
+        pcap_close( _globals.handle );
+        return NULL; 
     }
 
     /* apply rule/filter */
-    if ( pcap_setfilter(handle, &filter) < 0 ) {
-        errlog( ERR_CRITICAL, "pcap_setfilter: %s\n", pcap_geterr(handle));
-        return NULL; /* XXX exit here? */
+    if ( pcap_setfilter(_globals.handle, &filter) < 0 ) {
+        errlog( ERR_CRITICAL, "pcap_setfilter: %s\n", pcap_geterr(_globals.handle));
+        pcap_close( _globals.handle );
+        return NULL; 
     }
 
     /* start capturing */
-    if ( pcap_loop(handle, -1, _arp_listener_handler, NULL) < 0 ) {
-        errlog( ERR_CRITICAL, "pcap_loop: %s\n", pcap_geterr(handle));
-        return NULL; /* XXX exit here? */
+    if ( pcap_loop(_globals.handle, -1, _arp_listener_handler, NULL) < 0 ) {
+        if (errno != EINTR) 
+            errlog( ERR_CRITICAL, "pcap_loop: %s %i\n", pcap_geterr(_globals.handle),errno);
     }
-   
+
+    pcap_close( _globals.handle );
+    debug( 1, "SNIFF: Exitting\n");
     return NULL;
 }
 

@@ -161,6 +161,8 @@ int main( int argc, char** argv )
     /* An awesome way to wait for a shutdown signal. */
     while ( _globals.is_running == FLAG_ALIVE ) sleep( 1 );
 
+    arp_shutdown();
+    
     /* Destroy the arp eater */
     _destroy();
     
