@@ -168,9 +168,10 @@ int arp_shutdown ( void )
     if ( (hosts = arp_host_handlers_get_all()) != NULL ) {
         for (step = list_head(hosts) ; step ; step = list_node_next(step)) {
             host_handler_t* host = list_node_val(step);
+            pthread_t thread = host->thread;
             arp_host_handler_send_message( host, _HANDLER_MESG_KILL );
             
-            if ( pthread_join(host->thread, (void**)&ret) < 0 )
+            if ( pthread_join(thread, (void**)&ret) < 0 )
                 perrlog("pthread_join");
         }
     }
@@ -222,18 +223,26 @@ int arp_host_handler_kill_all ( void )
 
 int arp_host_handler_send_message_all ( handler_message_t mesg )
 {
-    list_t* hosts = arp_host_handlers_get_all();
+    list_t* hosts; 
     list_node_t* step;
 
-    if (hosts == NULL)
-        return perrlog("arp_get_host_handlers");
+    if ( sem_wait( &host_handlers_sem ) < 0 )
+        perrlog("sem_wait");
 
-    for (step = list_head(hosts) ; step ; step = list_node_next(step)) {
-        host_handler_t* host = list_node_val(step);
-        arp_host_handler_send_message( host, mesg);
+    if ( (hosts = arp_host_handlers_get_all()) == NULL ) 
+        perrlog("arp_get_host_handlers");
+    else {
+        for (step = list_head(hosts) ; step ; step = list_node_next(step)) {
+            host_handler_t* host = list_node_val(step);
+            arp_host_handler_send_message( host, mesg);
+        }
     }
     
-    list_raze(hosts);
+    if ( sem_post( &host_handlers_sem ) < 0 )
+        perrlog("sem_post");
+
+    if (hosts)
+        list_raze(hosts);
 
     return 0;
 }
