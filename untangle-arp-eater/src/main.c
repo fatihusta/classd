@@ -294,6 +294,8 @@ static int _init( int argc, char** argv )
         }
     }
 
+    if ( config_file_json != NULL ) json_object_put( config_file_json );
+
     _globals.daemon = MHD_start_daemon( MHD_USE_THREAD_PER_CONNECTION | MHD_USE_DEBUG,
                                         _globals.port, NULL, NULL, _globals.json_server.handler, 
                                         &_globals.json_server, MHD_OPTION_END );

@@ -65,6 +65,8 @@ static struct
 static int _get_network( arpeater_ae_config_t* config , struct in_addr* ip, 
                          arpeater_ae_config_network_t** network );
 
+static int _is_gateway( struct in_addr* ip );
+
 /*&
  * Returns 1 if the address is not the global broadcast address,
  * multicast address or any address.
@@ -149,6 +151,12 @@ int arpeater_ae_manager_get_ip_settings( struct in_addr* ip, arpeater_ae_manager
         settings->address.s_addr = ip->s_addr;
         settings->is_opportunistic = 1;
         
+        /* Check if it is any of the gateways */
+        if ( _is_gateway( ip ) == 1 ) {
+            settings->is_enabled = 0;
+            return 0;
+        }
+
         if ( _get_network( &_globals.config, ip, &network ) < 0 ) {
             return errlog( ERR_CRITICAL, "_get_network\n" );
         }
@@ -156,7 +164,7 @@ int arpeater_ae_manager_get_ip_settings( struct in_addr* ip, arpeater_ae_manager
         if (( network == NULL ) || ( network->is_enabled == 0 ) || ( network->is_spoof_enabled == 0 )) {
             settings->is_enabled = 0;
             return 0;
-        }
+        }           
 
         settings->is_enabled = 1;
         settings->is_opportunistic = network->is_opportunistic;
@@ -310,3 +318,31 @@ static int _is_automatic( struct in_addr* address )
 
     return 0;
 }
+
+static int _is_gateway( struct in_addr* address )
+{
+    in_addr_t addr = address->s_addr;
+    struct in_addr* gateway = &_globals.config.gateway;    
+    
+    if (( _is_automatic( gateway ) == 0 ) && ( addr == gateway->s_addr )) return 1;
+
+    gateway = &_globals.gateway;    
+    
+    if (( _is_automatic( gateway ) == 0 ) && ( addr == gateway->s_addr )) return 1;
+    
+    int c = 0;
+    arpeater_ae_config_network_t* network = NULL;
+
+    for ( c = 0 ; c < _globals.config.num_networks ; c++ ) {
+        network = &_globals.config.networks[c];
+        
+        if ( network->is_enabled == 0 )  continue;
+        
+        gateway = &network->gateway;
+        if (( _is_automatic( gateway ) == 0 ) && ( addr == gateway->s_addr )) return 1;
+    }
+
+    return 0;
+    
+}
+

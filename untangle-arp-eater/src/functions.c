@@ -27,18 +27,21 @@
 
 #include <mvutil/debug.h>
 #include <mvutil/errlog.h>
+#include <mvutil/unet.h>
 
 #include "json/object_utils.h"
 #include "json/serializer.h"
 #include "json/server.h"
 
-
+#include "ae/arp.h"
 #include "ae/config.h"
 #include "ae/manager.h"
 
 /* ten-4 */
 #define STATUS_OK 104
 #define STATUS_ERR 99
+
+#define _ADD_ACTIVE_HOST_MAX 256
 
 static struct json_object *_hello_world( struct json_object* request );
 
@@ -50,12 +53,15 @@ static struct json_object *_get_config( struct json_object* request );
 
 static struct json_object *_set_config( struct json_object* request );
 
-static struct json_object *_get_status( struct json_object* request );
+static struct json_object *_get_active_hosts( struct json_object* request );
+
+static struct json_object *_add_active_hosts( struct json_object* request );
 
 static struct json_object *_set_debug_level( struct json_object* request );
 
-static struct json_object *_shutdown( struct json_object* request );
+static struct json_object *_list_functions( struct json_object* request );
 
+static struct json_object *_shutdown( struct json_object* request );
 
 extern void arpeater_main_shutdown( void );
 
@@ -75,6 +81,9 @@ static struct
         { .name = "set_debug_level", .function = _set_debug_level },
         { .name = "update_network_settings", .function = _update_network_settings },
         { .name = "get_network_settings", .function = _get_network_settings },
+        { .name = "get_active_hosts", .function = _get_active_hosts },
+        { .name = "add_active_hosts", .function = _add_active_hosts },
+        { .name = "list_functions", .function = _list_functions },
         { .name = "shutdown", .function = _shutdown },
         { .name = NULL, .function = NULL }
     }
@@ -111,6 +120,39 @@ static json_serializer_t _network_settings_serializer = {
         .to_c = json_serializer_to_c_in_addr,
         .to_json = json_serializer_to_json_in_addr,
         .arg = (void*)offsetof( arpeater_ae_manager_settings_t, gateway )
+    }, JSON_SERIALIZER_FIELD_TERM }
+};
+
+static json_serializer_t _host_handler_serializer = {
+    .name = "host_handler",
+    .fields = {{
+        .name = "address",
+        .fetch_arg = 1,
+        .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
+        .to_c = json_serializer_to_c_in_addr,
+        .to_json = json_serializer_to_json_in_addr,
+        .arg = (void*)offsetof( host_handler_t, addr )
+    },{
+        .name = "enabled",
+        .fetch_arg = 1,
+        .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
+        .to_c = json_serializer_to_c_boolean,
+        .to_json = json_serializer_to_json_boolean,
+        .arg = (void*)offsetof( host_handler_t, settings.is_enabled )
+    },{
+        .name = "opportunistic",
+        .fetch_arg = 1,
+        .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
+        .to_c = json_serializer_to_c_boolean,
+        .to_json = json_serializer_to_json_boolean,
+        .arg = (void*)offsetof( host_handler_t, settings.is_opportunistic )
+    },{
+        .name = "gateway",
+        .fetch_arg = 1,
+        .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
+        .to_c = json_serializer_to_c_in_addr,
+        .to_json = json_serializer_to_json_in_addr,
+        .arg = (void*)offsetof( host_handler_t, settings.gateway )
     }, JSON_SERIALIZER_FIELD_TERM }
 };
         
@@ -323,18 +365,6 @@ static struct json_object *_get_network_settings( struct json_object* request )
     return response;
 }
 
-static struct json_object *_shutdown( struct json_object* request )
-{
-    arpeater_main_shutdown();
-
-    struct json_object* response = NULL;
-    if (( response = json_server_build_response( STATUS_OK, 0, "Shutdown signal sent" )) == NULL ) {
-        return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
-    }
-
-    return response;
-}
-
 static struct json_object *_set_debug_level( struct json_object* request )
 {
     int debug_level = 0;
@@ -362,5 +392,198 @@ static struct json_object *_set_debug_level( struct json_object* request )
     return response;
 }
 
+static struct json_object *_get_active_hosts( struct json_object* request )
+{
+    list_t* active_list = NULL;
+    struct json_object* hosts_json = NULL;
+    struct json_object* host_json = NULL;
+    struct json_object* response = NULL;
 
+    int _critical_section() {
+        int length = 0;
+        list_node_t* node = NULL;
+        host_handler_t* host = NULL;
 
+        if (( hosts_json = json_object_new_array()) == NULL ) {
+            return errlog( ERR_CRITICAL, "json_object_new_array\n" );
+        }
+        
+        if (( length = list_length( active_list )) < 0 ) return errlog( ERR_CRITICAL, "list_length\n" );
+        
+        int c = 0;
+        for ( c = 0, node = list_head( active_list)  ; c < length && node != NULL ; 
+              c++, node = list_node_next( node )) {
+            host_json = NULL;
+            if (( host = list_node_val( node )) == NULL ) return errlog( ERR_CRITICAL, "list_node_val\n" );
+            
+            if (( host_json = json_serializer_to_json( &_host_handler_serializer, host )) == NULL ) {
+                return errlog( ERR_CRITICAL, "json_serializer_to_json\n" );
+            }
+            
+            if ( json_object_array_add( hosts_json, host_json ) < 0 ) {
+                return errlog( ERR_CRITICAL, "json_object_array_add\n" );
+            }
+            
+            host_json = NULL;
+        }
+
+        if (( response = json_server_build_response( STATUS_OK, 0, "Retrieved active hosts. " )) == NULL ) {
+            return errlog( ERR_CRITICAL, "json_server_build_response\n" );
+        }
+
+        json_object_object_add( response, "hosts", hosts_json );
+        hosts_json = NULL;
+        
+        return 0;
+    }
+
+    int ret = 0;
+    
+    if (( active_list = arp_host_handlers_get_all()) == NULL ) {
+        errlog( ERR_CRITICAL, "arp_host_handlers_get_all\n" );
+        return json_object_get( _globals.internal_error );
+    }
+    
+    ret = _critical_section();
+    
+    if (( active_list != NULL ) && ( list_raze( active_list ) < 0 )) errlog( ERR_CRITICAL, "list_raze\n" );
+    
+    if ( ret < 0 ) {
+        errlog( ERR_CRITICAL, "_critical_section\n" );
+        if ( hosts_json != NULL ) json_object_put( hosts_json );
+        if ( host_json != NULL ) json_object_put( host_json );
+        if ( response != NULL ) json_object_put( response );
+        hosts_json = response = NULL;
+        return json_object_get( _globals.internal_error );
+    }
+        
+    return response;
+}
+
+static struct json_object *_add_active_hosts( struct json_object* request )
+{
+    struct json_object* hosts_json = NULL;
+
+    struct json_object* response = NULL;
+
+    if ( json_object_utils_get_array( request, "hosts", &hosts_json ) < 0 )  {
+        errlog( ERR_CRITICAL, "json_object_utils_get_array\n" );
+        return json_object_get( _globals.internal_error );
+    }
+    
+    if ( hosts_json == NULL ) {
+        if (( response = json_server_build_response( STATUS_ERR, 0, "Missing host array" )) == NULL ) {
+            return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
+        }
+        return response;
+    }
+
+    int c = 0;
+    int length = 0;
+    if (( length = json_object_array_length( hosts_json )) < 0 ) {
+        errlog( ERR_CRITICAL, "json_array_length\n" );
+        return json_object_get( _globals.internal_error );
+    }
+
+    if ( length > _ADD_ACTIVE_HOST_MAX ) {
+        errlog( ERR_WARNING, "Host size limit exceeded, adding first %d hosts\n", _ADD_ACTIVE_HOST_MAX );
+        length = _ADD_ACTIVE_HOST_MAX;
+    }
+    
+    struct json_object* ip_json = NULL;
+    char* ip_string = NULL;
+
+    /* Careful this is going onto the stack */
+    struct in_addr ip[length];
+
+    for ( c = 0 ; c < length ; c++ ) {
+        if (( ip_json = json_object_array_get_idx( hosts_json, c )) == NULL ) {
+            errlog( ERR_CRITICAL, "json_object_array_get_idx\n" );
+            return json_object_get( _globals.internal_error );
+        }
+
+        if (( ip_string = json_object_get_string( ip_json )) == NULL ) {
+            if (( response = json_server_build_response( STATUS_ERR, 0, "Item %d is not a string", c )) == NULL ) {
+                return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
+            }
+            return response;
+        }
+
+        if ( inet_aton( ip_string, &ip[c] ) == 0 ) {
+            if (( response = json_server_build_response( STATUS_ERR, 0, "Unable to parse %s", ip_string )) == NULL ) {
+                return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
+            }
+            return response;
+        }
+    }
+
+    for ( c =  0 ; c < length ; c++ ) {
+        if ( arp_host_handler_add( ip[c] ) < 0 ) {            
+            if ( errno == EADDRINUSE ) {
+                debug( 7, "A thread already exists for %s\n", unet_next_inet_ntoa( ip[c].s_addr ));
+                continue;
+            }
+            errlog( ERR_CRITICAL, "arp_host_handler_add\n" );
+            return json_object_get( _globals.internal_error );
+        }
+    }
+    
+    if (( response = json_server_build_response( STATUS_OK, 0, "Loaded %d addresses", length  )) == NULL ) {
+        return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
+    }
+    return response;    
+}
+
+static struct json_object *_list_functions( struct json_object* request )
+{
+    struct json_object* response= NULL;
+    struct json_object* functions = NULL;
+
+    int _critical_section() {
+        int c = 0;
+        for ( c = 0 ; ; c++ ) {
+            if (( _globals.function_table[c].name == NULL ) ||
+                ( _globals.function_table[c].function == NULL )) break;
+
+            if ( json_object_utils_array_add_string( functions, _globals.function_table[c].name ) < 0 ) {
+                return errlog( ERR_CRITICAL, "json_object_utils_array_add_string\n" );
+            }
+        }
+
+        if (( response = json_server_build_response( STATUS_OK, 0, "Listed functions" )) == NULL ) {
+            return errlog( ERR_CRITICAL, "json_server_build_response\n" );
+        }
+
+        json_object_object_add( response, "functions", functions );
+
+        functions = NULL;
+        
+        return 0;
+    }
+
+    if (( functions = json_object_new_array()) == NULL ) {
+        errlog( ERR_CRITICAL, "json_object_new_array\n" );
+        return json_object_get( _globals.internal_error );
+    }
+
+    if ( _critical_section() < 0 ) {
+        if ( functions != NULL ) json_object_put( functions );
+        if ( response != NULL ) json_object_put( response );
+        errlog( ERR_CRITICAL, "_critical_section\n" );
+        return json_object_get( _globals.internal_error );
+    }
+
+    return response;    
+}
+
+static struct json_object *_shutdown( struct json_object* request )
+{
+    arpeater_main_shutdown();
+
+    struct json_object* response = NULL;
+    if (( response = json_server_build_response( STATUS_OK, 0, "Shutdown signal sent" )) == NULL ) {
+        return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
+    }
+
+    return response;
+}
