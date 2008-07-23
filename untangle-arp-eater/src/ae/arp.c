@@ -336,6 +336,7 @@ static void* _host_handler_thread (void* arg)
                     sleep (.2);
                 }
                 go = 0;
+                settings->is_enabled = 0;
                 break;
             } /* switch (ret)  */
         } /* if (ret) */
