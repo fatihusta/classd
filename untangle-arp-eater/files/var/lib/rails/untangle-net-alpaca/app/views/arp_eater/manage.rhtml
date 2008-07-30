@@ -1,0 +1,31 @@
+<div id="title">
+  <h1>Untangle Single NIC Mode</h1>
+</div>
+<% form_tag( :action => 'save' ) do -%>
+
+  <div id="main-content-body">
+    <div class="wrapper">
+      <fieldset>
+        <ul class="text-fields">
+          <li>
+            <label for="single_nic"><%= "Enabled:".t %></label>
+            <%= check_box( "settings", "enabled" ) %>
+          </li>
+          <li>
+            <label for="single_nic"><%= "Broadcast:".t %></label>
+            <%= check_box( "settings", "broadcast" ) %>
+          </li>
+          <li>
+            <label for="single_nic"><%= "Gateway(blank for automatic):".t %></label>
+            <%= text_field( "settings", "gateway" ) %>
+          </li>
+        </ul>
+      </fieldset>
+      
+      <%= build_table( Alpaca::Table::Data.new( "arp-eater-network-list", @networks ), network_table_model) %> 
+      <%= build_table( Alpaca::Table::Data.new( "arp-eater-active-hosts", @active_hosts ), active_host_table_model) %> 
+    </div>
+  </div>
+
+  <%= build_footer %>
+<% end -%>  
