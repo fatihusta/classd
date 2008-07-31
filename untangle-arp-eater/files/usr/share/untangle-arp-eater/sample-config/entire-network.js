@@ -1,5 +1,5 @@
 /**
- * This is a sample designed to disable all of the scanning. 
+ * This is a sample designed to take over the local subnets 
  */
 {
   "gateway" : "0.0.0.0",
@@ -14,7 +14,7 @@
   "broadcast" : true,
 
   "networks" : [{
-      "enabled" : false,
+      "enabled" : true,
       "ip" : "0.0.0.0",
       "netmask" : "0.0.0.0",
       "spoof" : true,

@@ -282,6 +282,7 @@ static int _init( int argc, char** argv )
         errlog( ERR_CRITICAL, "json_object_from_file\n" );
     } else if ( is_error( config_file_json )) {
         errlog( ERR_CRITICAL, "json_object_from_file\n" );
+        config_file_json = NULL;
     } else {
         debug( 10, "MAIN: Loading the config file %s\n", _globals.config_file );
         /* Initialize the config manager */

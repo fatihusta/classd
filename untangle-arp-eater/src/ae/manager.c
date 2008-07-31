@@ -157,6 +157,11 @@ int arpeater_ae_manager_get_ip_settings( struct in_addr* ip, arpeater_ae_manager
             return 0;
         }
 
+        if ( ip->s_addr == INADDR_ANY ) {
+            settings->is_enabled = 0;
+            return 0;            
+        }
+
         if ( _get_network( &_globals.config, ip, &network ) < 0 ) {
             return errlog( ERR_CRITICAL, "_get_network\n" );
         }
@@ -322,7 +327,7 @@ static int _is_automatic( struct in_addr* address )
 static int _is_gateway( struct in_addr* address )
 {
     in_addr_t addr = address->s_addr;
-    struct in_addr* gateway = &_globals.config.gateway;    
+    struct in_addr* gateway = &_globals.config.gateway;
     
     if (( _is_automatic( gateway ) == 0 ) && ( addr == gateway->s_addr )) return 1;
 
