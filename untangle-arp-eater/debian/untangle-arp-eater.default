@@ -1,5 +1,5 @@
 #! /bin/dash
 
 ## Uncomment to change the default configuration file.
-# SHIELD_CONFIG_FILE=/etc/shield.conf
+ARP_EATER_CONFIG_FILE=/etc/arp-eater.conf
 

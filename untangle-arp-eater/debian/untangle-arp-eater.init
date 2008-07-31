@@ -1,7 +1,7 @@
 #! /bin/dash
 
 ### BEGIN INIT INFO
-# Provides:          untangle-shield
+# Provides:          untangle-arp-eater
 # Required-Start:    $local_fs $remote_fs
 # Required-Stop:
 # Default-Start:     2 3 4 5
@@ -12,14 +12,14 @@
 
 . /lib/lsb/init-functions
 
-DESC="Service for starting an untangle shield"
+DESC="Service for starting the untangle arp eater"
 
-DAEMON_NAME="shield"
+DAEMON_NAME="arp_eater"
 
-MONITOR="monitor"
-MONITOR_SCRIPT=/usr/share/untangle-shield/bin/${MONITOR}
+MONITOR="monitor.arp_eater"
+MONITOR_SCRIPT=/usr/share/untangle-arp-eater/bin/${MONITOR}
 
-PID_FILE="/var/run/untangle-shield.pid"
+PID_FILE="/var/run/untangle-arp-eater.pid"
 
 start()
 {
@@ -41,10 +41,6 @@ stop()
     killall ${MONITOR} > /dev/null  2>&1
     killall ${DAEMON_NAME} > /dev/null  2>&1
     rm -f ${PID_FILE}
-
-    ## Wait for the queue to be closed.
-    sleep 1
-    /etc/init.d/untangle-net-alpaca-iptables restart
 }
 
 case "$1" in

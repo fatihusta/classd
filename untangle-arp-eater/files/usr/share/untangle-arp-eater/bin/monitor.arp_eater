@@ -1,8 +1,8 @@
 #!/bin/dash
 
-mkdir -p /var/log/arp_eater
+mkdir -p /var/log/arp-eater
 
-exec >> /var/log/arp_eater/monitor.log 2>&1
+exec >> /var/log/arp-eater/debug.log 2>&1
 
 NAME="arp_eater"
 ARP_EATER_PID_FILE="/var/run/${NAME}.pid"
@@ -12,13 +12,11 @@ ARP_EATER_MONITOR_DELAY="10"
 load_defaults()
 {
     ARP_EATER_BIND_PORT="3002"
-    
-    ARP_EATER_CONF_FILE="/etc/arp_eater.conf"
-    
+    ARP_EATER_CONF_FILE="/etc/arp-eater.conf"
     ARP_EATER_MONITOR_DELAY="10"
 
-    ARP_EATER_LOG_OUT="/var/log/arp_eater/debug.log"
-    ARP_EATER_LOG_ERR="/var/log/arp_eater/error.log"
+    ARP_EATER_LOG_OUT="/var/log/arp-eater/debug.log"
+    ARP_EATER_LOG_ERR="/var/log/arp-eater/error.log"
     
     if [ -f /etc/default/untangle-arp_eater ] ; then
         . /etc/default/untangle-arp-eater
@@ -51,9 +49,7 @@ start_arp_eater()
     local t
     
     test -n "${ARP_EATER_BIND_PORT}" && t_args="${t_args} -p ${ARP_EATER_BIND_PORT}"
-    test -n "${ARP_EATER_QUEUE_NUM}" && t_args="${t_args} -q ${ARP_EATER_QUEUE_NUM}"
     test -n "${ARP_EATER_CONF_FILE}" && t_args="${t_args} -c ${ARP_EATER_CONF_FILE}"
-    test -n "${ARP_EATER_USER_FILE}" && t_args="${t_args} -b ${ARP_EATER_USER_FILE}"
     test -n "${ARP_EATER_LOG_OUT}" && t_args="${t_args} -o ${ARP_EATER_LOG_OUT}"
     test -n "${ARP_EATER_LOG_ERR}" && t_args="${t_args} -e ${ARP_EATER_LOG_ERR}"
     
@@ -64,12 +60,6 @@ is_still_running()
 {
     local t_pid="invalid"
     
-    ## First just validate that the queue is bound
-    if [ ! -f /proc/net/netfilter/nfnetlink_queue ] ; then return 1 ; fi
-
-    local t_queue_pid=`awk -v queue=${ARP_EATER_QUEUE_NUM} '{ if ( $1 == queue ) print $2 }' /proc/net/netfilter/nfnetlink_queue`
-    if [ -z "${t_queue_pid}" ]; then return 1 ; fi
-
     ## Perform a simple curl call to make sure the server is still running.
     curl -sf -F 'json_request=@-' -m 10 "http://localhost:${ARP_EATER_BIND_PORT}"  > /dev/null 2>&1 <<EOF
 { "function" : "hello_world" }
