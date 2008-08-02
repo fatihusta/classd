@@ -5,21 +5,30 @@ class OSLibrary::Debian::ArpEaterManager < OSLibrary::ArpEaterManager
 
   Service = "/etc/init.d/untangle-arp-eater"
 
-  DefaultConfigFile = "/etc/untangle-arp-eater.conf"
+  SingleNICFlag = "/etc/untangle-net-alpaca/single-nic-mode"
+  DefaultConfigFile = "/etc/arp-eater.conf"
   DefaultsFile = "/etc/default/untangle-arp-eater"
   STATUS_OK = 104
   STATUS_ERR = 99
 
   PostBoundary = "-----------------ae056fea542a76d4ec715"
 
-  Service = "/etc/init.d/untangle-arp-eater"
-
   DefaultPort = 3002
 
   GetActiveHosts = { "function" => "get_active_hosts" }.to_json
   HelloWorld = { "function" => "hello_world" }.to_json
   
+  def register_hooks
+    os["network_manager"].register_hook( -200, "arp_eater_manager", "write_files", :hook_write_files )
+    os["network_manager"].register_hook( 400, "arp_eater_manager", "run_services", :hook_run_services )
+  end
+
   def hook_commit
+    write_files
+    run_services
+  end
+
+  def hook_write_files
     settings = ArpEaterSettings.find( :first )
     if settings.nil?
       logger.warn "No settings"
@@ -30,6 +39,8 @@ class OSLibrary::Debian::ArpEaterManager < OSLibrary::ArpEaterManager
 
     ## Serialize the settings
     file_contents = serialize_settings( settings, networks )
+
+    os["override_manager"].write_file( SingleNICFlag, settings.enabled, "\n" )
     
     ## If the arp eater is running, use the request URL.
     request = { "function" => "set_config", "config" => file_contents, "write_config" => true }.to_json
@@ -41,7 +52,9 @@ class OSLibrary::Debian::ArpEaterManager < OSLibrary::ArpEaterManager
 
     #### serialize down to the config file.
     os["override_manager"].write_file( get_config_file, header, "\n", file_contents.to_json, "\n" )
-    
+  end
+
+  def hook_run_services
     #### restart the arp eater.
     logger.warn "Unable to restart the arp eater." unless run_command( "#{Service} restart" ) == 0
   end

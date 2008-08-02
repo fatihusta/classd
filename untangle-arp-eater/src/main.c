@@ -42,7 +42,7 @@
 #include "ae/manager.h"
 
 
-#define DEFAULT_CONFIG_FILE  "/etc/arpeater.conf"
+#define DEFAULT_CONFIG_FILE  "/etc/arp-eater.conf"
 #define DEFAULT_DEBUG_LEVEL  5
 #define DEFAULT_BIND_PORT 3002
 #define DEFAULT_INTERFACE "eth0"

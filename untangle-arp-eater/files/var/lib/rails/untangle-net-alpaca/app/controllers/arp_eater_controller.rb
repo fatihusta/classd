@@ -64,5 +64,4 @@ class ArpEaterController < ApplicationController
 
     os["arp_eater_manager"].commit
   end
-
 end
