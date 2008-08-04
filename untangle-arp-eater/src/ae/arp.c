@@ -254,6 +254,46 @@ int arp_host_handler_send_message ( host_handler_t* host, handler_message_t mesg
 
 
 /**
+ * Reset the timeout time of that host handler
+ */
+static int _host_handler_reset_timer (host_handler_t* host)
+{
+    if ( gettimeofday ( &host->timeout, NULL ) < 0) 
+        return perrlog("gettimeofday");
+
+    host->timeout.tv_sec += 60 * 60; /* XXX 1 hour - should be variable */
+    return 0;
+}
+
+/**
+ * check if the host handler is past its timeout time
+ * returns: 1 if yes, 0 if no
+ */
+static int _host_handler_is_timedout (host_handler_t* host)
+{
+    struct timeval now;
+
+    if ( gettimeofday( &now, NULL ) < 0 ) {
+        perrlog("gettimeofday");
+        return 0;
+    }
+
+    /* only check seconds - close enough */
+    if ( now.tv_sec > host->timeout.tv_sec )
+        return 1;
+
+    return 0;
+}
+
+/**
+ * returns whether or not the host is a broadcast address
+ */
+static int _host_handler_is_broadcast (host_handler_t* host)
+{
+    return (host->addr.s_addr == 0xffffffff);
+}
+
+/**
  * This function handles each host
  * It arp spoofs the victim as the gateway
  * It arp spoofs the gateway as the victim
@@ -263,7 +303,7 @@ static void* _host_handler_thread (void* arg)
 {
     host_handler_t* host = (host_handler_t*) arg;
     arpeater_ae_manager_settings_t* settings = &host->settings;
-    int ret, go = 1;
+    int ret, err, go = 1;
     
     debug(1, "HOST: New Host handler (%s)\n", unet_next_inet_ntoa(host->addr.s_addr));
 
@@ -293,23 +333,34 @@ static void* _host_handler_thread (void* arg)
             switch (ret) {
             case _HANDLER_MESG_REFRESH_CONFIG:
                 debug( 1, "HOST: Host (%s) Config Refresh\n", unet_inet_ntoa(host->addr.s_addr));
-            
+                err = 0;
+                
                 if ( arpeater_ae_manager_get_ip_settings( &host->addr, settings ) < 0)
-                    return (void*)perrlog("arpeater_ae_manager_get_ip_settings");
+                    err = errlog(ERR_CRITICAL, "arpeater_ae_manager_get_ip_settings");
 
-                if ( _arp_lookup( &host->host_mac, settings->address.s_addr) < 0 ) 
-                    errlog(ERR_WARNING, "Failed to lookup MAC of target (%s) (%s)\n",unet_inet_ntoa(host->addr.s_addr),errstr);
+                if ( _arp_lookup( &host->host_mac, settings->address.s_addr ) < 0 ) 
+                    err = errlog(ERR_CRITICAL, "Failed to lookup MAC of target (%s) (%s)\n",unet_inet_ntoa(settings->address.s_addr),errstr);
 
-                if ( _arp_lookup( &host->gateway_mac, settings->gateway.s_addr) < 0 ) 
-                    errlog(ERR_WARNING, "Failed to lookup MAC of target (%s) (%s)\n",unet_inet_ntoa(host->addr.s_addr),errstr);
+                if ( _arp_lookup( &host->gateway_mac, settings->gateway.s_addr ) < 0 ) 
+                    err = errlog(ERR_CRITICAL, "Failed to lookup MAC of gateway (%s) (%s)\n",unet_inet_ntoa(settings->gateway.s_addr),errstr);
 
-                debug(1, "HOST: Host handler config: (host %s) (host_mac: %s) (gateway %s) ",
-                      unet_next_inet_ntoa(host->addr.s_addr), 
-                      ether_ntoa(&host->host_mac),
-                      unet_next_inet_ntoa(settings->gateway.s_addr));
-                debug_nodate(1, "(gateway_mac %s) (enabled %i)\n",
-                             ether_ntoa(&host->gateway_mac),
-                             settings->is_enabled);
+                if ( _host_handler_reset_timer( host ) < 0 )
+                    err = errlog(ERR_CRITICAL, "_host_handler_reset_timer");
+
+                if (err) {
+                    go = 0;
+                    settings->is_enabled = 0;
+                }
+                else {
+                    debug(1, "HOST: Host handler config: (host %s) (host_mac: %s) (gateway %s) ",
+                          unet_next_inet_ntoa(host->addr.s_addr), 
+                          ether_ntoa(&host->host_mac),
+                          unet_next_inet_ntoa(settings->gateway.s_addr));
+                    debug_nodate(1, "(gateway_mac %s) (enabled %i)\n",
+                                 ether_ntoa(&host->gateway_mac),
+                                 settings->is_enabled);
+                }
+
                 break;
                 
             case _HANDLER_MESG_KILL:
@@ -321,7 +372,7 @@ static void* _host_handler_thread (void* arg)
                     /**
                      * If this is a broadcast thread
                      */
-                    if (host->addr.s_addr == 0xffffffff) {
+                    if ( _host_handler_is_broadcast( host ) ) {
                         /**
                          * Send to everyone that the gateway is at the gateway
                          */
@@ -350,11 +401,25 @@ static void* _host_handler_thread (void* arg)
             } /* switch (ret)  */
         } /* if (ret) */
 
+        /**
+         * If timed out then exit
+         * (Broadcast thread does not time out)
+         */
+        if ( _host_handler_is_timedout( host ) ) {
+            debug(1, "HOST: Host handler (%s) time out.\n", unet_next_inet_ntoa(host->addr.s_addr));
+            go = 0;
+            settings->is_enabled = 0;
+            break;
+        }
+
+        /**
+         * If enabled, send the arps
+         */
         if (settings->is_enabled) {
             /**
              * If this is a broadcast thread
              */
-            if (host->addr.s_addr == 0xffffffff) {
+            if ( _host_handler_is_broadcast( host ) ) {
                 /**
                  * send to everyone that gateway is at my mac
                  */
@@ -402,7 +467,8 @@ static int _host_handler_start ( in_addr_t addr )
         perrlog("sem_wait");
     
     do {
-        if ( ht_lookup( &host_handlers, (void*) addr) != NULL ) {
+        if ( (newhost = (host_handler_t*) ht_lookup( &host_handlers, (void*) addr)) != NULL ) {
+            _host_handler_reset_timer( newhost ); /* just saw an ARP - reset timer of current */
             ret = -1;
             break;
         }
@@ -413,6 +479,12 @@ static int _host_handler_start ( in_addr_t addr )
         }
 
         newhost->addr.s_addr = addr;
+
+        if ( gettimeofday( &newhost->starttime, NULL ) < 0 ) {
+            ret = perrlog("gettimeofday");
+            free(newhost);
+            break;
+        }   
 
         if ( mailbox_init( &newhost->mbox ) < 0 ) {
             ret = perrlog("mailbox_init");
@@ -475,7 +547,7 @@ static int _arp_lookup ( struct ether_addr *dest, in_addr_t ip )
 {
 	int i;
 
-    for (i=0;i<3;i++) {
+    for (i=0;i<5;i++) {
 		if ( _arp_table_lookup(dest, ip) == 0 )
             return 0;
 

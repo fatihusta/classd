@@ -21,6 +21,7 @@
 
 #include <mvutil/mailbox.h>
 #include <net/ethernet.h>
+#include <sys/time.h>
 #include "config.h"
 #include "manager.h"
 
@@ -33,6 +34,8 @@ typedef struct host_handler
     mailbox_t mbox;
     struct ether_addr host_mac;
     struct ether_addr gateway_mac;
+    struct timeval starttime;
+    struct timeval timeout;
 } host_handler_t;
 
 typedef enum
