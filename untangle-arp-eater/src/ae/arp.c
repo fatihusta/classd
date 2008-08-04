@@ -294,6 +294,79 @@ static int _host_handler_is_broadcast (host_handler_t* host)
 }
 
 /**
+ * Send the spoof arps
+ */
+static int _host_handler_send_arps (host_handler_t* host)
+{
+    arpeater_ae_manager_settings_t* settings = &host->settings;
+
+    /**
+     * If this is a broadcast thread
+     */
+    if ( _host_handler_is_broadcast( host ) ) {
+        /**
+         * send to everyone that gateway is at my mac
+         */
+        if ( _arp_send( ARPOP_REPLY, NULL, settings->gateway.s_addr, NULL, (in_addr_t)0 ) < 0 )
+            return perrlog("_arp_send");
+    }
+    else {
+        /**
+         * send to victim that gateway is at my mac
+         */
+        if ( _arp_send( ARPOP_REPLY, NULL, settings->gateway.s_addr, host->host_mac.ether_addr_octet, settings->address.s_addr ) < 0 )
+            return perrlog("_arp_send");
+                  
+        /**
+         * send to gateway that victim is at my mac 
+         */
+        if ( _arp_send( ARPOP_REPLY, NULL, settings->address.s_addr, host->gateway_mac.ether_addr_octet, settings->gateway.s_addr ) < 0 )
+            return perrlog("_arp_send");
+    }
+
+    return 0;
+}
+
+/**
+ * Undo ARPS by sending fixed arps
+ */
+static int _host_handler_undo_arps (host_handler_t* host)
+{
+    int ret;
+    arpeater_ae_manager_settings_t* settings = &host->settings;
+    
+    for (ret = 0; ret < 3 ;ret++) {
+        /**
+         * If this is a broadcast thread
+         */
+        if ( _host_handler_is_broadcast( host ) ) {
+            /**
+             * Send to everyone that the gateway is at the gateway
+             */
+            if ( _arp_send( ARPOP_REPLY, host->gateway_mac.ether_addr_octet, settings->gateway.s_addr, NULL, (in_addr_t)0 ) < 0 )
+                perrlog("_arp_send");
+        }
+        else {
+            /**
+             * send to victim that gateway is at the gateway
+             */
+            if ( _arp_send( ARPOP_REPLY, host->gateway_mac.ether_addr_octet, settings->gateway.s_addr, host->host_mac.ether_addr_octet, settings->address.s_addr ) < 0 )
+                perrlog("_arp_send");
+                  
+            /**
+             * send to gateway that victim is at them victim
+             */
+            if ( _arp_send( ARPOP_REPLY, host->host_mac.ether_addr_octet, settings->address.s_addr, host->gateway_mac.ether_addr_octet, settings->gateway.s_addr ) < 0 )
+                perrlog("_arp_send");
+        }
+
+        sleep (.2);
+    }
+
+    return 0;
+}
+
+/**
  * This function handles each host
  * It arp spoofs the victim as the gateway
  * It arp spoofs the gateway as the victim
@@ -338,20 +411,24 @@ static void* _host_handler_thread (void* arg)
                 if ( arpeater_ae_manager_get_ip_settings( &host->addr, settings ) < 0)
                     err = errlog(ERR_CRITICAL, "arpeater_ae_manager_get_ip_settings");
 
-                if ( _arp_lookup( &host->host_mac, settings->address.s_addr ) < 0 ) 
-                    err = errlog(ERR_CRITICAL, "Failed to lookup MAC of target (%s) (%s)\n",unet_inet_ntoa(settings->address.s_addr),errstr);
-
-                if ( _arp_lookup( &host->gateway_mac, settings->gateway.s_addr ) < 0 ) 
-                    err = errlog(ERR_CRITICAL, "Failed to lookup MAC of gateway (%s) (%s)\n",unet_inet_ntoa(settings->gateway.s_addr),errstr);
-
                 if ( _host_handler_reset_timer( host ) < 0 )
                     err = errlog(ERR_CRITICAL, "_host_handler_reset_timer");
 
+                if (settings->is_enabled) {
+                    if ( _arp_lookup( &host->host_mac, settings->address.s_addr ) < 0 ) 
+                        err = errlog(ERR_CRITICAL, "Failed to lookup MAC of target (%s) (%s)\n",unet_inet_ntoa(settings->address.s_addr),errstr);
+                    
+                    if ( _arp_lookup( &host->gateway_mac, settings->gateway.s_addr ) < 0 ) 
+                        err = errlog(ERR_CRITICAL, "Failed to lookup MAC of gateway (%s) (%s)\n",unet_inet_ntoa(settings->gateway.s_addr),errstr);
+                }
+                
                 if (err) {
                     go = 0;
                     settings->is_enabled = 0;
+                    break;
                 }
-                else {
+                
+                if (settings->is_enabled) {
                     debug(1, "HOST: Host handler config: (host %s) (host_mac: %s) (gateway %s) ",
                           unet_next_inet_ntoa(host->addr.s_addr), 
                           ether_ntoa(&host->host_mac),
@@ -360,41 +437,19 @@ static void* _host_handler_thread (void* arg)
                                  ether_ntoa(&host->gateway_mac),
                                  settings->is_enabled);
                 }
-
+                else {
+                    debug(1, "HOST: Host handler config: (host %s) - disabled\n",
+                          unet_next_inet_ntoa(host->addr.s_addr));
+                }
+                
                 break;
                 
             case _HANDLER_MESG_KILL:
                 debug( 1, "HOST: Host (%s) Kill - Cleaning up\n", unet_inet_ntoa(host->addr.s_addr));
-                /**
-                 * Undo arp spoofing
-                 */
-                for (ret = 0; ret < 3 ;ret++) {
-                    /**
-                     * If this is a broadcast thread
-                     */
-                    if ( _host_handler_is_broadcast( host ) ) {
-                        /**
-                         * Send to everyone that the gateway is at the gateway
-                         */
-                        if ( _arp_send( ARPOP_REPLY, host->gateway_mac.ether_addr_octet, settings->gateway.s_addr, NULL, (in_addr_t)0 ) < 0 )
-                            perrlog("_arp_send");
-                    }
-                    else {
-                        /**
-                         * send to victim that gateway is at the gateway
-                         */
-                        if ( _arp_send( ARPOP_REPLY, host->gateway_mac.ether_addr_octet, settings->gateway.s_addr, host->host_mac.ether_addr_octet, settings->address.s_addr ) < 0 )
-                            perrlog("_arp_send");
-                  
-                        /**
-                         * send to gateway that victim is at them victim
-                         */
-                        if ( _arp_send( ARPOP_REPLY, host->host_mac.ether_addr_octet, settings->address.s_addr, host->gateway_mac.ether_addr_octet, settings->gateway.s_addr ) < 0 )
-                            perrlog("_arp_send");
-                    }
 
-                    sleep (.2);
-                }
+                if (settings->is_enabled) 
+                    _host_handler_undo_arps(host);
+                
                 go = 0;
                 settings->is_enabled = 0;
                 break;
@@ -405,7 +460,7 @@ static void* _host_handler_thread (void* arg)
          * If timed out then exit
          * (Broadcast thread does not time out)
          */
-        if ( _host_handler_is_timedout( host ) ) {
+        if ( _host_handler_is_timedout( host ) && !_host_handler_is_broadcast( host) ) {
             debug(1, "HOST: Host handler (%s) time out.\n", unet_next_inet_ntoa(host->addr.s_addr));
             go = 0;
             settings->is_enabled = 0;
@@ -415,31 +470,9 @@ static void* _host_handler_thread (void* arg)
         /**
          * If enabled, send the arps
          */
-        if (settings->is_enabled) {
-            /**
-             * If this is a broadcast thread
-             */
-            if ( _host_handler_is_broadcast( host ) ) {
-                /**
-                 * send to everyone that gateway is at my mac
-                 */
-                if ( _arp_send( ARPOP_REPLY, NULL, settings->gateway.s_addr, NULL, (in_addr_t)0 ) < 0 )
-                    perrlog("_arp_send");
-            }
-            else {
-                /**
-                 * send to victim that gateway is at my mac
-                 */
-                if ( _arp_send( ARPOP_REPLY, NULL, settings->gateway.s_addr, host->host_mac.ether_addr_octet, settings->address.s_addr ) < 0 )
-                    perrlog("_arp_send");
-                  
-                /**
-                 * send to gateway that victim is at my mac 
-                 */
-                if ( _arp_send( ARPOP_REPLY, NULL, settings->address.s_addr, host->gateway_mac.ether_addr_octet, settings->gateway.s_addr ) < 0 )
-                    perrlog("_arp_send");
-            }
-        }
+        if (settings->is_enabled) 
+            _host_handler_send_arps(host);
+        
     } /* while (go) */
 
     if ( ht_remove( &host_handlers, (void*)host->addr.s_addr) < 0 )
@@ -547,7 +580,7 @@ static int _arp_lookup ( struct ether_addr *dest, in_addr_t ip )
 {
 	int i;
 
-    for (i=0;i<5;i++) {
+    for (i=0;i<3;i++) {
 		if ( _arp_table_lookup(dest, ip) == 0 )
             return 0;
 
