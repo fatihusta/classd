@@ -277,22 +277,24 @@ static int _init( int argc, char** argv )
     }
 
     struct json_object* config_file_json = NULL;
-    if (( config_file_json = json_object_from_file( _globals.config_file )) == NULL ) {
-        /* Ignore the error, and just load the defaults */
-        errlog( ERR_CRITICAL, "json_object_from_file\n" );
-    } else if ( is_error( config_file_json )) {
-        errlog( ERR_CRITICAL, "json_object_from_file\n" );
-        config_file_json = NULL;
-    } else {
-        debug( 10, "MAIN: Loading the config file %s\n", _globals.config_file );
-        /* Initialize the config manager */
-        if ( arpeater_ae_config_load_json( &config, config_file_json ) < 0 ) {
-            errlog( ERR_CRITICAL, "arpeater_ae_config_load_json\n" );
+    if ( _globals.config_file != NULL ) {
+        if (( config_file_json = json_object_from_file( _globals.config_file )) == NULL ) {
+            /* Ignore the error, and just load the defaults */
+            errlog( ERR_CRITICAL, "json_object_from_file\n" );
+        } else if ( is_error( config_file_json )) {
+            errlog( ERR_CRITICAL, "json_object_from_file\n" );
+            config_file_json = NULL;
         } else {
-            if ( arpeater_functions_load_config( &config ) < 0 ) {
-                errlog( ERR_CRITICAL, "barfight_functions_load_config\n" );
+            debug( 10, "MAIN: Loading the config file %s\n", _globals.config_file );
+            /* Initialize the config manager */
+            if ( arpeater_ae_config_load_json( &config, config_file_json ) < 0 ) {
+                errlog( ERR_CRITICAL, "arpeater_ae_config_load_json\n" );
+            } else {
+                if ( arpeater_functions_load_config( &config ) < 0 ) {
+                    errlog( ERR_CRITICAL, "barfight_functions_load_config\n" );
+                }
             }
-        }
+        }        
     }
 
     if ( config_file_json != NULL ) json_object_put( config_file_json );
