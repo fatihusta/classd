@@ -2,12 +2,13 @@ Source: untangle-support-keyring
 Section: admin
 Priority: important
 Maintainer: Sebastien Delafond <seb@untangle.com>
+Uploaders: Untangle Buildbot <buildbot@untangle.com>
 Build-Depends: debhelper (>> 3.0.0)
-Standards-Version: 3.7.2
+Standards-Version: 3.8.0
 
 Package: untangle-support-keyring
 Depends: untangle-openssh-server
 Architecture: all
 Description: The Untangle support keyring
-  The Untangle support keyring.
+ The Untangle support keyring, allowing for remote support.
 

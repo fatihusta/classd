@@ -1,0 +1,5 @@
+page.insert_html( :top, "arp-eater-network-list", :partial => "application/table_row", :object => @network, :locals => { :table_model => network_table_model, :data => Alpaca::Table::Data.new( "arp-eater-network-list", [ @network ] ) })
+page.sortable( "arp-eater-network-list", {:scroll => "'arp-eater-network-list-list-table'", :constraint => "vertical", :onChange => "function(){enableSave(); TableManager.updateRowStyles( 'arp-eater-network-list' );}" } )
+page << "TableManager.updateRowStyles( 'arp-eater-network-list' );"
+page << "initTableRow('arp-eater-network-list');"
+page << "enableSave();"

@@ -1,0 +1,7 @@
+/var/log/arp-eater/*.log {
+rotate 2
+size 500k
+compress
+notifempty
+copytruncate
+}

@@ -5,6 +5,8 @@
 include /usr/share/cdbs/1/rules/debhelper.mk
 include /usr/share/cdbs/1/rules/patchsys-quilt.mk
 
+DH_OPTIONS := -n
+
 PREFIX := debian/untangle-support-agent
 
 MANPAGES := debian/rbot.1
@@ -26,7 +28,9 @@ install/untangle-support-agent::
 	# disabled plugins
 #	find $(PREFIX)/usr/share/rbot -name "*.rb" -a ! -name ssh.rb -exec mv "{}" "{}".disabled \;
 	find $(PREFIX)/usr/share/rbot -iregex ".*\.rb\(\.disabled\)?" -a ! -iregex '.*/\(ssh\|exec\)\.rb' -exec rm -f "{}" \;
-	cp -r home-rbot/.rbot $(PREFIX)/home/rbot
+	chmod 755 $(PREFIX)/usr/share/rbot/plugins/extend_trial.sh
+	rm -fr $(PREFIX)/usr/share/rbot/contrib
+	cp -r home-rbot/.rbot $(PREFIX)/usr/share/untangle-support-agent/rbot-home/
 
 binary-install/untangle-support-agent::
 	dh_installman $(MANPAGES)

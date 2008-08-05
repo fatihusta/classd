@@ -1,0 +1,5 @@
+#! /bin/dash
+
+## Uncomment to change the default configuration file.
+ARP_EATER_CONFIG_FILE=/etc/arp-eater.conf
+

@@ -1,6 +1,6 @@
 SOURCE := generator.c
 OBJECTS := $(SOURCE:.c=.o)
-BINARY := mvverifykey
+BINARY := utverifykey
 LDFLAGS := -lssl
 CFLAGS := -c -Wall -DMV_VERIFY_KEY_ONLY
 DESTDIR := /usr/bin
