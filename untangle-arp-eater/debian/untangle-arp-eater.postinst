@@ -18,7 +18,7 @@ mkdir -p `dirname ${LOG_FILE}`
 echo "[`date`] DEBUG debian upgrade." >> ${LOG_FILE}
 
 if [ ! -f ${ARP_EATER_CONFIG_FILE} ]; then
-    echo "Copying in ${ARP_EATER_CONFIG_FILE} to ${ARP_EATER_CONFIG_FILE}"
+    echo "Copying in ${ARP_EATER_DEFAULT_CONFIG} to ${ARP_EATER_CONFIG_FILE}"
     cp ${ARP_EATER_DEFAULT_CONFIG} ${ARP_EATER_CONFIG_FILE}
 fi
 
