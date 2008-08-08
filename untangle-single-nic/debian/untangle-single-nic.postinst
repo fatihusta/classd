@@ -1,0 +1,28 @@
+#!/bin/sh
+
+ourInit() {
+if [ -x /usr/sbin/invoke-rc.d ] && [ ! "`readlink /usr/sbin/invoke-rc.d`" = /bin/true ] ; then
+  invoke-rc.d $1 $2
+else
+  /etc/init.d/$1 $2
+fi
+}
+
+LOG_FILE=/var/log/untangle-single-nic/alpaca-upgrade.log
+
+mkdir -p `dirname ${LOG_FILE}`
+
+echo "[`date`] DEBUG debian upgrade." >> ${LOG_FILE}
+
+## Create a new group for alapca users
+grep -q alpaca /etc/group || addgroup alpaca
+
+## Make the dnsmasq script executable.
+[ -f "/etc/untangle-single-nic/scripts/dnsmasq" ] && chmod +x /etc/untangle-single-nic/scripts/dnsmasq
+
+if [ -x "/etc/init.d/untangle-single-nic" ]; then
+    update-rc.d untangle-single-nic defaults >/dev/null
+    ourInit untangle-single-nic restart >> ${LOG_FILE} 2>&1 || exit 0
+fi
+    
+exit 0
