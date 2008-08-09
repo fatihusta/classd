@@ -49,7 +49,7 @@ typedef enum
  * This initializes the arp sniffing and host handling
  * Do not call any other functions before calling init
  */
-int arp_init ( char* interface );
+int arp_init ( void );
 
 /**
  * This shuts down the arp sniffing and host handling

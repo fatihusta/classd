@@ -45,7 +45,6 @@
 #define DEFAULT_CONFIG_FILE  "/etc/arp-eater.conf"
 #define DEFAULT_DEBUG_LEVEL  5
 #define DEFAULT_BIND_PORT 3002
-#define DEFAULT_INTERFACE "eth0"
 
 #define FLAG_ALIVE      0x543F00D
 
@@ -63,7 +62,6 @@ static struct
     pthread_t scheduler_thread;
     json_server_t json_server;
     struct MHD_Daemon *daemon;
-    char* interface;
 } _globals = {
     .is_running = 0,
     .scheduler_thread = 0,
@@ -76,7 +74,6 @@ static struct
     .std_out_filename = NULL,
     .std_out = -1,
     .debug_level = DEFAULT_DEBUG_LEVEL,
-    .interface = DEFAULT_INTERFACE
 };
 
 static int _parse_args( int argc, char** argv );
@@ -152,7 +149,7 @@ int main( int argc, char** argv )
 
     _globals.is_running = FLAG_ALIVE;
 
-    if ( arp_init(_globals.interface) < 0 )
+    if ( arp_init() < 0 )
         return perrlog("arp_init");
     
     debug( 1, "MAIN: Setting up signal handlers.\n" );
@@ -178,7 +175,7 @@ static int _parse_args( int argc, char** argv )
 {
     int c = 0;
     
-     while (( c = getopt( argc, argv, "dhp:c:o:e:l:i:" ))  != -1 ) {
+     while (( c = getopt( argc, argv, "dhp:c:o:e:l:" ))  != -1 ) {
     switch( c ) {
          case 'd':
     _globals.daemonize = 1;
@@ -206,10 +203,6 @@ static int _parse_args( int argc, char** argv )
          case 'l':
     _globals.debug_level = atoi( optarg );
              break;
-
-         case 'i':
-    _globals.interface = optarg;
-             break;
             
          case '?':
     return -1;
@@ -229,7 +222,6 @@ static int _usage( char *name )
      fprintf( stderr, "\t-o <log-file>: File to place standard output(more useful with -d).\n" );
      fprintf( stderr, "\t-e <log-file>: File to place standard error(more useful with -d).\n" );
      fprintf( stderr, "\t-l <debug-level>: Debugging level.\n" );    
-     fprintf( stderr, "\t-i <interface>: Interface to sniff for arps.\n" );    
      fprintf( stderr, "\t-h: Halp (show this message)\n" );
      return -1;
 }

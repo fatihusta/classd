@@ -47,7 +47,7 @@ static sem_t host_handlers_sem;
 
 static struct
 {
-    char* interface;
+    char interface[IF_NAMESIZE];
     int sock_raw;
     struct sockaddr_ll device;
     ht_t hosts;
@@ -72,14 +72,18 @@ static int   _arp_table_lookup ( struct ether_addr *dest, in_addr_t ip );
 static int   _host_handler_start ( in_addr_t addr );
 
 
-int arp_init ( char* interface )
+int arp_init ( void )
 {
     struct ifreq card;
     int pf;
     int i;
+    arpeater_ae_config_t config;
+    
+    if ( arpeater_ae_manager_get_config(&config) < 0)
+        return perrlog("arpeater_ae_manager_get_config");
 
     bzero(&_globals,sizeof(_globals));
-    _globals.interface = interface; 
+    strncpy(_globals.interface,config.interface,IF_NAMESIZE);
     _globals.device.sll_family = AF_PACKET;
 
     if ( (pf = socket( PF_PACKET, SOCK_RAW, htons(ETH_P_ALL) )) < 0 ) 

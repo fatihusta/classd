@@ -49,7 +49,7 @@ static struct
     },
 
     .default_config = {
-        .interface = "",
+        .interface = "eth0",
         .gateway = { .s_addr = INADDR_ANY },
         .timeout_ms = 0,
         .rate_ms = 0,
