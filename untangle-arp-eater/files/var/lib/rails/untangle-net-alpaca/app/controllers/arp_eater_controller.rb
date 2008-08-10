@@ -10,7 +10,7 @@ class ArpEaterController < ApplicationController
 
   def create_network
     @network = ArpEaterNetworks.new( :enabled => true, :spoof => true,
-                                     :passive => false, :gateway => "auto" )
+                                     :passive => true, :gateway => "auto" )
 
     @network.parseNetwork( "192.168.1.0 / 24" )
   end

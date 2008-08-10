@@ -16,7 +16,7 @@ class Alpaca::Components::ArpEaterComponent < Alpaca::Component
   def pre_prepare_configuration( config, settings_hash )
     settings = ArpEaterSettings.new( :enabled => false, :gateway => "auto", :broadcast => false ) 
     network = ArpEaterNetworks.new( :enabled => false, :spoof => false, :ip => "0.0.0.0", :netmask => "0",
-                                    :passive => false, :gateway => "auto", 
+                                    :passive => true, :gateway => "auto", 
                                     :description => "Local network" )
 
     if ( config["single_nic_mode"] == true )

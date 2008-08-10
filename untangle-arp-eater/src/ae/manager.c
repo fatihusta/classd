@@ -58,7 +58,7 @@ static struct
         .is_enabled = 1,
         .timeout_ms = 0,
         .is_spoof_enabled = 1,
-        .is_passive = 0
+        .is_passive = 1
     }
 };
 
