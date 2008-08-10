@@ -29,8 +29,10 @@
 #include <mvutil/errlog.h>
 #include <mvutil/unet.h>
 
+#include "ae/arp.h"
 #include "ae/config.h"
 #include "ae/manager.h"
+
 
 /* This is in network byte order */
 #define _MULTICAST_MASK          htonl(0xF0000000)
@@ -50,7 +52,7 @@ static struct
     arpeater_ae_config_network_t broadcast_network;
     char gateway_interface[IF_NAMESIZE];
 } _globals = {
-    .mutex = PTHREAD_MUTEX_INITIALIZER,
+    .mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP,
     .gateway = { .s_addr = INADDR_ANY },
     .broadcast_network = { 
         .gateway = { .s_addr = INADDR_ANY },
@@ -98,6 +100,9 @@ int arpeater_ae_manager_set_config( arpeater_ae_config_t* config )
         memcpy( &_globals.config, config, sizeof( _globals.config ));
 
         _globals.broadcast_network.is_enabled = _globals.config.is_broadcast_enabled;
+
+        if ( arp_refresh_config() < 0 ) return errlog( ERR_CRITICAL, "arp_refresh_config\n" );
+
         return 0;
     }
 
