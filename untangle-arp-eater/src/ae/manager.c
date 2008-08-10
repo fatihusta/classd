@@ -29,7 +29,6 @@
 #include <mvutil/errlog.h>
 #include <mvutil/unet.h>
 
-#include "ae/arp.h"
 #include "ae/config.h"
 #include "ae/manager.h"
 
@@ -100,8 +99,6 @@ int arpeater_ae_manager_set_config( arpeater_ae_config_t* config )
         memcpy( &_globals.config, config, sizeof( _globals.config ));
 
         _globals.broadcast_network.is_enabled = _globals.config.is_broadcast_enabled;
-
-        if ( arp_refresh_config() < 0 ) return errlog( ERR_CRITICAL, "arp_refresh_config\n" );
 
         return 0;
     }

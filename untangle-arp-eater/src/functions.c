@@ -250,6 +250,12 @@ static struct json_object *_set_config( struct json_object* request )
             return 0;
         }
 
+        if ( arp_refresh_config() < 0 ) {
+            errlog( ERR_CRITICAL, "arp_refresh_config\n" );
+            strncpy( message, "Unable to refresh JSON config.", message_size );
+            return 0;
+        }
+
         if ( arpeater_ae_manager_get_config( &config ) < 0 ) {
             errlog( ERR_CRITICAL, "arpeater_ae_manager_get_config\n" );
             strncpy( message, "Unable to get config for reserialization.", message_size );
