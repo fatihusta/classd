@@ -153,19 +153,20 @@ int arp_refresh_config ( void )
     struct ifreq card;
 
     /**
-     * Kill any previous broadcast threads 
-     */
-    if ( (handler = ht_lookup( &host_handlers, (void*) 0xffffffff)) != NULL ) {
-        debug(1,"REFRESH: Killing broadcast thread\n");
-        arp_host_handler_send_message(handler,_HANDLER_MESG_KILL);
-    }
-
-    /**
      * Kill any previous sniffer threads 
      */
     if ( _globals.handle != NULL ) {
         debug(1,"REFRESH: Killing sniffing  thread\n");
         pcap_breakloop( _globals.handle );
+        sleep (1);
+    }
+
+    /**
+     * Kill any previous broadcast threads 
+     */
+    if ( (handler = ht_lookup( &host_handlers, (void*) 0xffffffff)) != NULL ) {
+        debug(1,"REFRESH: Killing broadcast thread\n");
+        arp_host_handler_send_message(handler,_HANDLER_MESG_KILL_NOW);
     }
 
     /**
@@ -215,6 +216,18 @@ int arp_refresh_config ( void )
      */
     arp_host_handler_refresh_all();
 
+    /**
+     * Start all non-passive (active) host handler threads
+     */
+    for ( i = config.num_networks; i > 0 ; i--) {
+        if (!config.networks[i].is_passive) {
+            if ( ht_lookup( &host_handlers, (void*) config.networks[i].ip.s_addr) == NULL ) {
+                debug(1,"HOST: Starting Active Host thread (%s)\n", unet_inet_ntoa(config.networks[i].ip.s_addr));
+                _host_handler_start( config.networks[i].ip.s_addr );
+            }
+        }
+    }
+    
     /**
      * Donate a thread to start the arp listener.
      */
@@ -304,6 +317,14 @@ static int _host_handler_reset_timer (host_handler_t* host)
 }
 
 /**
+ * returns whether or not the host is a broadcast address
+ */
+static int _host_handler_is_broadcast (host_handler_t* host)
+{
+    return (host->addr.s_addr == 0xffffffff);
+}
+
+/**
  * check if the host handler is past its timeout time
  * returns: 1 if yes, 0 if no
  */
@@ -311,6 +332,12 @@ static int _host_handler_is_timedout (host_handler_t* host)
 {
     struct timeval now;
 
+    /**
+     * Broadcast and "active" threads don't time out
+     */
+    if (_host_handler_is_broadcast (host) || !host->settings.is_passive)
+        return 0;
+    
     if ( gettimeofday( &now, NULL ) < 0 ) {
         perrlog("gettimeofday");
         return 0;
@@ -321,14 +348,6 @@ static int _host_handler_is_timedout (host_handler_t* host)
         return 1;
 
     return 0;
-}
-
-/**
- * returns whether or not the host is a broadcast address
- */
-static int _host_handler_is_broadcast (host_handler_t* host)
-{
-    return (host->addr.s_addr == 0xffffffff);
 }
 
 /**
@@ -483,10 +502,12 @@ static void* _host_handler_thread (void* arg)
                 break;
                 
             case _HANDLER_MESG_KILL:
-                debug( 1, "HOST: Host (%s) Kill - Cleaning up\n", unet_inet_ntoa(host->addr.s_addr));
-
+                debug( 1, "HOST: Host Handler (%s) Cleaning up\n", unet_inet_ntoa(host->addr.s_addr));
                 if (settings->is_enabled) 
                     _host_handler_undo_arps(host);
+                /* fall through */
+            case _HANDLER_MESG_KILL_NOW:
+                debug( 1, "HOST: Host Handler (%s) Exitting\n", unet_inet_ntoa(host->addr.s_addr));
                 
                 go = 0;
                 settings->is_enabled = 0;
@@ -496,9 +517,8 @@ static void* _host_handler_thread (void* arg)
 
         /**
          * If timed out then exit
-         * (Broadcast thread does not time out)
          */
-        if ( _host_handler_is_timedout( host ) && !_host_handler_is_broadcast( host) ) {
+        if ( _host_handler_is_timedout( host ) ) {
             debug(1, "HOST: Host handler (%s) time out.\n", unet_next_inet_ntoa(host->addr.s_addr));
             go = 0;
             settings->is_enabled = 0;
@@ -812,7 +832,6 @@ static void* _arp_listener( void* arg )
     char pcap_errbuf[PCAP_ERRBUF_SIZE];
     struct bpf_program filter;
     
-    debug( 1, "SNIFF: Setting up arp listener.\n" );
     debug( 1, "SNIFF: Listening on %s.\n", _globals.interface);
     
     /* open interface for listening */
@@ -836,10 +855,7 @@ static void* _arp_listener( void* arg )
     }
 
     /* start capturing */
-    if ( pcap_loop(_globals.handle, -1, _arp_listener_handler, NULL) < 0 ) {
-        if (errno != EINTR) 
-            errlog( ERR_CRITICAL, "pcap_loop: %s %i\n", pcap_geterr(_globals.handle),errno);
-    }
+    pcap_loop(_globals.handle, -1, _arp_listener_handler, NULL);
 
     pcap_close( _globals.handle );
     _globals.handle = NULL;

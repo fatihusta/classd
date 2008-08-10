@@ -40,8 +40,9 @@ typedef struct host_handler
 
 typedef enum
 {
-    _HANDLER_MESG_REFRESH_CONFIG =  1,  
-    _HANDLER_MESG_KILL           =  2
+    _HANDLER_MESG_REFRESH_CONFIG =  1, /* re read your config */  
+    _HANDLER_MESG_KILL           =  2, /* exit - send cleanups */
+    _HANDLER_MESG_KILL_NOW       =  3  /* exit - don't send cleanups */
 } handler_message_t;
 
 
