@@ -82,10 +82,19 @@ class OSLibrary::Debian::ArpEaterManager < OSLibrary::ArpEaterManager
 
   def serialize_settings( settings, networks )
     gateway = settings.gateway
+
+    interface = settings.interface
+    if ApplicationHelper.null?( interface )
+      i = Interface.find( :first, :conditions => [ "wan=?", true ] )
+      interface = i.os_name unless i.nil?
+    end
+
+    ## If all else fails, default to eth0.
+    interface = "eth0" if ApplicationHelper.null?( interface )
     
     gateway = "0.0.0.0" if is_auto( gateway )
     settings_json = { 
-      :gateway => gateway, :interface => settings.interface,
+      :gateway => gateway, :interface => interface,
       :enabled => settings.enabled, :broadcast => settings.broadcast 
     }
     

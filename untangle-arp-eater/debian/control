@@ -7,6 +7,6 @@ Standards-Version: 3.7.2
 
 Package: untangle-arp-eater
 Architecture: any
-Depends: ${shlibs:Depends}, libjson0, libmicrohttpd4, dash
+Depends: ${shlibs:Depends}, libjson0, libmicrohttpd4, dash, libjson-ruby
 Description: The Untangle ARP Eater
  The Untangle ARP Eater.  A utility for network monitoring.
