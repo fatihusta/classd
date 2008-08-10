@@ -87,7 +87,7 @@ int arp_init ( void )
     _globals.device.sll_family = AF_PACKET;
 
     if ( (pf = socket( PF_PACKET, SOCK_RAW, htons(ETH_P_ALL) )) < 0 ) 
-        return errlog(ERR_CRITICAL, "Could not create packet socket");
+        return errlog(ERR_CRITICAL, "Could not create packet socket\n");
   
     /**
      * Find the index
@@ -95,7 +95,7 @@ int arp_init ( void )
     strcpy( card.ifr_name, _globals.interface );
     if ( ioctl( pf, SIOCGIFINDEX, &card) < 0 ) {
         close (pf);
-        return errlog(ERR_CRITICAL,"Could not find device index number for %s", card.ifr_name);
+        return errlog(ERR_CRITICAL,"Could not find device index number for %s\n", card.ifr_name);
     }
     _globals.device.sll_ifindex = card.ifr_ifindex;
 
@@ -105,7 +105,7 @@ int arp_init ( void )
     strcpy( card.ifr_name, _globals.interface );
     if ( ioctl( pf, SIOCGIFHWADDR, &card) < 0 ) {
         close (pf);
-        return errlog(ERR_CRITICAL,"Could not mac address for %s", card.ifr_name);
+        return errlog(ERR_CRITICAL,"Could not mac address for %s\n", card.ifr_name);
     }
     for (i=0; i<6; i++) 
         _globals.device.sll_addr[i] = card.ifr_hwaddr.sa_data[i];
