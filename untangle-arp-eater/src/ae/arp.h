@@ -58,6 +58,12 @@ int arp_init ( void );
 int arp_shutdown ( void );
 
 /**
+ * refresh config from file
+ * FIXME - does not reread interface setting
+ */
+int arp_refresh_config ( void );
+
+/**
  * This returns a list of host_handler_t's that represents the current set of host handlers
  * WARNING: This list must be razed
  */

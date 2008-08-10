@@ -74,78 +74,27 @@ static int   _host_handler_start ( in_addr_t addr );
 
 int arp_init ( void )
 {
-    struct ifreq card;
-    int pf;
-    int i;
-    arpeater_ae_config_t config;
-    
-    if ( arpeater_ae_manager_get_config(&config) < 0)
-        return perrlog("arpeater_ae_manager_get_config");
-
     bzero(&_globals,sizeof(_globals));
-    strncpy(_globals.interface,config.interface,IF_NAMESIZE);
-    _globals.device.sll_family = AF_PACKET;
-
-    if ( (pf = socket( PF_PACKET, SOCK_RAW, htons(ETH_P_ALL) )) < 0 ) 
-        return errlog(ERR_CRITICAL, "Could not create packet socket\n");
-  
-    /**
-     * Find the index
-     */
-    strcpy( card.ifr_name, _globals.interface );
-    if ( ioctl( pf, SIOCGIFINDEX, &card) < 0 ) {
-        close (pf);
-        return errlog(ERR_CRITICAL,"Could not find device index number for %s\n", card.ifr_name);
-    }
-    _globals.device.sll_ifindex = card.ifr_ifindex;
 
     /**
-     * Find the MAC address
-     */
-    strcpy( card.ifr_name, _globals.interface );
-    if ( ioctl( pf, SIOCGIFHWADDR, &card) < 0 ) {
-        close (pf);
-        return errlog(ERR_CRITICAL,"Could not mac address for %s\n", card.ifr_name);
-    }
-    for (i=0; i<6; i++) 
-        _globals.device.sll_addr[i] = card.ifr_hwaddr.sa_data[i];
-
-    if ( close(pf) < 0)
-        perrlog("close");
-    
-    debug( 2, "ARP: Spoofing on %s (index: %d) (mac: ", _globals.interface, _globals.device.sll_ifindex);
-    _globals.device.sll_halen = htons( 6 );
-    for (i=0; i<6; i++) 
-        debug_nodate(2,"%02x%s",_globals.device.sll_addr[i], (i<5 ? ":" : ""));
-    debug_nodate( 2, ")\n");
-
-    /**
-     * Initialize the socket for sending arps
-     */
-    if ( (_globals.sock_raw = socket( PF_PACKET, SOCK_RAW, htons(ETH_P_ARP) )) < 0 ) 
-        return perrlog("socket");
-
-    /**
-     * Initialize host_handlers table & lock
+     * Initialize host_handlers lock
      */
     if ( sem_init( &host_handlers_sem, 0, 1) < 0 )
         return perrlog( "sem_init" ); 
     
+    /**
+     * Initialize host_handlers table
+     */
     if ( ht_init( &host_handlers, 1337, int_hash_func, int_equ_func, HASH_FLAG_KEEP_LIST) < 0 )
         return perrlog( "hash_init" );
-                  
-    /**
-     * Donate a thread to start the arp listener.
-     */
-    if ( pthread_create( &_globals.sniff_thread, NULL, _arp_listener, NULL ) != 0 ) 
-        return perrlog( "pthread_create" );
 
     /**
-     * Donate a thread to start the broadcast arp spoofer. 
+     * Initialize the socket for sending arps
      */
-    _host_handler_start( 0xffffffff );
-
-    return 0;
+    if ( (_globals.sock_raw = socket( PF_PACKET, SOCK_RAW, htons(ETH_P_ARP) )) < 0  )
+            return perrlog("socket");
+    
+    return arp_refresh_config();
 }
 
 int arp_shutdown ( void )
@@ -192,6 +141,91 @@ int arp_shutdown ( void )
 
     if ( ht_destroy( &host_handlers ) < 0 )
         perrlog("ht_destroy");
+
+    return 0;
+}
+
+int arp_refresh_config ( void )
+{
+    arpeater_ae_config_t config;
+    host_handler_t* handler;
+    int pf, i;
+    struct ifreq card;
+
+    /**
+     * Kill any previous broadcast threads 
+     */
+    if ( (handler = ht_lookup( &host_handlers, (void*) 0xffffffff)) != NULL ) {
+        debug(1,"REFRESH: Killing broadcast thread\n");
+        arp_host_handler_send_message(handler,_HANDLER_MESG_KILL);
+    }
+
+    /**
+     * Kill any previous sniffer threads 
+     */
+    if ( _globals.handle != NULL ) {
+        debug(1,"REFRESH: Killing sniffing  thread\n");
+        pcap_breakloop( _globals.handle );
+    }
+
+    /**
+     * Get new config
+     */
+    if ( arpeater_ae_manager_get_config(&config) < 0)
+        return perrlog("arpeater_ae_manager_get_config");
+
+    strncpy(_globals.interface,config.interface,IF_NAMESIZE);
+    _globals.device.sll_family = AF_PACKET;
+
+    if ( (pf = socket( PF_PACKET, SOCK_RAW, htons(ETH_P_ALL) )) < 0 ) 
+        return errlog(ERR_CRITICAL, "Could not create packet socket\n");
+
+    /**
+     * Find the interface index
+     */
+    strcpy( card.ifr_name, _globals.interface );
+    if ( ioctl( pf, SIOCGIFINDEX, &card) < 0 ) {
+        close (pf);
+        return errlog(ERR_CRITICAL,"Could not find device index number for %s\n", card.ifr_name);
+    }
+    _globals.device.sll_ifindex = card.ifr_ifindex;
+
+    /**
+     * Find the MAC address
+     */
+    strcpy( card.ifr_name, _globals.interface );
+    if ( ioctl( pf, SIOCGIFHWADDR, &card) < 0 ) {
+        close (pf);
+        return errlog(ERR_CRITICAL,"Could not mac address for %s\n", card.ifr_name);
+    }
+    for (i=0; i<6; i++) 
+        _globals.device.sll_addr[i] = card.ifr_hwaddr.sa_data[i];
+
+    if ( close(pf) < 0)
+        perrlog("close");
+    
+    debug( 2, "ARP: Spoofing on %s (index: %d) (mac: ", _globals.interface, _globals.device.sll_ifindex);
+    _globals.device.sll_halen = htons( 6 );
+    for (i=0; i<6; i++) 
+        debug_nodate(2,"%02x%s",_globals.device.sll_addr[i], (i<5 ? ":" : ""));
+    debug_nodate( 2, ")\n");
+
+    /**
+     * Refresh all the host handlers
+     */
+    arp_host_handler_refresh_all();
+
+    /**
+     * Donate a thread to start the arp listener.
+     */
+    if ( pthread_create( &_globals.sniff_thread, NULL, _arp_listener, NULL ) != 0 ) 
+        return perrlog( "pthread_create" );
+
+    /**
+     * Donate a thread to start the broadcast arp spoofer. 
+     */
+    if (config.is_broadcast_enabled)
+        _host_handler_start( 0xffffffff );
 
     return 0;
 }
@@ -808,6 +842,8 @@ static void* _arp_listener( void* arg )
     }
 
     pcap_close( _globals.handle );
+    _globals.handle = NULL;
+    
     debug( 1, "SNIFF: Exitting\n");
     return NULL;
 }
