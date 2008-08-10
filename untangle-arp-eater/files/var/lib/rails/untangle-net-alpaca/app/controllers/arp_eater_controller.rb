@@ -10,7 +10,7 @@ class ArpEaterController < ApplicationController
 
   def create_network
     @network = ArpEaterNetworks.new( :enabled => true, :spoof => true,
-                                     :opportunistic => false, :gateway => "auto" )
+                                     :passive => false, :gateway => "auto" )
 
     @network.parseNetwork( "192.168.1.0 / 24" )
   end
@@ -45,13 +45,13 @@ class ArpEaterController < ApplicationController
     networks = params[:network]
     description = params[:description]
     gateways = params[:gateway]
-    opportunistic = params[:opportunistic]
+    passive = params[:passive]
 
     position = 0
     unless ids.nil?
       ids.each do |key|
         network = ArpEaterNetworks.new( :enabled => enabled[key], :spoof => spoof[key],
-                                        :opportunistic => opportunistic[key], 
+                                        :passive => passive[key], 
                                         :gateway => gateways[key], :description => description[key] )
 
         network.parseNetwork( networks[key] )

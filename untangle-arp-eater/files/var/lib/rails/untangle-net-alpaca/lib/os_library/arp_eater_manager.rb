@@ -2,11 +2,11 @@ class OSLibrary::ArpEaterManager < Alpaca::OS::ManagerBase
   AutoStrings = [ "auto", "automatic", "*" ]
 
   class ActiveHost
-    def initialize( enabled, address, opportunistic, gateway )
-      @enabled, @address, @opportunistic, @gateway = enabled, address, opportunistic, gateway
+    def initialize( enabled, address, passive, gateway )
+      @enabled, @address, @passive, @gateway = enabled, address, passive, gateway
     end
 
-    attr_reader :address, :enabled, :opportunistic, :gateway
+    attr_reader :address, :enabled, :passive, :gateway
   end
 
   ## This should commit and update all of the packet filter settings.

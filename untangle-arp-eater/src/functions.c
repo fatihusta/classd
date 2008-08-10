@@ -100,12 +100,12 @@ static json_serializer_t _network_settings_serializer = {
         .to_json = json_serializer_to_json_boolean,
         .arg = (void*)offsetof( arpeater_ae_manager_settings_t, is_enabled )
     },{
-        .name = "opportunistic",
+        .name = "passive",
         .fetch_arg = 1,
         .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
         .to_c = json_serializer_to_c_boolean,
         .to_json = json_serializer_to_json_boolean,
-        .arg = (void*)offsetof( arpeater_ae_manager_settings_t, is_opportunistic )
+        .arg = (void*)offsetof( arpeater_ae_manager_settings_t, is_passive )
     },{
         .name = "address",
         .fetch_arg = 1,
@@ -140,12 +140,12 @@ static json_serializer_t _host_handler_serializer = {
         .to_json = json_serializer_to_json_boolean,
         .arg = (void*)offsetof( host_handler_t, settings.is_enabled )
     },{
-        .name = "opportunistic",
+        .name = "passive",
         .fetch_arg = 1,
         .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
         .to_c = json_serializer_to_c_boolean,
         .to_json = json_serializer_to_json_boolean,
-        .arg = (void*)offsetof( host_handler_t, settings.is_opportunistic )
+        .arg = (void*)offsetof( host_handler_t, settings.is_passive )
     },{
         .name = "gateway",
         .fetch_arg = 1,

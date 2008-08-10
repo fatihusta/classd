@@ -47,8 +47,8 @@ typedef struct
     /* Set to true in order to spoof the network */
     int is_spoof_enabled;
     
-    /* Set to true if this network is opportunistic */
-    int is_opportunistic;
+    /* Set to true if this network is passive */
+    int is_passive;
 } arpeater_ae_config_network_t;
 
 typedef struct

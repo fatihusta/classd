@@ -70,7 +70,7 @@ class OSLibrary::Debian::ArpEaterManager < OSLibrary::ArpEaterManager
     return [] if hosts_json.nil?
 
     return hosts_json.map { |h| ActiveHost.new( h["enabled"], h["address"], 
-                                                h["opportunistic"], h["gateway"] ) }
+                                                h["passive"], h["gateway"] ) }
   end
 
   private
@@ -98,7 +98,7 @@ class OSLibrary::Debian::ArpEaterManager < OSLibrary::ArpEaterManager
       settings_json[:networks] << { 
         :ip => network.ip, :netmask => OSLibrary::NetworkManager.parseNetmask( network.netmask ),
         :gateway => gateway, :enabled => network.enabled,
-        :spoof => network.spoof, :opportunistic => network.opportunistic
+        :spoof => network.spoof, :passive => network.passive
       }
     end
 

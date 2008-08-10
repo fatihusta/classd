@@ -27,15 +27,10 @@ reap_child()
 {
     echo "[`date`] Retrieved signal to stop daemon."
 
-    ## this is ... special
-    for t in `seq 1 10` ; do 
-        pidof ${NAME} > /dev/null 2>&1 || break
+    pidof ${NAME} > /dev/null 2>&1 || break
 
-        killall ${NAME}
-        sleep 1
-    done
-    
-    sleep 1
+    killall ${NAME}
+
     exit 0
 }
 

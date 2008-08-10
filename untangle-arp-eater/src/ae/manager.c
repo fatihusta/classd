@@ -58,7 +58,7 @@ static struct
         .is_enabled = 1,
         .timeout_ms = 0,
         .is_spoof_enabled = 1,
-        .is_opportunistic = 0
+        .is_passive = 0
     }
 };
 
@@ -149,7 +149,7 @@ int arpeater_ae_manager_get_ip_settings( struct in_addr* ip, arpeater_ae_manager
         bzero( settings, sizeof( arpeater_ae_manager_settings_t ));
 
         settings->address.s_addr = ip->s_addr;
-        settings->is_opportunistic = 1;
+        settings->is_passive = 1;
         
         /* Check if it is any of the gateways */
         if ( _is_gateway( ip ) == 1 ) {
@@ -172,7 +172,7 @@ int arpeater_ae_manager_get_ip_settings( struct in_addr* ip, arpeater_ae_manager
         }           
 
         settings->is_enabled = 1;
-        settings->is_opportunistic = network->is_opportunistic;
+        settings->is_passive = network->is_passive;
 
         if ( _is_automatic( &network->gateway ) == 0 ) {
             settings->gateway.s_addr = network->gateway.s_addr;

@@ -18,7 +18,7 @@
       "ip" : "0.0.0.0",
       "netmask" : "0.0.0.0",
       "spoof" : true,
-      "opportunistic" : true,
+      "passive" : true,
       "target" : "0.0.0.0"
   }]
 }
