@@ -292,7 +292,7 @@ static int _init( int argc, char** argv )
             errlog( ERR_CRITICAL, "json_object_from_file\n" );
             config_file_json = NULL;
         } else {
-            debug( 10, "MAIN: Loading the config file %s\n", _globals.config_file );
+            debug( 2, "MAIN: Loading the config file %s\n", _globals.config_file );
             /* Initialize the config manager */
             if ( arpeater_ae_config_load_json( &config, config_file_json ) < 0 ) {
                 errlog( ERR_CRITICAL, "arpeater_ae_config_load_json\n" );

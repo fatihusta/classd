@@ -157,7 +157,7 @@ int arp_refresh_config ( void )
      * Kill any previous sniffer threads 
      */
     if ( _globals.handle != NULL ) {
-        debug(1,"REFRESH: Killing sniffing  thread\n");
+        debug(2,"REFRESH: Killing sniffing  thread\n");
         pcap_breakloop( _globals.handle );
         _globals.handle = NULL;
         if ( pthread_kill(_globals.sniff_thread, SIGINT) < 0)
@@ -168,7 +168,7 @@ int arp_refresh_config ( void )
      * Kill any previous broadcast threads 
      */
     if ( (handler = ht_lookup( &host_handlers, (void*) 0xffffffff)) != NULL ) {
-        debug(1,"REFRESH: Killing broadcast thread\n");
+        debug(2,"REFRESH: Killing broadcast thread\n");
         arp_host_handler_send_message(handler,_HANDLER_MESG_KILL_NOW);
     }
 
@@ -225,7 +225,7 @@ int arp_refresh_config ( void )
     for ( i = config.num_networks; i > 0 ; i--) {
         if (!config.networks[i].is_passive) {
             if ( ht_lookup( &host_handlers, (void*) config.networks[i].ip.s_addr) == NULL ) {
-                debug(1,"HOST: Starting Active Host thread (%s)\n", unet_inet_ntoa(config.networks[i].ip.s_addr));
+                debug( 3,"HOST: Starting Active Host thread (%s)\n", unet_inet_ntoa(config.networks[i].ip.s_addr));
                 _host_handler_start( config.networks[i].ip.s_addr );
             }
         }
@@ -487,7 +487,7 @@ static void* _host_handler_thread (void* arg)
         if (ret) {
             switch (ret) {
             case _HANDLER_MESG_REFRESH_CONFIG:
-                debug( 1, "HOST: Host (%s) Config Refresh\n", unet_inet_ntoa(host->addr.s_addr));
+                debug( 3, "HOST: Host (%s) Config Refresh\n", unet_inet_ntoa(host->addr.s_addr));
                 err = 0;
                 
                 if ( arpeater_ae_manager_get_ip_settings( &host->addr, settings ) < 0)
@@ -527,12 +527,12 @@ static void* _host_handler_thread (void* arg)
                 break;
                 
             case _HANDLER_MESG_KILL:
-                debug( 1, "HOST: Host Handler (%s) Cleaning up\n", unet_inet_ntoa(host->addr.s_addr));
+                debug( 3, "HOST: Host Handler (%s) Cleaning up\n", unet_inet_ntoa(host->addr.s_addr));
                 if (settings->is_enabled) 
                     _host_handler_undo_arps(host);
                 /* fall through */
             case _HANDLER_MESG_KILL_NOW:
-                debug( 1, "HOST: Host Handler (%s) Exiting\n", unet_inet_ntoa(host->addr.s_addr));
+                debug( 3, "HOST: Host Handler (%s) Exiting\n", unet_inet_ntoa(host->addr.s_addr));
                 
                 go = 0;
                 settings->is_enabled = 0;
@@ -828,7 +828,7 @@ static void _arp_listener_handler ( u_char* args, const struct pcap_pkthdr* head
         _globals.device.sll_addr[5] == eth_hdr->h_source[5]) 
         return;
         
-    debug( 2, "SNIFF: (%02x:%02x:%02x:%02x:%02x:%02x -> %02x:%02x:%02x:%02x:%02x:%02x) arp who has %s tell %s \n",
+    debug( 4, "SNIFF: (%02x:%02x:%02x:%02x:%02x:%02x -> %02x:%02x:%02x:%02x:%02x:%02x) arp who has %s tell %s \n",
            eth_hdr->h_source[0], eth_hdr->h_source[1],
            eth_hdr->h_source[2], eth_hdr->h_source[3],
            eth_hdr->h_source[4], eth_hdr->h_source[5],
@@ -841,7 +841,7 @@ static void _arp_listener_handler ( u_char* args, const struct pcap_pkthdr* head
     victim = *(in_addr_t*)&arp_payload->ar_sip;
 
     if ( ht_lookup( &host_handlers, (void*) victim) == NULL ) {
-        debug( 1, "SNIFF: New host (%s) found.\n", unet_inet_ntoa(victim));
+        debug( 3, "SNIFF: New host (%s) found.\n", unet_inet_ntoa(victim));
 
         _host_handler_start( victim );
     }
@@ -857,12 +857,12 @@ static void* _arp_listener( void* arg )
     pcap_t* handle = _globals.handle;
     
     /* start capturing */
-    debug( 1, "SNIFF: Listening on %s.\n", _globals.interface );
+    debug( 2, "SNIFF: Listening on %s.\n", _globals.interface );
     pcap_loop( handle, -1, _arp_listener_handler, NULL );
 
     pcap_close( handle );
     
-    debug( 1, "SNIFF: Exiting\n" );
+    debug( 2, "SNIFF: Exiting\n" );
     return NULL;
 }
 
