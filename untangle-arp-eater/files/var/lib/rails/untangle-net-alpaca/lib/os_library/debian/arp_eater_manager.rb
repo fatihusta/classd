@@ -30,12 +30,18 @@ class OSLibrary::Debian::ArpEaterManager < OSLibrary::ArpEaterManager
 
   def hook_write_files
     settings = ArpEaterSettings.find( :first )
+
+    
     if settings.nil?
-      logger.warn "No settings"
-      return
+      logger.warn "No settings, writing disabled settings"
+      settings = ArpEaterSettings.new( :enabled => false, :gateway => "auto", :broadcast => false )
     end
     
-   networks = ArpEaterNetworks.find( :all )
+    if settings.enabled
+      networks = ArpEaterNetworks.find( :all )
+    else
+      networks = [ ArpEaterNetworks.new( :enabled => false, :spoof => false, :passive => true, :gateway => "auto" ) ]
+    end
 
     ## Serialize the settings
     file_contents = serialize_settings( settings, networks )

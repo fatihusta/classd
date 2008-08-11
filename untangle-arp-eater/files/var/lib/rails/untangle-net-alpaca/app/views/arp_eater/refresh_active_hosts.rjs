@@ -1,0 +1,2 @@
+page.replace( "arp-eater-active-hosts", :partial => "application/table", :locals => { :table_model => active_host_table_model, :data => Alpaca::Table::Data.new( "arp-eater-active-hosts", @active_hosts ), :table_only => true })
+page << "TableManager.updateRowStyles( 'arp-eater-active-hosts' );"

@@ -2,7 +2,7 @@ class ArpEaterController < ApplicationController
   def manage
     @networks = ArpEaterNetworks.find( :all )
     @settings = ArpEaterSettings.find( :first )
-    @active_hosts = os["arp_eater_manager"].get_active_hosts
+    refresh_active_hosts
     
     @settings = ArpEaterSettings.new( :enabled => false, :gateway => "auto", :broadcast => false ) if @settings.nil?
     render :action => 'manage'
@@ -17,6 +17,11 @@ class ArpEaterController < ApplicationController
 
   alias :index :manage
 
+  def refresh_active_hosts
+    @active_hosts = os["arp_eater_manager"].get_active_hosts
+    @active_hosts = @active_hosts.sort_by { |i| IPAddr.parse( i.address ).to_i }
+  end
+  
   def save
     ## Review : Internationalization
     if ( params[:commit] != "Save".t )

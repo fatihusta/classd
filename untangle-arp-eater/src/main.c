@@ -23,6 +23,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <syslog.h>
+#include <semaphore.h>
 
 #include <libmvutil.h>
 
@@ -62,6 +63,7 @@ static struct
     pthread_t scheduler_thread;
     json_server_t json_server;
     struct MHD_Daemon *daemon;
+    sem_t* quit_sem;
 } _globals = {
     .is_running = 0,
     .scheduler_thread = 0,
@@ -74,6 +76,7 @@ static struct
     .std_out_filename = NULL,
     .std_out = -1,
     .debug_level = DEFAULT_DEBUG_LEVEL,
+    .quit_sem = NULL
 };
 
 static int _parse_args( int argc, char** argv );
@@ -149,14 +152,19 @@ int main( int argc, char** argv )
 
     _globals.is_running = FLAG_ALIVE;
 
-    if ( arp_init() < 0 )
-        return perrlog("arp_init");
+    if ( arp_init() < 0 ) return perrlog( "arp_init" );
     
     debug( 1, "MAIN: Setting up signal handlers.\n" );
     _set_signals();
     
-    /* An awesome way to wait for a shutdown signal. */
-    while ( _globals.is_running == FLAG_ALIVE ) sleep( 1 );
+    /* Wait for the shutdown signal */
+    while ( _globals.is_running == FLAG_ALIVE ) {
+        if ( sem_wait( _globals.quit_sem ) < 0 ) {
+            if ( errno != EINTR ) perrlog( "sem_wait" );
+        }
+        debug( 1, "Received shutdown signal\n" );
+    }
+    _globals.is_running = 0;
 
     arp_shutdown();
     
@@ -169,6 +177,9 @@ int main( int argc, char** argv )
 void arpeater_main_shutdown( void )
 {
     _globals.is_running = 0;
+    /* A shutdown race condition. */
+    sem_t* sem = _globals.quit_sem;
+    if ( sem != NULL ) sem_post( sem );    
 }
 
 static int _parse_args( int argc, char** argv )
@@ -244,6 +255,15 @@ static int _init( int argc, char** argv )
     /* Initialize the scheduler. */
     if ( arpeater_sched_init() < 0 ) return errlog( ERR_CRITICAL, "arpeater_sched_init\n" );
 
+    /* Initialize the quit semaphore */
+    sem_t* sem = NULL;
+    if (( sem = calloc( 1, sizeof( sem_t ))) == NULL ) return errlog( ERR_CRITICAL, "malloc" );
+    if ( sem_init( sem, 1, 0 ) < 0 ) {
+        free( sem );
+        return perrlog( "sem_init" );
+    }
+    _globals.quit_sem = sem;
+
     /* Donate a thread to start the scheduler. */
     if ( pthread_create( &_globals.scheduler_thread, &uthread_attr.other.medium,
                          arpeater_sched_donate, NULL )) {
@@ -302,7 +322,14 @@ static int _init( int argc, char** argv )
 
 static void _destroy( void )
 {    
+    sem_t* sem = NULL;
     if ( arpeater_sched_cleanup_z( NULL ) < 0 ) errlog( ERR_CRITICAL, "arpeater_sched_cleanup_z\n" );
+
+    if ( _globals.quit_sem != NULL ) {
+        sem = _globals.quit_sem;
+             _globals.quit_sem = NULL;
+
+    }
     
      MHD_stop_daemon( _globals.daemon );
     
@@ -316,6 +343,13 @@ static void _destroy( void )
     
      _globals.std_out = -1;
      _globals.std_err = -1;
+
+     /* Putting this at the end of the shutdown cycle to limit the
+      * effects of the race condition with the signal handler. */
+     if ( sem != NULL ) {
+         if ( sem_destroy( sem ) < 0 ) perrlog( "sem_destroy" );
+         free( sem );
+     }
 }
 
 static int _setup_output( void )
@@ -360,6 +394,9 @@ static int _setup_output( void )
 static void _signal_term( int sig )
 {
     _globals.is_running = 0;
+    /* A shutdown race condition. */
+    sem_t* sem = _globals.quit_sem;
+    if ( sem != NULL ) sem_post( sem );    
 }
 
 static int _set_signals( void )
