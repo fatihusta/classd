@@ -106,13 +106,12 @@ int arp_shutdown ( void )
     /**
      * kill sniffer thread
      */
-    if ( _globals.handle )
+    if ( _globals.handle ) {
         pcap_breakloop( _globals.handle );
+        _globals.handle = NULL;
+    }
     if ( pthread_kill(_globals.sniff_thread, SIGINT) < 0)
         perrlog("pthread_kill");
-    if ( pthread_join(_globals.sniff_thread, (void**)&ret) < 0 )
-        perrlog("pthread_join");
-
 
     /**
      * kill all host handlers
@@ -151,6 +150,8 @@ int arp_refresh_config ( void )
     host_handler_t* handler;
     int pf, i;
     struct ifreq card;
+    struct bpf_program filter;
+    char pcap_errbuf[PCAP_ERRBUF_SIZE];
 
     /**
      * Kill any previous sniffer threads 
@@ -158,7 +159,9 @@ int arp_refresh_config ( void )
     if ( _globals.handle != NULL ) {
         debug(1,"REFRESH: Killing sniffing  thread\n");
         pcap_breakloop( _globals.handle );
-        sleep (1);
+        _globals.handle = NULL;
+        if ( pthread_kill(_globals.sniff_thread, SIGINT) < 0)
+            perrlog("pthread_kill");
     }
 
     /**
@@ -227,11 +230,33 @@ int arp_refresh_config ( void )
             }
         }
     }
-    
+
+    /**
+     * Create arp listening resources
+     */
+    /* open interface for listening */
+    if ( (_globals.handle = pcap_open_live(_globals.interface, BUFSIZ, 1, 0, pcap_errbuf)) == NULL ) {
+        return errlog( ERR_CRITICAL, "pcap_open_live: %s\n", pcap_errbuf );
+    }
+
+    /* compile rule/filter to only listen to arp */
+    if ( pcap_compile(_globals.handle, &filter, "arp", 1, 0) < 0 ) {
+        errlog( ERR_CRITICAL, "pcap_compile: %s\n", pcap_geterr(_globals.handle));
+        pcap_close( _globals.handle );
+        return -1;
+    }
+
+    /* apply rule/filter */
+    if ( pcap_setfilter(_globals.handle, &filter) < 0 ) {
+        errlog( ERR_CRITICAL, "pcap_setfilter: %s\n", pcap_geterr(_globals.handle));
+        pcap_close( _globals.handle );
+        return -1; 
+    }
+
     /**
      * Donate a thread to start the arp listener.
      */
-    if ( pthread_create( &_globals.sniff_thread, NULL, _arp_listener, NULL ) != 0 ) 
+    if ( pthread_create( &_globals.sniff_thread, &uthread_attr.other.medium, _arp_listener, NULL ) != 0 ) 
         return perrlog( "pthread_create" );
 
     /**
@@ -507,7 +532,7 @@ static void* _host_handler_thread (void* arg)
                     _host_handler_undo_arps(host);
                 /* fall through */
             case _HANDLER_MESG_KILL_NOW:
-                debug( 1, "HOST: Host Handler (%s) Exitting\n", unet_inet_ntoa(host->addr.s_addr));
+                debug( 1, "HOST: Host Handler (%s) Exiting\n", unet_inet_ntoa(host->addr.s_addr));
                 
                 go = 0;
                 settings->is_enabled = 0;
@@ -829,38 +854,15 @@ static void _arp_listener_handler ( u_char* args, const struct pcap_pkthdr* head
  */
 static void* _arp_listener( void* arg )
 {
-    char pcap_errbuf[PCAP_ERRBUF_SIZE];
-    struct bpf_program filter;
+    pcap_t* handle = _globals.handle;
     
-    debug( 1, "SNIFF: Listening on %s.\n", _globals.interface);
-    
-    /* open interface for listening */
-    if ( (_globals.handle = pcap_open_live(_globals.interface, BUFSIZ, 1, 0, pcap_errbuf)) == NULL ) {
-        errlog( ERR_CRITICAL, "pcap_open_live: %s\n", pcap_errbuf );
-        return NULL; 
-    }
-
-    /* compile rule/filter to only listen to arp */
-    if ( pcap_compile(_globals.handle, &filter, "arp", 1, 0) < 0 ) {
-        errlog( ERR_CRITICAL, "pcap_compile: %s\n", pcap_geterr(_globals.handle));
-        pcap_close( _globals.handle );
-        return NULL; 
-    }
-
-    /* apply rule/filter */
-    if ( pcap_setfilter(_globals.handle, &filter) < 0 ) {
-        errlog( ERR_CRITICAL, "pcap_setfilter: %s\n", pcap_geterr(_globals.handle));
-        pcap_close( _globals.handle );
-        return NULL; 
-    }
-
     /* start capturing */
-    pcap_loop(_globals.handle, -1, _arp_listener_handler, NULL);
+    debug( 1, "SNIFF: Listening on %s.\n", _globals.interface );
+    pcap_loop( handle, -1, _arp_listener_handler, NULL );
 
-    pcap_close( _globals.handle );
-    _globals.handle = NULL;
+    pcap_close( handle );
     
-    debug( 1, "SNIFF: Exitting\n");
+    debug( 1, "SNIFF: Exiting\n" );
     return NULL;
 }
 

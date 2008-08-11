@@ -158,12 +158,14 @@ int main( int argc, char** argv )
         if (errno != EINTR) perrlog("sem_wait");
     }
     
-    debug( 1, "Received shutdown signal\n" );
+    debug( 1, "MAIN: Received shutdown signal\n" );
 
     arp_shutdown();
-    
+
     /* Destroy the arp eater */
     _destroy();
+
+    debug( 1, "MAIN: Exiting\n" );
     
     return 0;
 }
@@ -308,7 +310,7 @@ static int _init( int argc, char** argv )
                                         _globals.port, NULL, NULL, _globals.json_server.handler, 
                                         &_globals.json_server, MHD_OPTION_END );
 
-    if ( _globals.daemon == NULL ) return errlog( ERR_CRITICAL, "MHD_start_daemon\n" );
+    if ( _globals.daemon == NULL ) return errlog( ERR_CRITICAL, "MHD_start_daemon: %s\n", strerror(errno));
 
     return 0;
 }

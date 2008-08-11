@@ -12,7 +12,7 @@
 
 . /lib/lsb/init-functions
 
-DESC="Service for starting the untangle arp eater"
+DESC="Untangle Arp-Eater"
 
 DAEMON_NAME="arp_eater"
 
@@ -23,23 +23,35 @@ PID_FILE="/var/run/untangle-arp-eater.pid"
 
 start()
 {
+    log_daemon_msg "Starting $DESC"
+
     if [ -f ${PID_FILE} ] ; then
       ps -p `cat ${PID_FILE}` > /dev/null 2>&1
       if [ $? -eq 0 ] ; then
-	echo "Already running: "`cat ${PID_FILE}`
+          echo "Already Running."
+          log_end_msg 1
+          exit 1
       fi	
+      echo "Removing Stale pid file"
       rm -f ${PID_FILE}
     fi
 
+    log_progress_msg "untangle-arp-eater"    
     start-stop-daemon -m --pidfile ${PID_FILE} --name ${MONITOR} --start --background \
         --startas ${MONITOR_SCRIPT}
+
+    log_end_msg 0	
 }
 
 stop()
 {
-    start-stop-daemon --pidfile ${PID_FILE} --stop
+    log_daemon_msg "Stopping $DESC"
 
-    sleep 4
+    log_progress_msg "untangle-arp-eater"    
+    start-stop-daemon --pidfile ${PID_FILE} --stop --retry INT/4/INT/2/INT/2/TERM/1/KILL/1
+    RET=$?
+    log_end_msg $RET
+
     rm -f ${PID_FILE}
 }
 

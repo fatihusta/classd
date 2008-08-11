@@ -24,7 +24,8 @@ fi
 
 if [ -x "/etc/init.d/untangle-arp-eater" ]; then
     update-rc.d untangle-arp-eater defaults >/dev/null
-    ourInit untangle-arp-eater restart >> ${LOG_FILE} 2>&1 || exit 0
+    ourInit untangle-arp-eater stop > /dev/null 2>&1 || exit 0
+    ourInit untangle-arp-eater start || exit 0
 fi
 
 exit 0

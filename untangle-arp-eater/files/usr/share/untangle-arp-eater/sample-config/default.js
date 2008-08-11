@@ -11,7 +11,7 @@
   "rate" : 2.0,
 
   /* Send broadcast spoof */
-  "broadcast" : true,
+  "broadcast" : false,
 
   "networks" : [{
       "enabled" : false,
