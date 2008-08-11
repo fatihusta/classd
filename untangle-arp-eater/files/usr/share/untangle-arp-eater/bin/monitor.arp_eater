@@ -13,7 +13,7 @@ load_defaults()
     ARP_EATER_LOG_OUT="/var/log/untangle-arp-eater/debug.log"
     ARP_EATER_LOG_ERR="/var/log/untangle-arp-eater/error.log"
     
-    if [ -f /etc/default/untangle-arp_eater ] ; then
+    if [ -f /etc/default/untangle-arp-eater ] ; then
         . /etc/default/untangle-arp-eater
     fi
 }
