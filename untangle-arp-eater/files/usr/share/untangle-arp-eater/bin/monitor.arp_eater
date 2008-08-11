@@ -1,8 +1,7 @@
 #!/bin/dash
 
-mkdir -p /var/log/arp-eater
-
-exec >> /var/log/arp-eater/debug.log 2>&1
+mkdir -p /var/log/untangle-arp-eater
+exec >> /var/log/untangle-arp-eater/debug.log 2>&1
 
 NAME="arp_eater"
 ARP_EATER_PID_FILE="/var/run/${NAME}.pid"
@@ -11,9 +10,8 @@ load_defaults()
 {
     ARP_EATER_BIND_PORT="3002"
     ARP_EATER_CONF_FILE="/etc/arp-eater.conf"
-
-    ARP_EATER_LOG_OUT="/var/log/arp-eater/debug.log"
-    ARP_EATER_LOG_ERR="/var/log/arp-eater/error.log"
+    ARP_EATER_LOG_OUT="/var/log/untangle-arp-eater/debug.log"
+    ARP_EATER_LOG_ERR="/var/log/untangle-arp-eater/error.log"
     
     if [ -f /etc/default/untangle-arp_eater ] ; then
         . /etc/default/untangle-arp-eater

@@ -11,7 +11,7 @@ ourInit() {
 ARP_EATER_CONFIG_FILE="/etc/arp-eater.conf"
 ARP_EATER_DEFAULT_CONFIG="/usr/share/untangle-arp-eater/sample-config/default.js"
 
-LOG_FILE=/var/log/arp-eater/debug.log
+LOG_FILE=/var/log/untangle-arp-eater/debug.log
 
 mkdir -p `dirname ${LOG_FILE}`
 
