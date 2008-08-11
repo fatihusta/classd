@@ -43,8 +43,8 @@
 #include "ae/manager.h"
 
 
-#define DEFAULT_CONFIG_FILE  "/etc/arp-eater.conf"
-#define DEFAULT_DEBUG_LEVEL  5
+#define DEFAULT_CONFIG_FILE  "/etc/untangle-arp-eater.conf"
+#define DEFAULT_DEBUG_LEVEL  1
 #define DEFAULT_BIND_PORT 3002
 
 #define FLAG_ALIVE      0x543F00D
@@ -150,9 +150,9 @@ int main( int argc, char** argv )
 
     if ( arp_init() < 0 ) return perrlog( "arp_init" );
     
-    debug( 1, "MAIN: Setting up signal handlers.\n" );
+    debug( 1, "MAIN: Arp-Eater started.\n" );
     _set_signals();
-    
+
     /* Wait for the shutdown signal */
     while ( sem_wait( _globals.quit_sem ) < 0 ) {
         if (errno != EINTR) perrlog("sem_wait");

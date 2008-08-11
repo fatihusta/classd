@@ -157,7 +157,7 @@ int arp_refresh_config ( void )
      * Kill any previous sniffer threads 
      */
     if ( _globals.handle != NULL ) {
-        debug(2,"REFRESH: Killing sniffing  thread\n");
+        debug( 2,"REFRESH: Killing sniffing  thread\n");
         pcap_breakloop( _globals.handle );
         _globals.handle = NULL;
         if ( pthread_kill(_globals.sniff_thread, SIGINT) < 0)
@@ -168,7 +168,7 @@ int arp_refresh_config ( void )
      * Kill any previous broadcast threads 
      */
     if ( (handler = ht_lookup( &host_handlers, (void*) 0xffffffff)) != NULL ) {
-        debug(2,"REFRESH: Killing broadcast thread\n");
+        debug( 2,"REFRESH: Killing broadcast thread\n");
         arp_host_handler_send_message(handler,_HANDLER_MESG_KILL_NOW);
     }
 
@@ -460,7 +460,7 @@ static void* _host_handler_thread (void* arg)
     arpeater_ae_manager_settings_t* settings = &host->settings;
     int ret, err, go = 1;
     
-    debug(1, "HOST: New Host handler (%s)\n", unet_next_inet_ntoa(host->addr.s_addr));
+    debug( 3, "HOST: New Host handler (%s)\n", unet_next_inet_ntoa(host->addr.s_addr));
 
     /**
      * Temporarily enable and put a config message so it will fetch the config the first time
@@ -511,16 +511,16 @@ static void* _host_handler_thread (void* arg)
                 }
                 
                 if (settings->is_enabled) {
-                    debug(1, "HOST: Host handler config: (host %s) (host_mac: %s) (gateway %s) ",
+                    debug( 3, "HOST: Host handler config: (host %s) (host_mac: %s) (gateway %s) ",
                           unet_next_inet_ntoa(host->addr.s_addr), 
                           ether_ntoa(&host->host_mac),
                           unet_next_inet_ntoa(settings->gateway.s_addr));
-                    debug_nodate(1, "(gateway_mac %s) (enabled %i)\n",
+                    debug_nodate( 3, "(gateway_mac %s) (enabled %i)\n",
                                  ether_ntoa(&host->gateway_mac),
                                  settings->is_enabled);
                 }
                 else {
-                    debug(1, "HOST: Host handler config: (host %s) - disabled\n",
+                    debug( 3, "HOST: Host handler config: (host %s) - disabled\n",
                           unet_next_inet_ntoa(host->addr.s_addr));
                 }
                 
@@ -544,7 +544,7 @@ static void* _host_handler_thread (void* arg)
          * If timed out then exit
          */
         if ( _host_handler_is_timedout( host ) ) {
-            debug(1, "HOST: Host handler (%s) time out.\n", unet_next_inet_ntoa(host->addr.s_addr));
+            debug( 3, "HOST: Host handler (%s) time out.\n", unet_next_inet_ntoa(host->addr.s_addr));
             go = 0;
             settings->is_enabled = 0;
             break;
@@ -761,15 +761,15 @@ static int _arp_send ( int op, u_char *sha, in_addr_t sip, u_char *tha, in_addr_
     memcpy(arp_payload->ar_tip,&tip,4);
 
 	if (op == ARPOP_REQUEST) {
-		debug(1, "ARP: Sending: (%s %s) arp who-has %s tell %s\n",
+		debug( 4, "ARP: Sending: (%s %s) arp who-has %s tell %s\n",
               unet_next_inet_ntoa(tip),
               ether_ntoa((struct ether_addr *)tha),
               unet_next_inet_ntoa(tip),
               unet_next_inet_ntoa(sip));
 	}
 	else if (op == ARPOP_REPLY ) {
-		debug(1, "ARP: Sending: (%16s %21s)", unet_next_inet_ntoa(tip), ether_ntoa((struct ether_addr *)tha));
-		debug_nodate(1, " arp reply %16s is-at %s\n", unet_next_inet_ntoa(sip), ether_ntoa((struct ether_addr *)sha));
+		debug( 4, "ARP: Sending: (%16s %21s)", unet_next_inet_ntoa(tip), ether_ntoa((struct ether_addr *)tha));
+		debug_nodate( 4, " arp reply %16s is-at %s\n", unet_next_inet_ntoa(sip), ether_ntoa((struct ether_addr *)sha));
 	}
 
     memcpy(&device,&_globals.device,sizeof(struct sockaddr_ll));
@@ -920,8 +920,8 @@ static int _test_arp ( void )
     
     debug( 2, "ARP: Test Lookup (%s = ", unet_inet_ntoa(*(in_addr_t*)&ip));
     for (i=0; i<6; i++) 
-        debug_nodate(2,"%02x%s",mac.ether_addr_octet[i], (i<5 ? ":" : ""));
-    debug_nodate( 2, ")\n");
+        debug_nodate( 5,"%02x%s",mac.ether_addr_octet[i], (i<5 ? ":" : ""));
+    debug_nodate( 5, ")\n");
 
     ip[0] = 192;
     ip[1] = 168;
@@ -930,10 +930,10 @@ static int _test_arp ( void )
 
     _arp_lookup( &mac, *(in_addr_t*)&ip );
     
-    debug( 2, "ARP: Test Lookup (%s = ", unet_inet_ntoa(*(in_addr_t*)&ip));
+    debug( 5, "ARP: Test Lookup (%s = ", unet_inet_ntoa(*(in_addr_t*)&ip));
     for (i=0; i<6; i++) 
-        debug_nodate(2,"%02x%s",mac.ether_addr_octet[i], (i<5 ? ":" : ""));
-    debug_nodate( 2, ")\n");
+        debug_nodate( 5,"%02x%s",mac.ether_addr_octet[i], (i<5 ? ":" : ""));
+    debug_nodate( 5, ")\n");
     
     return 0;
 }

@@ -9,7 +9,7 @@ ARP_EATER_PID_FILE="/var/run/${NAME}.pid"
 load_defaults()
 {
     ARP_EATER_BIND_PORT="3002"
-    ARP_EATER_CONF_FILE="/etc/arp-eater.conf"
+    ARP_EATER_CONF_FILE="/etc/untangle-arp-eater.conf"
     ARP_EATER_LOG_OUT="/var/log/untangle-arp-eater/debug.log"
     ARP_EATER_LOG_ERR="/var/log/untangle-arp-eater/error.log"
     
@@ -52,13 +52,14 @@ start_arp_eater()
 {
     load_defaults
     
-    local t_args="${ARP_EATER_ARGS} -l 10 "
+    local t_args="${ARP_EATER_ARGS}"
     local t
     
     test -n "${ARP_EATER_BIND_PORT}" && t_args="${t_args} -p ${ARP_EATER_BIND_PORT}"
     test -n "${ARP_EATER_CONF_FILE}" && t_args="${t_args} -c ${ARP_EATER_CONF_FILE}"
     test -n "${ARP_EATER_LOG_OUT}" && t_args="${t_args} -o ${ARP_EATER_LOG_OUT}"
     test -n "${ARP_EATER_LOG_ERR}" && t_args="${t_args} -e ${ARP_EATER_LOG_ERR}"
+    test -n "${ARP_EATER_DEBUG_LEVEL}" && t_args="${t_args} -l ${ARP_EATER_DEBUG_LEVEL}"
     
     /usr/bin/${NAME} ${t_args} &
     export PID=$!

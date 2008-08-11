@@ -6,7 +6,7 @@ class OSLibrary::Debian::ArpEaterManager < OSLibrary::ArpEaterManager
   Service = "/etc/init.d/untangle-arp-eater"
 
   SingleNICFlag = "/etc/untangle-net-alpaca/single-nic-mode"
-  DefaultConfigFile = "/etc/arp-eater.conf"
+  DefaultConfigFile = "/etc/untangle-arp-eater.conf"
   DefaultsFile = "/etc/default/untangle-arp-eater"
   STATUS_OK = 104
   STATUS_ERR = 99
