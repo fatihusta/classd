@@ -23,11 +23,13 @@ PID_FILE="/var/run/untangle-arp-eater.pid"
 
 start()
 {
-    killall ${MONITOR} > /dev/null  2>&1
-    killall ${DAEMON_NAME} > /dev/null  2>&1
-    rm -f ${PID_FILE}
-
-    sleep 2
+    if [ -f ${PID_FILE} ] ; then
+      ps -p `cat ${PID_FILE}` > /dev/null 2>&1
+      if [ $? -eq 0 ] ; then
+	echo "Already running: "`cat ${PID_FILE}`
+      fi	
+      rm -f ${PID_FILE}
+    fi
 
     start-stop-daemon -m --pidfile ${PID_FILE} --name ${MONITOR} --start --background \
         --startas ${MONITOR_SCRIPT}
@@ -35,11 +37,9 @@ start()
 
 stop()
 {
-    start-stop-daemon --pidfile ${PID_FILE} --name ${MONITOR} --stop
+    start-stop-daemon --pidfile ${PID_FILE} --stop
 
-    sleep 2
-    killall ${MONITOR} > /dev/null  2>&1
-    killall ${DAEMON_NAME} > /dev/null  2>&1
+    sleep 4
     rm -f ${PID_FILE}
 }
 

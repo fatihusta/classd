@@ -23,13 +23,26 @@ load_defaults()
     fi
 }
 
+reap_child_hardest()
+{
+  reap_child 6
+}
+
+reap_child_harder()
+{
+  reap_child 15
+}
+
+reap_child_easy()
+{
+  reap_child 2
+}
+
 reap_child()
 {
     echo "[`date`] Retrieved signal to stop daemon."
 
-    pidof ${NAME} > /dev/null 2>&1 || break
-
-    killall ${NAME}
+    killall -2 ${NAME}
 
     exit 0
 }
@@ -61,9 +74,9 @@ is_still_running()
 EOF
 }
 
-trap reap_child 6
-trap reap_child 15
-trap reap_child 2
+trap reap_child_hardest 6
+trap reap_child_harder 15
+trap reap_child_easy 2
 
 while ( true ) ;  do
     is_still_running || {
