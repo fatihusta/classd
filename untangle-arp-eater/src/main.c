@@ -59,13 +59,11 @@ static struct
     int port;
     int debug_level;
     int daemonize;
-    int is_running;
     pthread_t scheduler_thread;
     json_server_t json_server;
     struct MHD_Daemon *daemon;
     sem_t* quit_sem;
 } _globals = {
-    .is_running = 0,
     .scheduler_thread = 0,
     .daemon = NULL,
     .config_file = NULL,
@@ -150,21 +148,17 @@ int main( int argc, char** argv )
         return errlog( ERR_CRITICAL, "_init\n" );
     }
 
-    _globals.is_running = FLAG_ALIVE;
-
     if ( arp_init() < 0 ) return perrlog( "arp_init" );
     
     debug( 1, "MAIN: Setting up signal handlers.\n" );
     _set_signals();
     
     /* Wait for the shutdown signal */
-    while ( _globals.is_running == FLAG_ALIVE ) {
-        if ( sem_wait( _globals.quit_sem ) < 0 ) {
-            if ( errno != EINTR ) perrlog( "sem_wait" );
-        }
-        debug( 1, "Received shutdown signal\n" );
+    while ( sem_wait( _globals.quit_sem ) < 0 ) {
+        if (errno != EINTR) perrlog("sem_wait");
     }
-    _globals.is_running = 0;
+    
+    debug( 1, "Received shutdown signal\n" );
 
     arp_shutdown();
     
@@ -176,7 +170,6 @@ int main( int argc, char** argv )
 
 void arpeater_main_shutdown( void )
 {
-    _globals.is_running = 0;
     /* A shutdown race condition. */
     sem_t* sem = _globals.quit_sem;
     if ( sem != NULL ) sem_post( sem );    
@@ -393,7 +386,6 @@ static int _setup_output( void )
 
 static void _signal_term( int sig )
 {
-    _globals.is_running = 0;
     /* A shutdown race condition. */
     sem_t* sem = _globals.quit_sem;
     if ( sem != NULL ) sem_post( sem );    
