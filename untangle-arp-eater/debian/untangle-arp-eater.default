@@ -1,4 +1,3 @@
-#! /bin/dash
 
 ## Uncomment to change the default configuration file.
 ARP_EATER_CONFIG_FILE=/etc/untangle-arp-eater.conf
