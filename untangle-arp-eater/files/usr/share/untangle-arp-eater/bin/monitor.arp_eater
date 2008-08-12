@@ -66,6 +66,7 @@ start_arp_eater()
 }
 
 trap reap_child_easy 2
+trap reap_child_easy 15
 
 while ( true ) ;  do
     echo "[`date`] Starting Arp-Eater"
