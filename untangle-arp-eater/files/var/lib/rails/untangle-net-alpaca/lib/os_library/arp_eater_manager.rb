@@ -1,6 +1,4 @@
 class OSLibrary::ArpEaterManager < Alpaca::OS::ManagerBase
-  AutoStrings = [ "auto", "automatic", "*" ]
-
   class ActiveHost
     def initialize( enabled, address, passive, gateway )
       @enabled, @address, @passive, @gateway = enabled, address, passive, gateway
@@ -18,11 +16,8 @@ class OSLibrary::ArpEaterManager < Alpaca::OS::ManagerBase
     raise "base class, override in an os specific class"
   end
 
+  ## Can't use nil, because the tested gateway may be nil.
   def is_auto( gateway )
-    return true if gateway.nil? 
-    gateway.strip!
-    
-    return true if gateway.empty? || AutoStrings.include?( gateway )
-    false
+    ArpEaterNetworks.is_gateway_auto?( gateway )
   end
 end
