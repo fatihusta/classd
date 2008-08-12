@@ -1,4 +1,4 @@
-Source: untangle-single-nic
+Source: untangle-windows-installer
 Section: admin
 Priority: optional
 Maintainer: Robert Scott <rbscott@untangle.com>
@@ -6,8 +6,8 @@ Uploaders: Untangle Buildbot <buildbot@untangle.com>
 Build-Depends: debhelper (>> 3.0.0)
 Standards-Version: 3.8.0
 
-Package: untangle-single-nic
+Package: untangle-windows-installer
 Architecture: all
-Depends: mongrel, ruby, ruby1.8, dash
-Description: The Untangle Single NIC Support
-  Untangle Single NIC Support.  This contains libraries for preconfiguring the box.
+Depends: mongrel, ruby, ruby1.8, libjson-ruby, dash
+Description: The Untangle Windows Installer
+  Untangle Windows Installer Support.  This contains a few scripts for preconfiguring the box.

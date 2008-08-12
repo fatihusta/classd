@@ -3,8 +3,8 @@
 DESTDIR := debian/tmp
 
 
-ALPACA_DESTDIR := debian/untangle-single-nic
-IPTABLES_DESTDIR := debian/untangle-single-nic-iptables
+ALPACA_DESTDIR := debian/untangle-windows-installer
+IPTABLES_DESTDIR := debian/untangle-windows-installer-iptables
 
 configure: configure-stamp
 configure-stamp:
