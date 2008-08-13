@@ -17,7 +17,7 @@ PopId="/usr/share/untangle/popid"
 RegistrationInfo="/usr/share/untangle/registration.info"
 RegistrationDone="/usr/share/untangle/.regdone"
 
-logger = Logger.new( STDOUT )
+$logger = Logger.new( STDOUT )
 
 def usage()
   puts "USAGE #{ARGV[0]} <config-file>"
@@ -48,7 +48,7 @@ end
 def set_password_hash( config, dbh ) 
   password_hash = config["password"]
   if ( password_hash.nil? || /^[0-9a-fA-F]{48}$/.match( password_hash ).nil? )
-    logger.warn( "Invalid password hash: #{password_hash}" )
+    $logger.warn( "Invalid password hash: #{password_hash}" )
     return
   end
 
@@ -68,17 +68,17 @@ end
 
 def setup_registration( config, dbh )
   unless File.exists?( CreatePopId )
-    logger.warn( "Unable to create pop id, missing the script #{CreatePopId}" )
+    $logger.warn( "Unable to create pop id, missing the script #{CreatePopId}" )
     return
   end
 
   unless ( status = run_command( CreatePopId, 15 )) == 0
-    logger.warn( "Non-zero return code from pop id script. #{status}" )
+    $logger.warn( "Non-zero return code from pop id script. #{status}" )
     return
   end
   
   unless File.exists?( PopId )
-    logger.warn( "POPID file doesn't exists: #{PopId}" )
+    $logger.warn( "POPID file doesn't exists: #{PopId}" )
     return
   end
   
@@ -93,12 +93,12 @@ def setup_registration( config, dbh )
 
   ## This will get updated later automatically.
   if popid.empty?
-    logger.warn( "POPID is empty" )
+    $logger.warn( "POPID is empty" )
     return
   end
     
   if registration.nil?
-    logger.warn( "WARNING : Missing registration information, assuming bogus values." )
+    $logger.warn( "WARNING : Missing registration information, assuming bogus values." )
     registration["email"] = "unset@example.com"
     registration["name"] = "unset"
     registration["numseats"] = 5
@@ -162,6 +162,12 @@ usage if ARGV.length != 1
 config_file = ARGV[0]
 
 config = ""
+
+unless File.exist?( config_file )
+  $logger.info( "The config_file: #{config_file} doesn't exists." )
+  exit 0
+end
+
 File.open( config_file, "r" ) { |f| f.each_line { |l| config << l }}
 config = ::JSON.parse( config )
 

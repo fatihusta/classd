@@ -8,6 +8,6 @@ Standards-Version: 3.8.0
 
 Package: untangle-windows-installer
 Architecture: all
-Depends: mongrel, ruby, ruby1.8, libjson-ruby, dash
+Depends: ruby, ruby1.8, libjson-ruby, dash
 Description: The Untangle Windows Installer
   Untangle Windows Installer Support.  This contains a few scripts for preconfiguring the box.

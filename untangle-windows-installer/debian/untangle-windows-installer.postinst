@@ -1,3 +1,19 @@
-#!/bin/sh
+#!/bin/dash
 
+INSTALL_DIR="/var/lib/untangle-windows-installer"
+
+mkdir -p ${INSTALL_DIR}
+INSTALL_MARKER=${INSTALL_DIR}/is_initialized
+
+## Install to indicate this is the first install.
+[ -f ${INSTALL_MARKER} ] || {
+    ## Remove the persistent net file, this package is only used to
+    ## provision the box and then it is removed.
+    rm -f /etc/udev/rules.d/z25_persistent-net.rules
+
+    ## Copy in the scripts for automatic configuration
+    cp /usr/share/untangle-windows-installer/bin/*.rb ${INSTALL_DIR}
+}
+
+touch ${INSTALL_MARKER}
 exit 0
