@@ -110,8 +110,6 @@ int arp_shutdown ( void )
         pcap_breakloop( _globals.handle );
         _globals.handle = NULL;
     }
-    if ( pthread_kill(_globals.sniff_thread, SIGINT) < 0)
-        perrlog("pthread_kill");
 
     /**
      * kill all host handlers
@@ -121,6 +119,9 @@ int arp_shutdown ( void )
     if ( sem_wait( &host_handlers_sem ) < 0 )
         perrlog("sem_wait");
 
+    /**
+     * XXX - should send all host handlers signal - then wait on all
+     */
     if ( (hosts = arp_host_handlers_get_all()) != NULL ) {
         for (step = list_head(hosts) ; step ; step = list_node_next(step)) {
             host_handler_t* host = list_node_val(step);
@@ -165,8 +166,6 @@ int arp_refresh_config ( void )
         debug( 2,"REFRESH: Killing sniffing  thread\n");
         pcap_breakloop( _globals.handle );
         _globals.handle = NULL;
-        if ( pthread_kill(_globals.sniff_thread, SIGINT) < 0)
-            perrlog("pthread_kill");
     }
 
     /**

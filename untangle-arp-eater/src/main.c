@@ -153,6 +153,8 @@ int main( int argc, char** argv )
     debug( 1, "MAIN: Arp-Eater started.\n" );
     _set_signals();
 
+    debug(1,"MAIN: (thread: %08x)\n",pthread_self());
+
     /* Wait for the shutdown signal */
     while ( sem_wait( _globals.quit_sem ) < 0 ) {
         if (errno != EINTR) perrlog("sem_wait");
@@ -390,6 +392,7 @@ static void _signal_term( int sig )
 {
     /* A shutdown race condition. */
     sem_t* sem = _globals.quit_sem;
+    debug(1,"SIGNAL: %i (thread: %08x)\n",sig,pthread_self());
     if ( sem != NULL ) sem_post( sem );    
 }
 
