@@ -6,9 +6,6 @@ require "cgi"
 require "ftools"
 require "logger"
 
-## DELETE ME BEFORE RELEASING
-Root="/home/rbscott/devel/untangle/web-ui/work/src/dist"
-
 SingleNicFlag="/usr/share/untangle-arp-eater/flag"
 
 CreatePopId="/usr/share/untangle/bin/createpopid.rb"
@@ -178,10 +175,10 @@ echo "[`date`] Recreating the database for Single NIC Mode."
 dropdb -U postgres uvm
 createuser -U postgres ${PG_CREATEUSER_OPTIONS} untangle 2>/dev/null
 createdb -O postgres -U postgres uvm
-#{Root}/usr/share/untangle/bin/update-schema settings uvm
-#{Root}/usr/share/untangle/bin/update-schema events uvm
-#{Root}/usr/share/untangle/bin/update-schema settings untangle-node-router
-#{Root}/usr/share/untangle/bin/update-schema events untangle-node-router
+/usr/share/untangle/bin/update-schema settings uvm
+/usr/share/untangle/bin/update-schema events uvm
+/usr/share/untangle/bin/update-schema settings untangle-node-router
+/usr/share/untangle/bin/update-schema events untangle-node-router
 EOF
 
 ## Insert the password for the user
