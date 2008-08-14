@@ -19,7 +19,7 @@ def install_packages( config )
   Kernel.system( "apt-get install #{INST_OPTS} #{packages.join( " " )}" )
 end
 
-def start_nodes( config, rush_shell )
+def start_nodes( config )
   nodes = config["nodes"]
 
   if ( nodes.nil? || !( nodes.is_a? Array ) || nodes.empty? )
