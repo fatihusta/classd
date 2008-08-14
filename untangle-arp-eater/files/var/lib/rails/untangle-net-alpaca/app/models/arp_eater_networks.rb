@@ -1,4 +1,6 @@
 class ArpEaterNetworks < ActiveRecord::Base
+  AutoStrings = [ "auto", "automatic", "*" ]
+
   ## Parse a network and netmask combination.
   ## Valid Syntax:
   ## w.x.y.z -> w.x.y.z / 32
@@ -23,5 +25,13 @@ class ArpEaterNetworks < ActiveRecord::Base
   def validate
     errors.add( "Invalid IP Address '#{ip}'" ) if IPAddr.parse_ip( ip ).nil?
     errors.add( "Invalid Netmask '#{netmask}'" ) if IPAddr.parse_netmask( netmask ).nil?
+  end
+
+  def self.is_gateway_auto?( test_gateway )
+    return true if test_gateway.nil? 
+    test_gateway.strip!
+    
+    return true if test_gateway.empty? || AutoStrings.include?( test_gateway )
+    false
   end
 end

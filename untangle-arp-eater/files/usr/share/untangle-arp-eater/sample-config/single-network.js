@@ -16,21 +16,21 @@
       "ip" : "192.168.1.17",
       "netmask" : "255.255.255.255",
       "spoof" : false,
-      "opportunistic" : false,
+      "passive" : false,
       "target" : "0.0.0.0"
   },{
       "enabled" : true,
       "ip" : "192.168.1.0",
       "netmask" : "255.255.255.0",
       "spoof" : true,
-      "opportunistic" : true,
+      "passive" : true,
       "target" : "0.0.0.0"
   },{
       "enabled" : true,
       "ip" : "0.0.0.0",
       "netmask" : "0.0.0.0",
       "spoof" : false,
-      "opportunistic" : true,
+      "passive" : true,
       "target" : "0.0.0.0"
   }]
 }

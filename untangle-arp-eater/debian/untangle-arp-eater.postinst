@@ -8,23 +8,24 @@ ourInit() {
     fi
 }
 
-ARP_EATER_CONFIG_FILE="/etc/arp-eater.conf"
+ARP_EATER_CONFIG_FILE="/etc/untangle-arp-eater.conf"
 ARP_EATER_DEFAULT_CONFIG="/usr/share/untangle-arp-eater/sample-config/default.js"
 
-LOG_FILE=/var/log/arp-eater/debug.log
+LOG_FILE=/var/log/untangle-arp-eater/debug.log
 
 mkdir -p `dirname ${LOG_FILE}`
 
 echo "[`date`] DEBUG debian upgrade." >> ${LOG_FILE}
 
 if [ ! -f ${ARP_EATER_CONFIG_FILE} ]; then
-    echo "Copying in ${ARP_EATER_CONFIG_FILE} to ${ARP_EATER_CONFIG_FILE}"
+    echo "Copying in ${ARP_EATER_DEFAULT_CONFIG} to ${ARP_EATER_CONFIG_FILE}"
     cp ${ARP_EATER_DEFAULT_CONFIG} ${ARP_EATER_CONFIG_FILE}
 fi
 
 if [ -x "/etc/init.d/untangle-arp-eater" ]; then
     update-rc.d untangle-arp-eater defaults >/dev/null
-    ourInit untangle-arp-eater restart >> ${LOG_FILE} 2>&1 || exit 0
+    ourInit untangle-arp-eater stop > /dev/null 2>&1 || exit 0
+    ourInit untangle-arp-eater start || exit 0
 fi
 
 exit 0

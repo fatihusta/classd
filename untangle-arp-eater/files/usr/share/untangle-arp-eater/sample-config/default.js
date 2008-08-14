@@ -11,14 +11,14 @@
   "rate" : 2.0,
 
   /* Send broadcast spoof */
-  "broadcast" : true,
+  "broadcast" : false,
 
   "networks" : [{
       "enabled" : false,
       "ip" : "0.0.0.0",
       "netmask" : "0.0.0.0",
       "spoof" : true,
-      "opportunistic" : true,
+      "passive" : true,
       "target" : "0.0.0.0"
   }]
 }

@@ -18,7 +18,7 @@
       "netmask" : "255.255.255.0",
       "target" : "192.168.1.1",
       "spoof" : true,
-      "opportunistic" : true
+      "passive" : true
   },{
       /* This should tell all hosts on 192.168.2.0 that we are 192.168.2.1, and tell
        * 192.168.2.1 that we are the hosts in our list. */
@@ -27,7 +27,7 @@
       "netmask" : "255.255.255.0",
       "target" : "192.168.2.1",
       "spoof" : true,
-      "opportunistic" : true,
+      "passive" : true,
       "timeout" : 1.5,
       "rate" : 1.0
   }]

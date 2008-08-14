@@ -25,7 +25,7 @@
 typedef struct
 {
     int is_enabled;
-    int is_opportunistic;
+    int is_passive;
     /* This is the address these settings are for. */
     struct in_addr address;
     struct in_addr gateway;

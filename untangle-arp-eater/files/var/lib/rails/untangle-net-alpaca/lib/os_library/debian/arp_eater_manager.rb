@@ -6,7 +6,7 @@ class OSLibrary::Debian::ArpEaterManager < OSLibrary::ArpEaterManager
   Service = "/etc/init.d/untangle-arp-eater"
 
   SingleNICFlag = "/etc/untangle-net-alpaca/single-nic-mode"
-  DefaultConfigFile = "/etc/arp-eater.conf"
+  DefaultConfigFile = "/etc/untangle-arp-eater.conf"
   DefaultsFile = "/etc/default/untangle-arp-eater"
   STATUS_OK = 104
   STATUS_ERR = 99
@@ -30,12 +30,18 @@ class OSLibrary::Debian::ArpEaterManager < OSLibrary::ArpEaterManager
 
   def hook_write_files
     settings = ArpEaterSettings.find( :first )
+
+    
     if settings.nil?
-      logger.warn "No settings"
-      return
+      logger.warn "No settings, writing disabled settings"
+      settings = ArpEaterSettings.new( :enabled => false, :gateway => "auto", :broadcast => false )
     end
     
-   networks = ArpEaterNetworks.find( :all )
+    if settings.enabled
+      networks = ArpEaterNetworks.find( :all )
+    else
+      networks = [ ArpEaterNetworks.new( :enabled => false, :spoof => false, :passive => true, :gateway => "auto" ) ]
+    end
 
     ## Serialize the settings
     file_contents = serialize_settings( settings, networks )
@@ -70,7 +76,7 @@ class OSLibrary::Debian::ArpEaterManager < OSLibrary::ArpEaterManager
     return [] if hosts_json.nil?
 
     return hosts_json.map { |h| ActiveHost.new( h["enabled"], h["address"], 
-                                                h["opportunistic"], h["gateway"] ) }
+                                                h["passive"], h["gateway"] ) }
   end
 
   private
@@ -82,10 +88,19 @@ class OSLibrary::Debian::ArpEaterManager < OSLibrary::ArpEaterManager
 
   def serialize_settings( settings, networks )
     gateway = settings.gateway
+
+    interface = settings.interface
+    if ApplicationHelper.null?( interface )
+      i = Interface.find( :first, :conditions => [ "wan=?", true ] )
+      interface = i.os_name unless i.nil?
+    end
+
+    ## If all else fails, default to eth0.
+    interface = "eth0" if ApplicationHelper.null?( interface )
     
     gateway = "0.0.0.0" if is_auto( gateway )
     settings_json = { 
-      :gateway => gateway, :interface => settings.interface,
+      :gateway => gateway, :interface => interface,
       :enabled => settings.enabled, :broadcast => settings.broadcast 
     }
     
@@ -98,7 +113,7 @@ class OSLibrary::Debian::ArpEaterManager < OSLibrary::ArpEaterManager
       settings_json[:networks] << { 
         :ip => network.ip, :netmask => OSLibrary::NetworkManager.parseNetmask( network.netmask ),
         :gateway => gateway, :enabled => network.enabled,
-        :spoof => network.spoof, :opportunistic => network.opportunistic
+        :spoof => network.spoof, :passive => network.passive
       }
     end
 

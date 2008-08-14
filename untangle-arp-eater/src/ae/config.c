@@ -49,7 +49,7 @@ static struct
     },
 
     .default_config = {
-        .interface = "",
+        .interface = "eth0",
         .gateway = { .s_addr = INADDR_ANY },
         .timeout_ms = 0,
         .rate_ms = 0,
@@ -66,7 +66,7 @@ static struct
         .rate_ms = 0,
         .is_enabled = 0,
         .is_spoof_enabled = 1,
-        .is_opportunistic = 1
+        .is_passive = 1
     }
 };
 
@@ -177,12 +177,12 @@ static json_serializer_t _network_serializer = {
         .to_json = json_serializer_to_json_boolean,
         .arg = (void*)offsetof( arpeater_ae_config_network_t, is_spoof_enabled )
     },{
-        .name = "opportunistic",
+        .name = "passive",
         .fetch_arg = 1,
         .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
         .to_c = json_serializer_to_c_boolean,
         .to_json = json_serializer_to_json_boolean,
-        .arg = (void*)offsetof( arpeater_ae_config_network_t, is_opportunistic )
+        .arg = (void*)offsetof( arpeater_ae_config_network_t, is_passive )
     }, JSON_SERIALIZER_FIELD_TERM}
 };
 

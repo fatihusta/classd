@@ -40,8 +40,9 @@ typedef struct host_handler
 
 typedef enum
 {
-    _HANDLER_MESG_REFRESH_CONFIG =  1,  
-    _HANDLER_MESG_KILL           =  2
+    _HANDLER_MESG_REFRESH_CONFIG =  1, /* re read your config */  
+    _HANDLER_MESG_KILL           =  2, /* exit - send cleanups */
+    _HANDLER_MESG_KILL_NOW       =  3  /* exit - don't send cleanups */
 } handler_message_t;
 
 
@@ -49,13 +50,19 @@ typedef enum
  * This initializes the arp sniffing and host handling
  * Do not call any other functions before calling init
  */
-int arp_init ( char* interface );
+int arp_init ( void );
 
 /**
  * This shuts down the arp sniffing and host handling
  * Do not call any other functions after calling shutdown
  */
 int arp_shutdown ( void );
+
+/**
+ * refresh config from file
+ * FIXME - does not reread interface setting
+ */
+int arp_refresh_config ( void );
 
 /**
  * This returns a list of host_handler_t's that represents the current set of host handlers

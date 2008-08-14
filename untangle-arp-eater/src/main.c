@@ -23,6 +23,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <syslog.h>
+#include <semaphore.h>
 
 #include <libmvutil.h>
 
@@ -42,10 +43,9 @@
 #include "ae/manager.h"
 
 
-#define DEFAULT_CONFIG_FILE  "/etc/arp-eater.conf"
-#define DEFAULT_DEBUG_LEVEL  5
+#define DEFAULT_CONFIG_FILE  "/etc/untangle-arp-eater.conf"
+#define DEFAULT_DEBUG_LEVEL  1
 #define DEFAULT_BIND_PORT 3002
-#define DEFAULT_INTERFACE "eth0"
 
 #define FLAG_ALIVE      0x543F00D
 
@@ -59,13 +59,11 @@ static struct
     int port;
     int debug_level;
     int daemonize;
-    int is_running;
     pthread_t scheduler_thread;
     json_server_t json_server;
     struct MHD_Daemon *daemon;
-    char* interface;
+    sem_t* quit_sem;
 } _globals = {
-    .is_running = 0,
     .scheduler_thread = 0,
     .daemon = NULL,
     .config_file = NULL,
@@ -76,7 +74,7 @@ static struct
     .std_out_filename = NULL,
     .std_out = -1,
     .debug_level = DEFAULT_DEBUG_LEVEL,
-    .interface = DEFAULT_INTERFACE
+    .quit_sem = NULL
 };
 
 static int _parse_args( int argc, char** argv );
@@ -150,35 +148,40 @@ int main( int argc, char** argv )
         return errlog( ERR_CRITICAL, "_init\n" );
     }
 
-    _globals.is_running = FLAG_ALIVE;
-
-    if ( arp_init(_globals.interface) < 0 )
-        return perrlog("arp_init");
+    if ( arp_init() < 0 ) return perrlog( "arp_init" );
     
-    debug( 1, "MAIN: Setting up signal handlers.\n" );
+    debug( 1, "MAIN: Arp-Eater started.\n" );
     _set_signals();
+
+    /* Wait for the shutdown signal */
+    while ( sem_wait( _globals.quit_sem ) < 0 ) {
+        if (errno != EINTR) perrlog("sem_wait");
+    }
     
-    /* An awesome way to wait for a shutdown signal. */
-    while ( _globals.is_running == FLAG_ALIVE ) sleep( 1 );
+    debug( 1, "MAIN: Received shutdown signal\n" );
 
     arp_shutdown();
-    
+
     /* Destroy the arp eater */
     _destroy();
+
+    debug( 1, "MAIN: Exiting\n" );
     
     return 0;
 }
 
 void arpeater_main_shutdown( void )
 {
-    _globals.is_running = 0;
+    /* A shutdown race condition. */
+    sem_t* sem = _globals.quit_sem;
+    if ( sem != NULL ) sem_post( sem );    
 }
 
 static int _parse_args( int argc, char** argv )
 {
     int c = 0;
     
-     while (( c = getopt( argc, argv, "dhp:c:o:e:l:i:" ))  != -1 ) {
+     while (( c = getopt( argc, argv, "dhp:c:o:e:l:" ))  != -1 ) {
     switch( c ) {
          case 'd':
     _globals.daemonize = 1;
@@ -206,10 +209,6 @@ static int _parse_args( int argc, char** argv )
          case 'l':
     _globals.debug_level = atoi( optarg );
              break;
-
-         case 'i':
-    _globals.interface = optarg;
-             break;
             
          case '?':
     return -1;
@@ -229,7 +228,6 @@ static int _usage( char *name )
      fprintf( stderr, "\t-o <log-file>: File to place standard output(more useful with -d).\n" );
      fprintf( stderr, "\t-e <log-file>: File to place standard error(more useful with -d).\n" );
      fprintf( stderr, "\t-l <debug-level>: Debugging level.\n" );    
-     fprintf( stderr, "\t-i <interface>: Interface to sniff for arps.\n" );    
      fprintf( stderr, "\t-h: Halp (show this message)\n" );
      return -1;
 }
@@ -251,6 +249,15 @@ static int _init( int argc, char** argv )
     
     /* Initialize the scheduler. */
     if ( arpeater_sched_init() < 0 ) return errlog( ERR_CRITICAL, "arpeater_sched_init\n" );
+
+    /* Initialize the quit semaphore */
+    sem_t* sem = NULL;
+    if (( sem = calloc( 1, sizeof( sem_t ))) == NULL ) return errlog( ERR_CRITICAL, "malloc" );
+    if ( sem_init( sem, 1, 0 ) < 0 ) {
+        free( sem );
+        return perrlog( "sem_init" );
+    }
+    _globals.quit_sem = sem;
 
     /* Donate a thread to start the scheduler. */
     if ( pthread_create( &_globals.scheduler_thread, &uthread_attr.other.medium,
@@ -277,22 +284,24 @@ static int _init( int argc, char** argv )
     }
 
     struct json_object* config_file_json = NULL;
-    if (( config_file_json = json_object_from_file( _globals.config_file )) == NULL ) {
-        /* Ignore the error, and just load the defaults */
-        errlog( ERR_CRITICAL, "json_object_from_file\n" );
-    } else if ( is_error( config_file_json )) {
-        errlog( ERR_CRITICAL, "json_object_from_file\n" );
-        config_file_json = NULL;
-    } else {
-        debug( 10, "MAIN: Loading the config file %s\n", _globals.config_file );
-        /* Initialize the config manager */
-        if ( arpeater_ae_config_load_json( &config, config_file_json ) < 0 ) {
-            errlog( ERR_CRITICAL, "arpeater_ae_config_load_json\n" );
+    if ( _globals.config_file != NULL ) {
+        if (( config_file_json = json_object_from_file( _globals.config_file )) == NULL ) {
+            /* Ignore the error, and just load the defaults */
+            errlog( ERR_CRITICAL, "json_object_from_file\n" );
+        } else if ( is_error( config_file_json )) {
+            errlog( ERR_CRITICAL, "json_object_from_file\n" );
+            config_file_json = NULL;
         } else {
-            if ( arpeater_functions_load_config( &config ) < 0 ) {
-                errlog( ERR_CRITICAL, "barfight_functions_load_config\n" );
+            debug( 2, "MAIN: Loading the config file %s\n", _globals.config_file );
+            /* Initialize the config manager */
+            if ( arpeater_ae_config_load_json( &config, config_file_json ) < 0 ) {
+                errlog( ERR_CRITICAL, "arpeater_ae_config_load_json\n" );
+            } else {
+                if ( arpeater_functions_load_config( &config ) < 0 ) {
+                    errlog( ERR_CRITICAL, "barfight_functions_load_config\n" );
+                }
             }
-        }
+        }        
     }
 
     if ( config_file_json != NULL ) json_object_put( config_file_json );
@@ -301,14 +310,21 @@ static int _init( int argc, char** argv )
                                         _globals.port, NULL, NULL, _globals.json_server.handler, 
                                         &_globals.json_server, MHD_OPTION_END );
 
-    if ( _globals.daemon == NULL ) return errlog( ERR_CRITICAL, "MHD_start_daemon\n" );
+    if ( _globals.daemon == NULL ) return errlog( ERR_CRITICAL, "MHD_start_daemon: %s\n", strerror(errno));
 
     return 0;
 }
 
 static void _destroy( void )
 {    
+    sem_t* sem = NULL;
     if ( arpeater_sched_cleanup_z( NULL ) < 0 ) errlog( ERR_CRITICAL, "arpeater_sched_cleanup_z\n" );
+
+    if ( _globals.quit_sem != NULL ) {
+        sem = _globals.quit_sem;
+             _globals.quit_sem = NULL;
+
+    }
     
      MHD_stop_daemon( _globals.daemon );
     
@@ -322,6 +338,13 @@ static void _destroy( void )
     
      _globals.std_out = -1;
      _globals.std_err = -1;
+
+     /* Putting this at the end of the shutdown cycle to limit the
+      * effects of the race condition with the signal handler. */
+     if ( sem != NULL ) {
+         if ( sem_destroy( sem ) < 0 ) perrlog( "sem_destroy" );
+         free( sem );
+     }
 }
 
 static int _setup_output( void )
@@ -365,7 +388,9 @@ static int _setup_output( void )
 
 static void _signal_term( int sig )
 {
-    _globals.is_running = 0;
+    /* A shutdown race condition. */
+    sem_t* sem = _globals.quit_sem;
+    if ( sem != NULL ) sem_post( sem );    
 }
 
 static int _set_signals( void )

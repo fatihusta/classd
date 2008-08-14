@@ -2,7 +2,7 @@ class ArpEaterController < ApplicationController
   def manage
     @networks = ArpEaterNetworks.find( :all )
     @settings = ArpEaterSettings.find( :first )
-    @active_hosts = os["arp_eater_manager"].get_active_hosts
+    refresh_active_hosts
     
     @settings = ArpEaterSettings.new( :enabled => false, :gateway => "auto", :broadcast => false ) if @settings.nil?
     render :action => 'manage'
@@ -10,13 +10,18 @@ class ArpEaterController < ApplicationController
 
   def create_network
     @network = ArpEaterNetworks.new( :enabled => true, :spoof => true,
-                                     :opportunistic => false, :gateway => "auto" )
+                                     :passive => true, :gateway => "auto" )
 
     @network.parseNetwork( "192.168.1.0 / 24" )
   end
 
   alias :index :manage
 
+  def refresh_active_hosts
+    @active_hosts = os["arp_eater_manager"].get_active_hosts
+    @active_hosts = @active_hosts.sort_by { |i| IPAddr.parse( i.address ).to_i }
+  end
+  
   def save
     ## Review : Internationalization
     if ( params[:commit] != "Save".t )
@@ -45,13 +50,13 @@ class ArpEaterController < ApplicationController
     networks = params[:network]
     description = params[:description]
     gateways = params[:gateway]
-    opportunistic = params[:opportunistic]
+    passive = params[:passive]
 
     position = 0
     unless ids.nil?
       ids.each do |key|
         network = ArpEaterNetworks.new( :enabled => enabled[key], :spoof => spoof[key],
-                                        :opportunistic => opportunistic[key], 
+                                        :passive => passive[key], 
                                         :gateway => gateways[key], :description => description[key] )
 
         network.parseNetwork( networks[key] )

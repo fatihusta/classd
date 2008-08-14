@@ -100,12 +100,12 @@ static json_serializer_t _network_settings_serializer = {
         .to_json = json_serializer_to_json_boolean,
         .arg = (void*)offsetof( arpeater_ae_manager_settings_t, is_enabled )
     },{
-        .name = "opportunistic",
+        .name = "passive",
         .fetch_arg = 1,
         .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
         .to_c = json_serializer_to_c_boolean,
         .to_json = json_serializer_to_json_boolean,
-        .arg = (void*)offsetof( arpeater_ae_manager_settings_t, is_opportunistic )
+        .arg = (void*)offsetof( arpeater_ae_manager_settings_t, is_passive )
     },{
         .name = "address",
         .fetch_arg = 1,
@@ -140,12 +140,12 @@ static json_serializer_t _host_handler_serializer = {
         .to_json = json_serializer_to_json_boolean,
         .arg = (void*)offsetof( host_handler_t, settings.is_enabled )
     },{
-        .name = "opportunistic",
+        .name = "passive",
         .fetch_arg = 1,
         .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
         .to_c = json_serializer_to_c_boolean,
         .to_json = json_serializer_to_json_boolean,
-        .arg = (void*)offsetof( host_handler_t, settings.is_opportunistic )
+        .arg = (void*)offsetof( host_handler_t, settings.is_passive )
     },{
         .name = "gateway",
         .fetch_arg = 1,
@@ -247,6 +247,12 @@ static struct json_object *_set_config( struct json_object* request )
         if ( arpeater_functions_load_config( &config ) < 0 ) {
             errlog( ERR_CRITICAL, "arpeater_functions_load_config\n" );
             strncpy( message, "Unable to load json configuration.", message_size );
+            return 0;
+        }
+
+        if ( arp_refresh_config() < 0 ) {
+            errlog( ERR_CRITICAL, "arp_refresh_config\n" );
+            strncpy( message, "Unable to refresh JSON config.", message_size );
             return 0;
         }
 

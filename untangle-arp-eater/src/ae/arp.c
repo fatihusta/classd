@@ -47,7 +47,7 @@ static sem_t host_handlers_sem;
 
 static struct
 {
-    char* interface;
+    char interface[IF_NAMESIZE];
     int sock_raw;
     struct sockaddr_ll device;
     ht_t hosts;
@@ -72,76 +72,29 @@ static int   _arp_table_lookup ( struct ether_addr *dest, in_addr_t ip );
 static int   _host_handler_start ( in_addr_t addr );
 
 
-int arp_init ( char* interface )
+int arp_init ( void )
 {
-    struct ifreq card;
-    int pf;
-    int i;
-
     bzero(&_globals,sizeof(_globals));
-    _globals.interface = interface; 
-    _globals.device.sll_family = AF_PACKET;
-
-    if ( (pf = socket( PF_PACKET, SOCK_RAW, htons(ETH_P_ALL) )) < 0 ) 
-        return errlog(ERR_CRITICAL, "Could not create packet socket");
-  
-    /**
-     * Find the index
-     */
-    strcpy( card.ifr_name, _globals.interface );
-    if ( ioctl( pf, SIOCGIFINDEX, &card) < 0 ) {
-        close (pf);
-        return errlog(ERR_CRITICAL,"Could not find device index number for %s", card.ifr_name);
-    }
-    _globals.device.sll_ifindex = card.ifr_ifindex;
 
     /**
-     * Find the MAC address
-     */
-    strcpy( card.ifr_name, _globals.interface );
-    if ( ioctl( pf, SIOCGIFHWADDR, &card) < 0 ) {
-        close (pf);
-        return errlog(ERR_CRITICAL,"Could not mac address for %s", card.ifr_name);
-    }
-    for (i=0; i<6; i++) 
-        _globals.device.sll_addr[i] = card.ifr_hwaddr.sa_data[i];
-
-    if ( close(pf) < 0)
-        perrlog("close");
-    
-    debug( 2, "ARP: Spoofing on %s (index: %d) (mac: ", _globals.interface, _globals.device.sll_ifindex);
-    _globals.device.sll_halen = htons( 6 );
-    for (i=0; i<6; i++) 
-        debug_nodate(2,"%02x%s",_globals.device.sll_addr[i], (i<5 ? ":" : ""));
-    debug_nodate( 2, ")\n");
-
-    /**
-     * Initialize the socket for sending arps
-     */
-    if ( (_globals.sock_raw = socket( PF_PACKET, SOCK_RAW, htons(ETH_P_ARP) )) < 0 ) 
-        return perrlog("socket");
-
-    /**
-     * Initialize host_handlers table & lock
+     * Initialize host_handlers lock
      */
     if ( sem_init( &host_handlers_sem, 0, 1) < 0 )
         return perrlog( "sem_init" ); 
     
+    /**
+     * Initialize host_handlers table
+     */
     if ( ht_init( &host_handlers, 1337, int_hash_func, int_equ_func, HASH_FLAG_KEEP_LIST) < 0 )
         return perrlog( "hash_init" );
-                  
-    /**
-     * Donate a thread to start the arp listener.
-     */
-    if ( pthread_create( &_globals.sniff_thread, NULL, _arp_listener, NULL ) != 0 ) 
-        return perrlog( "pthread_create" );
 
     /**
-     * Donate a thread to start the broadcast arp spoofer. 
+     * Initialize the socket for sending arps
      */
-    _host_handler_start( 0xffffffff );
-
-    return 0;
+    if ( (_globals.sock_raw = socket( PF_PACKET, SOCK_RAW, htons(ETH_P_ARP) )) < 0  )
+            return perrlog("socket");
+    
+    return arp_refresh_config();
 }
 
 int arp_shutdown ( void )
@@ -153,13 +106,12 @@ int arp_shutdown ( void )
     /**
      * kill sniffer thread
      */
-    if ( _globals.handle )
+    if ( _globals.handle ) {
         pcap_breakloop( _globals.handle );
+        _globals.handle = NULL;
+    }
     if ( pthread_kill(_globals.sniff_thread, SIGINT) < 0)
         perrlog("pthread_kill");
-    if ( pthread_join(_globals.sniff_thread, (void**)&ret) < 0 )
-        perrlog("pthread_join");
-
 
     /**
      * kill all host handlers
@@ -188,6 +140,130 @@ int arp_shutdown ( void )
 
     if ( ht_destroy( &host_handlers ) < 0 )
         perrlog("ht_destroy");
+
+    return 0;
+}
+
+int arp_refresh_config ( void )
+{
+    arpeater_ae_config_t config;
+    host_handler_t* handler;
+    int pf, i;
+    struct ifreq card;
+    struct bpf_program filter;
+    char pcap_errbuf[PCAP_ERRBUF_SIZE];
+
+    /**
+     * Kill any previous sniffer threads 
+     */
+    if ( _globals.handle != NULL ) {
+        debug( 2,"REFRESH: Killing sniffing  thread\n");
+        pcap_breakloop( _globals.handle );
+        _globals.handle = NULL;
+        if ( pthread_kill(_globals.sniff_thread, SIGINT) < 0)
+            perrlog("pthread_kill");
+    }
+
+    /**
+     * Kill any previous broadcast threads 
+     */
+    if ( (handler = ht_lookup( &host_handlers, (void*) 0xffffffff)) != NULL ) {
+        debug( 2,"REFRESH: Killing broadcast thread\n");
+        arp_host_handler_send_message(handler,_HANDLER_MESG_KILL_NOW);
+    }
+
+    /**
+     * Get new config
+     */
+    if ( arpeater_ae_manager_get_config(&config) < 0)
+        return perrlog("arpeater_ae_manager_get_config");
+
+    strncpy(_globals.interface,config.interface,IF_NAMESIZE);
+    _globals.device.sll_family = AF_PACKET;
+
+    if ( (pf = socket( PF_PACKET, SOCK_RAW, htons(ETH_P_ALL) )) < 0 ) 
+        return errlog(ERR_CRITICAL, "Could not create packet socket\n");
+
+    /**
+     * Find the interface index
+     */
+    strcpy( card.ifr_name, _globals.interface );
+    if ( ioctl( pf, SIOCGIFINDEX, &card) < 0 ) {
+        close (pf);
+        return errlog(ERR_CRITICAL,"Could not find device index number for %s\n", card.ifr_name);
+    }
+    _globals.device.sll_ifindex = card.ifr_ifindex;
+
+    /**
+     * Find the MAC address
+     */
+    strcpy( card.ifr_name, _globals.interface );
+    if ( ioctl( pf, SIOCGIFHWADDR, &card) < 0 ) {
+        close (pf);
+        return errlog(ERR_CRITICAL,"Could not mac address for %s\n", card.ifr_name);
+    }
+    for (i=0; i<6; i++) 
+        _globals.device.sll_addr[i] = card.ifr_hwaddr.sa_data[i];
+
+    if ( close(pf) < 0)
+        perrlog("close");
+    
+    debug( 2, "ARP: Spoofing on %s (index: %d) (mac: ", _globals.interface, _globals.device.sll_ifindex);
+    _globals.device.sll_halen = htons( 6 );
+    for (i=0; i<6; i++) 
+        debug_nodate(2,"%02x%s",_globals.device.sll_addr[i], (i<5 ? ":" : ""));
+    debug_nodate( 2, ")\n");
+
+    /**
+     * Refresh all the host handlers
+     */
+    arp_host_handler_refresh_all();
+
+    /**
+     * Start all non-passive (active) host handler threads
+     */
+    for ( i = config.num_networks; i > 0 ; i--) {
+        if (!config.networks[i].is_passive) {
+            if ( ht_lookup( &host_handlers, (void*) config.networks[i].ip.s_addr) == NULL ) {
+                debug( 3,"HOST: Starting Active Host thread (%s)\n", unet_inet_ntoa(config.networks[i].ip.s_addr));
+                _host_handler_start( config.networks[i].ip.s_addr );
+            }
+        }
+    }
+
+    /**
+     * Create arp listening resources
+     */
+    /* open interface for listening */
+    if ( (_globals.handle = pcap_open_live(_globals.interface, BUFSIZ, 1, 0, pcap_errbuf)) == NULL ) {
+        return errlog( ERR_CRITICAL, "pcap_open_live: %s\n", pcap_errbuf );
+    }
+
+    /* compile rule/filter to only listen to arp */
+    if ( pcap_compile(_globals.handle, &filter, "arp", 1, 0) < 0 ) {
+        errlog( ERR_CRITICAL, "pcap_compile: %s\n", pcap_geterr(_globals.handle));
+        pcap_close( _globals.handle );
+        return -1;
+    }
+
+    /* apply rule/filter */
+    if ( pcap_setfilter(_globals.handle, &filter) < 0 ) {
+        errlog( ERR_CRITICAL, "pcap_setfilter: %s\n", pcap_geterr(_globals.handle));
+        pcap_close( _globals.handle );
+        return -1; 
+    }
+
+    /**
+     * Donate a thread to start the arp listener.
+     */
+    if ( pthread_create( &_globals.sniff_thread, &uthread_attr.other.medium, _arp_listener, NULL ) != 0 ) 
+        return perrlog( "pthread_create" );
+
+    /**
+     * Donate a thread to start the broadcast arp spoofer. 
+     */
+    if (config.is_broadcast_enabled)
+        _host_handler_start( 0xffffffff );
 
     return 0;
 }
@@ -266,6 +342,14 @@ static int _host_handler_reset_timer (host_handler_t* host)
 }
 
 /**
+ * returns whether or not the host is a broadcast address
+ */
+static int _host_handler_is_broadcast (host_handler_t* host)
+{
+    return (host->addr.s_addr == 0xffffffff);
+}
+
+/**
  * check if the host handler is past its timeout time
  * returns: 1 if yes, 0 if no
  */
@@ -273,6 +357,12 @@ static int _host_handler_is_timedout (host_handler_t* host)
 {
     struct timeval now;
 
+    /**
+     * Broadcast and "active" threads don't time out
+     */
+    if (_host_handler_is_broadcast (host) || !host->settings.is_passive)
+        return 0;
+    
     if ( gettimeofday( &now, NULL ) < 0 ) {
         perrlog("gettimeofday");
         return 0;
@@ -283,14 +373,6 @@ static int _host_handler_is_timedout (host_handler_t* host)
         return 1;
 
     return 0;
-}
-
-/**
- * returns whether or not the host is a broadcast address
- */
-static int _host_handler_is_broadcast (host_handler_t* host)
-{
-    return (host->addr.s_addr == 0xffffffff);
 }
 
 /**
@@ -378,7 +460,7 @@ static void* _host_handler_thread (void* arg)
     arpeater_ae_manager_settings_t* settings = &host->settings;
     int ret, err, go = 1;
     
-    debug(1, "HOST: New Host handler (%s)\n", unet_next_inet_ntoa(host->addr.s_addr));
+    debug( 3, "HOST: New Host handler (%s)\n", unet_next_inet_ntoa(host->addr.s_addr));
 
     /**
      * Temporarily enable and put a config message so it will fetch the config the first time
@@ -405,7 +487,7 @@ static void* _host_handler_thread (void* arg)
         if (ret) {
             switch (ret) {
             case _HANDLER_MESG_REFRESH_CONFIG:
-                debug( 1, "HOST: Host (%s) Config Refresh\n", unet_inet_ntoa(host->addr.s_addr));
+                debug( 3, "HOST: Host (%s) Config Refresh\n", unet_inet_ntoa(host->addr.s_addr));
                 err = 0;
                 
                 if ( arpeater_ae_manager_get_ip_settings( &host->addr, settings ) < 0)
@@ -429,26 +511,28 @@ static void* _host_handler_thread (void* arg)
                 }
                 
                 if (settings->is_enabled) {
-                    debug(1, "HOST: Host handler config: (host %s) (host_mac: %s) (gateway %s) ",
+                    debug( 3, "HOST: Host handler config: (host %s) (host_mac: %s) (gateway %s) ",
                           unet_next_inet_ntoa(host->addr.s_addr), 
                           ether_ntoa(&host->host_mac),
                           unet_next_inet_ntoa(settings->gateway.s_addr));
-                    debug_nodate(1, "(gateway_mac %s) (enabled %i)\n",
+                    debug_nodate( 3, "(gateway_mac %s) (enabled %i)\n",
                                  ether_ntoa(&host->gateway_mac),
                                  settings->is_enabled);
                 }
                 else {
-                    debug(1, "HOST: Host handler config: (host %s) - disabled\n",
+                    debug( 3, "HOST: Host handler config: (host %s) - disabled\n",
                           unet_next_inet_ntoa(host->addr.s_addr));
                 }
                 
                 break;
                 
             case _HANDLER_MESG_KILL:
-                debug( 1, "HOST: Host (%s) Kill - Cleaning up\n", unet_inet_ntoa(host->addr.s_addr));
-
+                debug( 3, "HOST: Host Handler (%s) Cleaning up\n", unet_inet_ntoa(host->addr.s_addr));
                 if (settings->is_enabled) 
                     _host_handler_undo_arps(host);
+                /* fall through */
+            case _HANDLER_MESG_KILL_NOW:
+                debug( 3, "HOST: Host Handler (%s) Exiting\n", unet_inet_ntoa(host->addr.s_addr));
                 
                 go = 0;
                 settings->is_enabled = 0;
@@ -458,10 +542,9 @@ static void* _host_handler_thread (void* arg)
 
         /**
          * If timed out then exit
-         * (Broadcast thread does not time out)
          */
-        if ( _host_handler_is_timedout( host ) && !_host_handler_is_broadcast( host) ) {
-            debug(1, "HOST: Host handler (%s) time out.\n", unet_next_inet_ntoa(host->addr.s_addr));
+        if ( _host_handler_is_timedout( host ) ) {
+            debug( 3, "HOST: Host handler (%s) time out.\n", unet_next_inet_ntoa(host->addr.s_addr));
             go = 0;
             settings->is_enabled = 0;
             break;
@@ -678,15 +761,15 @@ static int _arp_send ( int op, u_char *sha, in_addr_t sip, u_char *tha, in_addr_
     memcpy(arp_payload->ar_tip,&tip,4);
 
 	if (op == ARPOP_REQUEST) {
-		debug(1, "ARP: Sending: (%s %s) arp who-has %s tell %s\n",
+		debug( 4, "ARP: Sending: (%s %s) arp who-has %s tell %s\n",
               unet_next_inet_ntoa(tip),
               ether_ntoa((struct ether_addr *)tha),
               unet_next_inet_ntoa(tip),
               unet_next_inet_ntoa(sip));
 	}
 	else if (op == ARPOP_REPLY ) {
-		debug(1, "ARP: Sending: (%16s %21s)", unet_next_inet_ntoa(tip), ether_ntoa((struct ether_addr *)tha));
-		debug_nodate(1, " arp reply %16s is-at %s\n", unet_next_inet_ntoa(sip), ether_ntoa((struct ether_addr *)sha));
+		debug( 4, "ARP: Sending: (%16s %21s)", unet_next_inet_ntoa(tip), ether_ntoa((struct ether_addr *)tha));
+		debug_nodate( 4, " arp reply %16s is-at %s\n", unet_next_inet_ntoa(sip), ether_ntoa((struct ether_addr *)sha));
 	}
 
     memcpy(&device,&_globals.device,sizeof(struct sockaddr_ll));
@@ -745,7 +828,7 @@ static void _arp_listener_handler ( u_char* args, const struct pcap_pkthdr* head
         _globals.device.sll_addr[5] == eth_hdr->h_source[5]) 
         return;
         
-    debug( 2, "SNIFF: (%02x:%02x:%02x:%02x:%02x:%02x -> %02x:%02x:%02x:%02x:%02x:%02x) arp who has %s tell %s \n",
+    debug( 4, "SNIFF: (%02x:%02x:%02x:%02x:%02x:%02x -> %02x:%02x:%02x:%02x:%02x:%02x) arp who has %s tell %s \n",
            eth_hdr->h_source[0], eth_hdr->h_source[1],
            eth_hdr->h_source[2], eth_hdr->h_source[3],
            eth_hdr->h_source[4], eth_hdr->h_source[5],
@@ -758,7 +841,7 @@ static void _arp_listener_handler ( u_char* args, const struct pcap_pkthdr* head
     victim = *(in_addr_t*)&arp_payload->ar_sip;
 
     if ( ht_lookup( &host_handlers, (void*) victim) == NULL ) {
-        debug( 1, "SNIFF: New host (%s) found.\n", unet_inet_ntoa(victim));
+        debug( 3, "SNIFF: New host (%s) found.\n", unet_inet_ntoa(victim));
 
         _host_handler_start( victim );
     }
@@ -771,40 +854,15 @@ static void _arp_listener_handler ( u_char* args, const struct pcap_pkthdr* head
  */
 static void* _arp_listener( void* arg )
 {
-    char pcap_errbuf[PCAP_ERRBUF_SIZE];
-    struct bpf_program filter;
+    pcap_t* handle = _globals.handle;
     
-    debug( 1, "SNIFF: Setting up arp listener.\n" );
-    debug( 1, "SNIFF: Listening on %s.\n", _globals.interface);
-    
-    /* open interface for listening */
-    if ( (_globals.handle = pcap_open_live(_globals.interface, BUFSIZ, 1, 0, pcap_errbuf)) == NULL ) {
-        errlog( ERR_CRITICAL, "pcap_open_live: %s\n", pcap_errbuf );
-        return NULL; 
-    }
-
-    /* compile rule/filter to only listen to arp */
-    if ( pcap_compile(_globals.handle, &filter, "arp", 1, 0) < 0 ) {
-        errlog( ERR_CRITICAL, "pcap_compile: %s\n", pcap_geterr(_globals.handle));
-        pcap_close( _globals.handle );
-        return NULL; 
-    }
-
-    /* apply rule/filter */
-    if ( pcap_setfilter(_globals.handle, &filter) < 0 ) {
-        errlog( ERR_CRITICAL, "pcap_setfilter: %s\n", pcap_geterr(_globals.handle));
-        pcap_close( _globals.handle );
-        return NULL; 
-    }
-
     /* start capturing */
-    if ( pcap_loop(_globals.handle, -1, _arp_listener_handler, NULL) < 0 ) {
-        if (errno != EINTR) 
-            errlog( ERR_CRITICAL, "pcap_loop: %s %i\n", pcap_geterr(_globals.handle),errno);
-    }
+    debug( 2, "SNIFF: Listening on %s.\n", _globals.interface );
+    pcap_loop( handle, -1, _arp_listener_handler, NULL );
 
-    pcap_close( _globals.handle );
-    debug( 1, "SNIFF: Exitting\n");
+    pcap_close( handle );
+    
+    debug( 2, "SNIFF: Exiting\n" );
     return NULL;
 }
 
@@ -862,8 +920,8 @@ static int _test_arp ( void )
     
     debug( 2, "ARP: Test Lookup (%s = ", unet_inet_ntoa(*(in_addr_t*)&ip));
     for (i=0; i<6; i++) 
-        debug_nodate(2,"%02x%s",mac.ether_addr_octet[i], (i<5 ? ":" : ""));
-    debug_nodate( 2, ")\n");
+        debug_nodate( 5,"%02x%s",mac.ether_addr_octet[i], (i<5 ? ":" : ""));
+    debug_nodate( 5, ")\n");
 
     ip[0] = 192;
     ip[1] = 168;
@@ -872,10 +930,10 @@ static int _test_arp ( void )
 
     _arp_lookup( &mac, *(in_addr_t*)&ip );
     
-    debug( 2, "ARP: Test Lookup (%s = ", unet_inet_ntoa(*(in_addr_t*)&ip));
+    debug( 5, "ARP: Test Lookup (%s = ", unet_inet_ntoa(*(in_addr_t*)&ip));
     for (i=0; i<6; i++) 
-        debug_nodate(2,"%02x%s",mac.ether_addr_octet[i], (i<5 ? ":" : ""));
-    debug_nodate( 2, ")\n");
+        debug_nodate( 5,"%02x%s",mac.ether_addr_octet[i], (i<5 ? ":" : ""));
+    debug_nodate( 5, ")\n");
     
     return 0;
 }

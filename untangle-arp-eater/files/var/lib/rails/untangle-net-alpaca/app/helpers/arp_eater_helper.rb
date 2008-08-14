@@ -25,12 +25,12 @@ EOF
 EOF
       end
 
-      columns << Alpaca::Table::Column.new( "opportunistic", "Passive".t ) do |entry,options|
+      columns << Alpaca::Table::Column.new( "passive", "Passive".t ) do |entry,options|
         row_id = options[:row_id]
         view = options[:view]
 
 <<EOF
-        #{view.table_checkbox( row_id, "opportunistic", entry.opportunistic )}
+        #{view.table_checkbox( row_id, "passive", entry.passive )}
 EOF
       end
 
@@ -91,12 +91,12 @@ EOF
 EOF
       end
 
-      columns << Alpaca::Table::Column.new( "opportunistic", "Passive".t ) do |entry,options|
+      columns << Alpaca::Table::Column.new( "passive", "Passive".t ) do |entry,options|
         row_id = options[:row_id]
         view = options[:view]
 
 <<EOF
-        #{view.table_checkbox( row_id, "opportunistic",  entry.opportunistic, true )}
+        #{view.table_checkbox( row_id, "passive",  entry.passive, true )}
 EOF
       end
 

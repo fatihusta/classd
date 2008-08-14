@@ -1,12 +1,10 @@
 class OSLibrary::ArpEaterManager < Alpaca::OS::ManagerBase
-  AutoStrings = [ "auto", "automatic", "*" ]
-
   class ActiveHost
-    def initialize( enabled, address, opportunistic, gateway )
-      @enabled, @address, @opportunistic, @gateway = enabled, address, opportunistic, gateway
+    def initialize( enabled, address, passive, gateway )
+      @enabled, @address, @passive, @gateway = enabled, address, passive, gateway
     end
 
-    attr_reader :address, :enabled, :opportunistic, :gateway
+    attr_reader :address, :enabled, :passive, :gateway
   end
 
   ## This should commit and update all of the packet filter settings.
@@ -18,11 +16,8 @@ class OSLibrary::ArpEaterManager < Alpaca::OS::ManagerBase
     raise "base class, override in an os specific class"
   end
 
+  ## Can't use nil, because the tested gateway may be nil.
   def is_auto( gateway )
-    return true if gateway.nil? 
-    gateway.strip!
-    
-    return true if gateway.empty? || AutoStrings.include?( gateway )
-    false
+    ArpEaterNetworks.is_gateway_auto?( gateway )
   end
 end
