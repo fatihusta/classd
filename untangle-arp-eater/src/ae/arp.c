@@ -117,6 +117,9 @@ int arp_shutdown ( void )
      * kill all host handlers
      * and wait for them to die.
      */
+    if ( sem_wait( &host_handlers_sem ) < 0 )
+        perrlog("sem_wait");
+
     if ( (hosts = arp_host_handlers_get_all()) != NULL ) {
         for (step = list_head(hosts) ; step ; step = list_node_next(step)) {
             host_handler_t* host = list_node_val(step);
@@ -130,7 +133,12 @@ int arp_shutdown ( void )
     else {
         perrlog("arp_get_host_handlers");
     }
+
     list_raze(hosts);
+
+    if ( sem_post( &host_handlers_sem ) < 0 )
+        perrlog("sem_wait");
+    
     
     /**
      * free resources

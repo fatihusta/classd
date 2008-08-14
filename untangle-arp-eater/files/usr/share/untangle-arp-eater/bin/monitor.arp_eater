@@ -37,10 +37,10 @@ reap_child_easy()
 
 reap_child()
 {
-    echo "[`date`] Retrieved signal to stop daemon. (signal: $1)"
+    echo "[`date`] Retrieved signal to stop daemon. (signal: $1) (monitor: $$) (arp_eater: $PID)"
 
     if [ ! -z "$PID" ] ; then
-        echo "[`date`] Sending kill signal to arp_eater."
+        echo "[`date`] Sending kill signal to arp_eater ($PID)."
         kill -$1 ${PID}
         wait $PID
     fi
