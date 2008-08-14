@@ -81,7 +81,7 @@ int arpeater_ae_manager_init( arpeater_ae_config_t* config )
     memcpy( &_globals.config, config, sizeof( _globals.config ));
 
     if ( arpeater_ae_manager_reload_gateway() < 0 ) {
-        return errlog( ERR_CRITICAL, "arpeater_ae_manager_reload_gateway" );
+        return errlog( ERR_CRITICAL, "arpeater_ae_manager_reload_gateway\n" );
     }
 
     return 0;
@@ -103,10 +103,10 @@ int arpeater_ae_manager_set_config( arpeater_ae_config_t* config )
         return 0;
     }
 
-    if ( pthread_mutex_lock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_lock\n" );
+    if ( pthread_mutex_lock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_lock" );
     int ret = _critical_section();
     
-    if ( pthread_mutex_unlock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_unlock\n" );
+    if ( pthread_mutex_unlock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_unlock" );
     
     if ( ret < 0 ) return errlog( ERR_CRITICAL, "_critical_section\n" );
     
@@ -126,10 +126,10 @@ int arpeater_ae_manager_get_config( arpeater_ae_config_t* config )
         return 0;
     }
 
-    if ( pthread_mutex_lock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_lock\n" );
+    if ( pthread_mutex_lock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_lock" );
     int ret = _critical_section();
     
-    if ( pthread_mutex_unlock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_unlock\n" );
+    if ( pthread_mutex_unlock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_unlock" );
     
     if ( ret < 0 ) return errlog( ERR_CRITICAL, "_critical_section\n" );
     
@@ -197,11 +197,11 @@ int arpeater_ae_manager_get_ip_settings( struct in_addr* ip, arpeater_ae_manager
         return 0;
     }
 
-    if ( pthread_mutex_lock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_lock\n" );
+    if ( pthread_mutex_lock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_lock" );
     
     int ret = _critical_section();
 
-    if ( pthread_mutex_unlock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_unlock\n" );
+    if ( pthread_mutex_unlock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_unlock" );
 
     if ( ret < 0 ) return errlog( ERR_CRITICAL, "_critical_section\n" );
         
@@ -258,11 +258,11 @@ int arpeater_ae_manager_reload_gateway( void )
         return 0;
     }
 
-    if ( pthread_mutex_lock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_lock\n" );
+    if ( pthread_mutex_lock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_lock" );
     
     int ret = _critical_section();
 
-    if ( pthread_mutex_unlock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_unlock\n" );
+    if ( pthread_mutex_unlock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_unlock" );
 
     if (( proc_fd >= 0 ) && ( close( proc_fd ) < 0 )) perrlog( "close" );
 

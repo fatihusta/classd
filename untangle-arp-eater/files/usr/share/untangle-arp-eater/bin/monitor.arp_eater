@@ -72,8 +72,8 @@ while ( true ) ;  do
     echo "[`date`] Starting Arp-Eater"
 
     start_arp_eater
+    sleep 2
     wait $PID
 
     echo "[`date`] Arp-Eater stopped, restarting daemon"
-    sleep 2
 done

@@ -116,6 +116,7 @@ int arp_shutdown ( void )
     /**
      * kill all host handlers
      * and wait for them to die.
+     * after this it is never released
      */
     if ( sem_wait( &host_handlers_sem ) < 0 )
         perrlog("sem_wait");
@@ -136,10 +137,6 @@ int arp_shutdown ( void )
 
     list_raze(hosts);
 
-    if ( sem_post( &host_handlers_sem ) < 0 )
-        perrlog("sem_wait");
-    
-    
     /**
      * free resources
      */
