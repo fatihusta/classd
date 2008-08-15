@@ -21,6 +21,7 @@ class Alpaca::Components::ArpEaterComponent < Alpaca::Component
 
     if ( config["single_nic_mode"] == true )
       settings.enabled = true
+      settings.broadcast = true
       network.enabled = true
       network.spoof = true
     end
