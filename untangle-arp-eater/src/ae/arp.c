@@ -119,16 +119,23 @@ int arp_shutdown ( void )
     if ( sem_wait( &host_handlers_sem ) < 0 )
         perrlog("sem_wait");
 
-    /**
-     * XXX - should send all host handlers signal - then wait on all
-     */
-    if ( (hosts = arp_host_handlers_get_all()) != NULL ) {
-        for (step = list_head(hosts) ; step ; step = list_node_next(step)) {
+    hosts = arp_host_handlers_get_all();
+
+    if (hosts) {
+        int count = 0;
+        pthread_t threads[list_size(hosts)];
+
+        /* terminate the threads */
+        for ( step = list_head(hosts), count=0 ; step ; step = list_node_next(step), count++ ) {
             host_handler_t* host = list_node_val(step);
-            pthread_t thread = host->thread;
+            threads[count] = host->thread;
             arp_host_handler_send_message( host, _HANDLER_MESG_KILL );
             
-            if ( pthread_join(thread, (void**)&ret) < 0 )
+        }
+
+        /* wait for the threads */
+        for (count = 0 ; count < list_size(hosts) ; count++) {
+            if ( pthread_join(threads[count], (void**)&ret) < 0 )
                 perrlog("pthread_join");
         }
     }
