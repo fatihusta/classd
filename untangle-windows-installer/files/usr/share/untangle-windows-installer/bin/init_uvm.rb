@@ -22,7 +22,7 @@ def start_nodes( config )
   install_nodes = "/usr/share/untangle-windows-installer/bin/install_nodes.rb"
 
   $logger.info( "#{rush_shell} #{install_nodes}" )
-  Kernel.system( "#{rush_shell} #{install_nodes}" )
+  Kernel.system( "#{rush_shell} #{install_nodes} 2>&1" )
 end
 
 ## Parse the config file
