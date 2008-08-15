@@ -21,6 +21,7 @@ def start_nodes( config )
   install_nodes = ENV["INSTALL_NODES"]
   install_nodes = "/usr/share/untangle-windows-installer/bin/install_nodes.rb"
 
+  $logger.info( "#{rush_shell} #{install_nodes}" )
   Kernel.system( "#{rush_shell} #{install_nodes}" )
 end
 
