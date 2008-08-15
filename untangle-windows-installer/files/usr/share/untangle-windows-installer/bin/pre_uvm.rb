@@ -42,6 +42,22 @@ def run_command( command, timeout = 30 )
   end
 end
 
+## All of the pacakges should already be inside of the cache.
+INST_OPTS = " -o DPkg::Options::=--force-confnew --yes --force-yes --fix-broken --purge --no-download "
+
+def install_packages( config )
+  packages = config["packages"]
+
+  if ( packages.nil? || !( packages.is_a? Array ) || packages.empty? )
+    $logger.info( "No packages to install." )
+    return
+  end
+
+  run_command( "apt-get install #{INST_OPTS} #{packages.join( " " )}" )
+  
+  run_command( "echo '' > /etc/apt/sources.list" )
+end
+
 def set_password_hash( config, dbh ) 
   password_hash = config["password"]
   if ( password_hash.nil? || /^[0-9a-fA-F]{48}$/.match( password_hash ).nil? )
@@ -183,6 +199,8 @@ EOF
 
 ## Insert the password for the user
 dbh = DBI.connect('DBI:Pg:uvm', 'postgres')
+
+install_packages( config )
 
 set_password_hash( config, dbh )
 
