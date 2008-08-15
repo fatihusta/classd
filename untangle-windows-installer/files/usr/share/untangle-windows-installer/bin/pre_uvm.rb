@@ -6,9 +6,6 @@ require "cgi"
 require "ftools"
 require "logger"
 
-## DELETE ME BEFORE RELEASING
-Root="/home/rbscott/devel/untangle/web-ui/work/src/dist"
-
 SingleNicFlag="/usr/share/untangle-arp-eater/flag"
 
 CreatePopId="/usr/share/untangle/bin/createpopid.rb"
@@ -43,6 +40,22 @@ def run_command( command, timeout = 30 )
   ensure
     p.close unless p.nil?
   end
+end
+
+## All of the pacakges should already be inside of the cache.
+INST_OPTS = " -o DPkg::Options::=--force-confnew --yes --force-yes --fix-broken --purge --no-download "
+
+def install_packages( config )
+  packages = config["packages"]
+
+  if ( packages.nil? || !( packages.is_a? Array ) || packages.empty? )
+    $logger.info( "No packages to install." )
+    return
+  end
+
+  run_command( "apt-get install #{INST_OPTS} #{packages.join( " " )}" )
+  
+  run_command( "echo '' > /etc/apt/sources.list" )
 end
 
 def set_password_hash( config, dbh ) 
@@ -178,14 +191,16 @@ echo "[`date`] Recreating the database for Single NIC Mode."
 dropdb -U postgres uvm
 createuser -U postgres ${PG_CREATEUSER_OPTIONS} untangle 2>/dev/null
 createdb -O postgres -U postgres uvm
-#{Root}/usr/share/untangle/bin/update-schema settings uvm
-#{Root}/usr/share/untangle/bin/update-schema events uvm
-#{Root}/usr/share/untangle/bin/update-schema settings untangle-node-router
-#{Root}/usr/share/untangle/bin/update-schema events untangle-node-router
+/usr/share/untangle/bin/update-schema settings uvm
+/usr/share/untangle/bin/update-schema events uvm
+/usr/share/untangle/bin/update-schema settings untangle-node-router
+/usr/share/untangle/bin/update-schema events untangle-node-router
 EOF
 
 ## Insert the password for the user
 dbh = DBI.connect('DBI:Pg:uvm', 'postgres')
+
+install_packages( config )
 
 set_password_hash( config, dbh )
 

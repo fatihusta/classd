@@ -1,7 +1,7 @@
 #!/bin/dash
 
 mkdir -p /var/log/untangle-arp-eater
-exec >> /var/log/untangle-arp-eater/debug.log 2>&1
+exec >> /var/log/untangle-arp-eater/monitor.log 2>&1
 
 NAME="arp_eater"
 ARP_EATER_PID_FILE="/var/run/${NAME}.pid"
@@ -25,22 +25,24 @@ reap_child_hardest()
 
 reap_child_harder()
 {
-  reap_child 15
   trap reap_child_hardest 2
+  trap reap_child_hardest 15
+  reap_child 15
 }
 
 reap_child_easy()
 {
-  reap_child 2
   trap reap_child_harder 2
+  trap reap_child_harder 15
+  reap_child 2
 }
 
 reap_child()
 {
-    echo "[`date`] Retrieved signal to stop daemon. (signal: $1)"
+    echo "[`date`] Retrieved signal to stop daemon. (signal: $1) (monitor: $$) (arp_eater: $PID)"
 
     if [ ! -z "$PID" ] ; then
-        echo "[`date`] Sending kill signal to arp_eater."
+        echo "[`date`] Sending kill signal to arp_eater ($PID)."
         kill -$1 ${PID}
         wait $PID
     fi
@@ -72,8 +74,8 @@ while ( true ) ;  do
     echo "[`date`] Starting Arp-Eater"
 
     start_arp_eater
+    sleep 2
     wait $PID
 
     echo "[`date`] Arp-Eater stopped, restarting daemon"
-    sleep 2
 done

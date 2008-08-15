@@ -322,29 +322,29 @@ static void _destroy( void )
 
     if ( _globals.quit_sem != NULL ) {
         sem = _globals.quit_sem;
-             _globals.quit_sem = NULL;
-
+        _globals.quit_sem = NULL;
     }
-    
-     MHD_stop_daemon( _globals.daemon );
-    
-     json_server_destroy( &_globals.json_server );
 
-     libmvutil_cleanup();
+    /* XXX can hang indefinitely */
+    MHD_stop_daemon( _globals.daemon );
+    
+    json_server_destroy( &_globals.json_server );
+
+    libmvutil_cleanup();
 
     /* Close the two open file descriptors */
-     if ( _globals.std_out > 0 ) close( _globals.std_out );
-     if ( _globals.std_err > 0 ) close( _globals.std_err );
+    if ( _globals.std_out > 0 ) close( _globals.std_out );
+    if ( _globals.std_err > 0 ) close( _globals.std_err );
     
-     _globals.std_out = -1;
-     _globals.std_err = -1;
+    _globals.std_out = -1;
+    _globals.std_err = -1;
 
-     /* Putting this at the end of the shutdown cycle to limit the
-      * effects of the race condition with the signal handler. */
-     if ( sem != NULL ) {
-         if ( sem_destroy( sem ) < 0 ) perrlog( "sem_destroy" );
-         free( sem );
-     }
+    /* Putting this at the end of the shutdown cycle to limit the
+     * effects of the race condition with the signal handler. */
+    if ( sem != NULL ) {
+        if ( sem_destroy( sem ) < 0 ) perrlog( "sem_destroy" );
+        free( sem );
+    }
 }
 
 static int _setup_output( void )
