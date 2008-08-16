@@ -496,16 +496,24 @@ static void* _host_handler_thread (void* arg)
          * Message received
          */
         if (ret) {
+            int was_enabled; 
+
             switch (ret) {
             case _HANDLER_MESG_REFRESH_CONFIG:
                 debug( 3, "HOST: Host (%s) Config Refresh\n", unet_inet_ntoa(host->addr.s_addr));
                 err = 0;
                 
+                was_enabled = settings->is_enabled;
                 if ( arpeater_ae_manager_get_ip_settings( &host->addr, settings ) < 0)
                     err = errlog(ERR_CRITICAL, "arpeater_ae_manager_get_ip_settings");
 
                 if ( _host_handler_reset_timer( host ) < 0 )
                     err = errlog(ERR_CRITICAL, "_host_handler_reset_timer");
+
+                /* if was enabled but not is not, send undo arps */
+                if (was_enabled && !settings->is_enabled) {
+                    _host_handler_undo_arps(host);
+                }
 
                 if (settings->is_enabled) {
                     if ( _arp_lookup( &host->host_mac, settings->address.s_addr ) < 0 ) 
@@ -514,7 +522,7 @@ static void* _host_handler_thread (void* arg)
                     if ( _arp_lookup( &host->gateway_mac, settings->gateway.s_addr ) < 0 ) 
                         err = errlog(ERR_CRITICAL, "Failed to lookup MAC of gateway (%s) (%s)\n",unet_inet_ntoa(settings->gateway.s_addr),errstr);
                 }
-                
+
                 if (err) {
                     if ( _host_handler_is_broadcast( host ) ) {
                         /* broadcast thread doesn't exit on error, try again later */
@@ -582,7 +590,7 @@ static void* _host_handler_thread (void* arg)
         
     } /* while (go) */
 
-    debug( 3, "HOST: Host handler (%s) exitting.\n", unet_next_inet_ntoa(host->addr.s_addr));
+    debug( 3, "HOST: Host handler (%s) exiting.\n", unet_next_inet_ntoa(host->addr.s_addr));
 
     if ( ht_remove( &host_handlers, (void*)host->addr.s_addr) < 0 )
         perrlog("ht_remove");
