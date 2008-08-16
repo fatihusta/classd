@@ -8,7 +8,7 @@ require "logger"
 
 SingleNicFlag="/usr/share/untangle-arp-eater/flag"
 
-CreatePopId="/usr/share/untangle/bin/createpopid.rb"
+Activate="/usr/share/untangle/bin/utactivate"
 PopId="/usr/share/untangle/popid"
 
 RegistrationInfo="/usr/share/untangle/registration.info"
@@ -80,12 +80,12 @@ SQL
 end
 
 def setup_registration( config, dbh )
-  unless File.exists?( CreatePopId )
-    $logger.warn( "Unable to create pop id, missing the script #{CreatePopId}" )
+  unless File.exists?( Activate )
+    $logger.warn( "Unable to create pop id, missing the script #{Activate}" )
     return
   end
 
-  unless ( status = run_command( CreatePopId, 15 )) == 0
+  unless ( status = run_command( Activate, 15 )) == 0
     $logger.warn( "Non-zero return code from pop id script. #{status}" )
     return
   end
