@@ -480,7 +480,7 @@ static void* _host_handler_thread (void* arg)
         go = 0;
         return (void*)perrlog("mailbox_put");
     }
-    settings->is_enabled = 1;
+    settings->is_enabled = 0;
     
     while (go) {
         /**
