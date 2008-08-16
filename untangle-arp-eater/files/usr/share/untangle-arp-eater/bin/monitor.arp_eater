@@ -41,7 +41,7 @@ reap_child()
     echo "[`date`] Received Signal      (monitor: $$) (arp_eater: $ARP_PID) (sending signal: $1) "
 
     if [ ! -z "$ARP_PID" ] ; then
-        echo "[`date`] Sending kill signal to arp_eater ($ARP_PID)."
+        echo "[`date`] Sending signal $1 to arp_eater ($ARP_PID)."
         kill -$1 ${ARP_PID}
         wait ${ARP_PID}
         echo "[`date`] Arp Eater Stopped    (monitor: $$) (arp_eater: $ARP_PID)"

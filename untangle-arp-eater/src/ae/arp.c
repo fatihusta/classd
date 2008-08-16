@@ -516,9 +516,22 @@ static void* _host_handler_thread (void* arg)
                 }
                 
                 if (err) {
-                    go = 0;
-                    settings->is_enabled = 0;
-                    break;
+                    if ( _host_handler_is_broadcast( host ) ) {
+                        /* broadcast thread doesn't exit on error, try again later */
+                        sleep( 3 );
+                        if ( mailbox_put(&host->mbox,(void*)_HANDLER_MESG_REFRESH_CONFIG) < 0 ) {
+                            go = 0;
+                            return (void*)perrlog("mailbox_put");
+                        }
+                        settings->is_enabled = 0;
+                        break;
+                    }
+                    else {
+                        /* all other host handlers exit on error */
+                        go = 0;
+                        settings->is_enabled = 0;
+                        break;
+                    }
                 }
                 
                 if (settings->is_enabled) {
@@ -568,6 +581,8 @@ static void* _host_handler_thread (void* arg)
             _host_handler_send_arps(host);
         
     } /* while (go) */
+
+    debug( 3, "HOST: Host handler (%s) exitting.\n", unet_next_inet_ntoa(host->addr.s_addr));
 
     if ( ht_remove( &host_handlers, (void*)host->addr.s_addr) < 0 )
         perrlog("ht_remove");
