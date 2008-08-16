@@ -101,7 +101,7 @@ class OSLibrary::Debian::ArpEaterManager < OSLibrary::ArpEaterManager
     gateway = "0.0.0.0" if is_auto( gateway )
     settings_json = { 
       :gateway => gateway, :interface => interface,
-      :enabled => settings.enabled, :broadcast => settings.broadcast 
+      :enabled => settings.enabled, :broadcast => ( settings.enabled && settings.broadcast )
     }
     
     settings_json[:networks] = []
