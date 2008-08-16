@@ -4,7 +4,6 @@ mkdir -p /var/log/untangle-arp-eater
 exec >> /var/log/untangle-arp-eater/monitor.log 2>&1
 
 NAME="arp_eater"
-ARP_EATER_PID_FILE="/var/run/${NAME}.pid"
 
 load_defaults()
 {
@@ -39,12 +38,13 @@ reap_child_easy()
 
 reap_child()
 {
-    echo "[`date`] Retrieved signal to stop daemon. (signal: $1) (monitor: $$) (arp_eater: $PID)"
+    echo "[`date`] Received Signal      (monitor: $$) (arp_eater: $ARP_PID) (sending signal: $1) "
 
-    if [ ! -z "$PID" ] ; then
-        echo "[`date`] Sending kill signal to arp_eater ($PID)."
-        kill -$1 ${PID}
-        wait $PID
+    if [ ! -z "$ARP_PID" ] ; then
+        echo "[`date`] Sending kill signal to arp_eater ($ARP_PID)."
+        kill -$1 ${ARP_PID}
+        wait ${ARP_PID}
+        echo "[`date`] Arp Eater Stopped    (monitor: $$) (arp_eater: $ARP_PID)"
     fi
 
     exit 0
@@ -64,7 +64,8 @@ start_arp_eater()
     test -n "${ARP_EATER_DEBUG_LEVEL}" && t_args="${t_args} -l ${ARP_EATER_DEBUG_LEVEL}"
     
     /usr/bin/${NAME} ${t_args} &
-    export PID=$!
+    ARP_PID=$!
+    echo "[`date`] Started Arp-Eater    (monitor: $$) (arp_eater: $ARP_PID)"
 }
 
 trap reap_child_easy 2
@@ -75,7 +76,8 @@ while ( true ) ;  do
 
     start_arp_eater
     sleep 2
-    wait $PID
+    echo "[`date`] Monitoring Arp-Eater (monitor: $$) (arp_eater: $ARP_PID)"
+    wait $ARP_PID
 
-    echo "[`date`] Arp-Eater stopped, restarting daemon"
+    echo "[`date`] Arp Eater Died!      (monitor: $$) (arp_eater: $ARP_PID)"
 done
