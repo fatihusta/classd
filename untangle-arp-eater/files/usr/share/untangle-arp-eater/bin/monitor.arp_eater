@@ -52,8 +52,8 @@ start_arp_eater()
 {
     load_defaults
     
-    local t_args="${ARP_EATER_ARGS}"
-    local t
+    local t_args
+    t_args="${ARP_EATER_ARGS}"
     
     test -n "${ARP_EATER_BIND_PORT}" && t_args="${t_args} -p ${ARP_EATER_BIND_PORT}"
     test -n "${ARP_EATER_CONF_FILE}" && t_args="${t_args} -c ${ARP_EATER_CONF_FILE}"
