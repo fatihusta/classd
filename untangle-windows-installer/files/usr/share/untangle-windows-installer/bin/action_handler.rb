@@ -5,7 +5,7 @@ require "ftools"
 action_file = ENV["ACTION_FILE"]
 
 ActionFile = action_file.nil? ? "/mnt/hgfs/untangle/action" : action_file
-MaxActionSize = 2048
+ActionSizeRange = 1..2048
 
 poll_timeout = ENV["POLL_TIMEOUT"]
 PollTimeout = poll_timeout.nil? ? 1.0 : poll_timeout
@@ -17,8 +17,8 @@ end
 def get_action
   return nil unless File.exists? ActionFile
   
-  ## File must have been corrupted or something.
-  return nil if File.size( ActionFile ) > 2048
+  ## File must have been corrupted or something, or it is empty.
+  return nil unless ActionSizeRange.include?( File.size( ActionFile ))
   
   ## Make sure you can write the file.
   return nil unless File.writable?( ActionFile )
