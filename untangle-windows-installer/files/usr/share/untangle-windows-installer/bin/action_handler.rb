@@ -39,7 +39,7 @@ def handle_action( action )
   case action
   when Actions::Shutdown
     Kernel.system( "shutdown -h now" )
-    $is_running false
+    $is_running = false
   else
     puts "unknown action: #{action}"
   end
