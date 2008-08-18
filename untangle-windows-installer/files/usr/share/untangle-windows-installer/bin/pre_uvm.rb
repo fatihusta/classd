@@ -121,6 +121,7 @@ def setup_registration( config, dbh )
     
   if registration.nil?
     $logger.warn( "WARNING : Missing registration information, assuming bogus values." )
+    registration={}
     registration["email"] = "unset@example.com"
     registration["name"] = "unset"
     registration["numseats"] = 5
