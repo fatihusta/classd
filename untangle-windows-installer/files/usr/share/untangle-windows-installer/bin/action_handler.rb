@@ -1,4 +1,13 @@
 #!/usr/bin/env ruby
+## Copyright (c) 2003-2008 Untangle, Inc.
+##  All rights reserved.
+## 
+##  This software is the confidential and proprietary information of
+##  Untangle, Inc. ("Confidential Information"). You shall
+##  not disclose such Confidential Information.
+## 
+##  $Id: ADConnectorImpl.java 15443 2008-03-24 22:53:16Z amread $
+## 
 
 require "ftools"
 
