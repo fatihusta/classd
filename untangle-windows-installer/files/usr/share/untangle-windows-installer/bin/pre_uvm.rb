@@ -37,6 +37,8 @@ def run_command( command, timeout = 30 )
     status = 127
     t = Thread.new do 
       p = IO.popen( command )
+      $logger.info( "running the command: #{command}" )
+      p.each_line { |line| $logger.info( line.strip ) }
       pid, status = Process.wait2( p.pid )
       status = status.exitstatus
     end
@@ -62,7 +64,7 @@ def install_packages( config )
     return
   end
 
-  run_command( "apt-get install #{INST_OPTS} #{packages.join( " " )}" )
+  run_command( "apt-get install #{INST_OPTS} #{packages.join( " " )}", 30 * 60 )
   
   run_command( "echo '' > /etc/apt/sources.list" )
 end
@@ -94,7 +96,7 @@ def setup_registration( config, dbh )
     return
   end
 
-  unless ( status = run_command( Activate, 15 )) == 0
+  unless ( status = run_command( Activate, 10 * 60 )) == 0
     $logger.warn( "Non-zero return code from pop id script. #{status}" )
     return
   end
