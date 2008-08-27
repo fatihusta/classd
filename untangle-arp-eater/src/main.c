@@ -1,19 +1,12 @@
 /*
- * $HeadURL: svn://chef/work/src/libnetcap/src/netcap_shield.c $
- * Copyright (c) 2003-2008 Untangle, Inc. 
+ * Copyright (c) 2003-2008 Untangle, Inc.
+ * All rights reserved.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License, version 2,
- * as published by the Free Software Foundation.
+ * This software is the confidential and proprietary information of
+ * Untangle, Inc. ("Confidential Information"). You shall
+ * not disclose such Confidential Information.
  *
- * This program is distributed in the hope that it will be useful, but
- * AS-IS and WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE, TITLE, or
- * NONINFRINGEMENT.  See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ * $Id: ADConnectorImpl.java 15443 2008-03-24 22:53:16Z amread $
  */
 
 #include <signal.h>
@@ -34,8 +27,6 @@
 #include <mvutil/unet.h>
 
 #include <microhttpd.h>
-
-#include "utils/sched.h"
 
 #include "json/server.h"
 
@@ -59,12 +50,10 @@ static struct
     int port;
     int debug_level;
     int daemonize;
-    pthread_t scheduler_thread;
     json_server_t json_server;
     struct MHD_Daemon *daemon;
     sem_t* quit_sem;
 } _globals = {
-    .scheduler_thread = 0,
     .daemon = NULL,
     .config_file = NULL,
     .port = DEFAULT_BIND_PORT,
@@ -247,9 +236,6 @@ static int _init( int argc, char** argv )
     /* Configure the debug level */
     debug_set_mylevel( _globals.debug_level );
     
-    /* Initialize the scheduler. */
-    if ( arpeater_sched_init() < 0 ) return errlog( ERR_CRITICAL, "arpeater_sched_init\n" );
-
     /* Initialize the quit semaphore */
     sem_t* sem = NULL;
     if (( sem = calloc( 1, sizeof( sem_t ))) == NULL ) return errlog( ERR_CRITICAL, "malloc" );
@@ -258,12 +244,6 @@ static int _init( int argc, char** argv )
         return perrlog( "sem_init" );
     }
     _globals.quit_sem = sem;
-
-    /* Donate a thread to start the scheduler. */
-    if ( pthread_create( &_globals.scheduler_thread, &uthread_attr.other.medium,
-                         arpeater_sched_donate, NULL )) {
-        return perrlog( "pthread_create" );
-    }
         
     arpeater_ae_config_t config;
     if ( arpeater_ae_config_init( &config ) < 0 ) return errlog( ERR_CRITICAL, "arpeater_ae_config_init\n" );
@@ -318,8 +298,6 @@ static int _init( int argc, char** argv )
 static void _destroy( void )
 {    
     sem_t* sem = NULL;
-    if ( arpeater_sched_cleanup_z( NULL ) < 0 ) errlog( ERR_CRITICAL, "arpeater_sched_cleanup_z\n" );
-
     if ( _globals.quit_sem != NULL ) {
         sem = _globals.quit_sem;
         _globals.quit_sem = NULL;

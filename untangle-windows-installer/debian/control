@@ -1,5 +1,5 @@
 Source: untangle-windows-installer
-Section: admin
+Section: premium/admin
 Priority: optional
 Maintainer: Robert Scott <rbscott@untangle.com>
 Uploaders: Untangle Buildbot <buildbot@untangle.com>

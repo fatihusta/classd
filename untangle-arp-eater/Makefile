@@ -36,7 +36,7 @@ mvutil_source=libmvutil/src/debug.c libmvutil/src/errlog.c libmvutil/src/hash.c 
 	libmvutil/src/uthread.c libmvutil/src/utime.c
 
 ## ARP Eater source
-ae_source=src/utils/sched.c src/utils/lru.c src/json/server.c src/json/object_utils.c \
+ae_source=src/json/server.c src/json/object_utils.c \
 	src/json/serializer.c src/functions.c src/main.c src/ae/config.c src/ae/arp.c \
 	src/ae/manager.c \
 	${mvutil_source}

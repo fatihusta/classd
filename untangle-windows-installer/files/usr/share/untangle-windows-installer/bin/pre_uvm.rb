@@ -1,4 +1,13 @@
 #!/usr/bin/env ruby
+## Copyright (c) 2003-2008 Untangle, Inc.
+##  All rights reserved.
+## 
+##  This software is the confidential and proprietary information of
+##  Untangle, Inc. ("Confidential Information"). You shall
+##  not disclose such Confidential Information.
+## 
+##  $Id: ADConnectorImpl.java 15443 2008-03-24 22:53:16Z amread $
+## 
 
 require "dbi"
 require "json"
@@ -8,7 +17,7 @@ require "logger"
 
 SingleNicFlag="/usr/share/untangle-arp-eater/flag"
 
-CreatePopId="/usr/share/untangle/bin/createpopid.rb"
+Activate="/usr/share/untangle/bin/utactivate"
 PopId="/usr/share/untangle/popid"
 
 RegistrationInfo="/usr/share/untangle/registration.info"
@@ -28,6 +37,8 @@ def run_command( command, timeout = 30 )
     status = 127
     t = Thread.new do 
       p = IO.popen( command )
+      $logger.info( "running the command: #{command}" )
+      p.each_line { |line| $logger.info( line.strip ) }
       pid, status = Process.wait2( p.pid )
       status = status.exitstatus
     end
@@ -53,7 +64,7 @@ def install_packages( config )
     return
   end
 
-  run_command( "apt-get install #{INST_OPTS} #{packages.join( " " )}" )
+  run_command( "apt-get install #{INST_OPTS} #{packages.join( " " )}", 30 * 60 )
   
   run_command( "echo '' > /etc/apt/sources.list" )
 end
@@ -80,12 +91,12 @@ SQL
 end
 
 def setup_registration( config, dbh )
-  unless File.exists?( CreatePopId )
-    $logger.warn( "Unable to create pop id, missing the script #{CreatePopId}" )
+  unless File.exists?( Activate )
+    $logger.warn( "Unable to create pop id, missing the script #{Activate}" )
     return
   end
 
-  unless ( status = run_command( CreatePopId, 15 )) == 0
+  unless ( status = run_command( Activate, 10 * 60 )) == 0
     $logger.warn( "Non-zero return code from pop id script. #{status}" )
     return
   end
@@ -112,6 +123,7 @@ def setup_registration( config, dbh )
     
   if registration.nil?
     $logger.warn( "WARNING : Missing registration information, assuming bogus values." )
+    registration={}
     registration["email"] = "unset@example.com"
     registration["name"] = "unset"
     registration["numseats"] = 5

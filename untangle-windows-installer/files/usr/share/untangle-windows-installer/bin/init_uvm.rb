@@ -1,4 +1,13 @@
 #!/usr/bin/env ruby
+## Copyright (c) 2003-2008 Untangle, Inc.
+##  All rights reserved.
+## 
+##  This software is the confidential and proprietary information of
+##  Untangle, Inc. ("Confidential Information"). You shall
+##  not disclose such Confidential Information.
+## 
+##  $Id: ADConnectorImpl.java 15443 2008-03-24 22:53:16Z amread $
+## 
 
 require "logger"
 require "json"
@@ -21,7 +30,8 @@ def start_nodes( config )
   install_nodes = ENV["INSTALL_NODES"]
   install_nodes = "/usr/share/untangle-windows-installer/bin/install_nodes.rb"
 
-  Kernel.system( "#{rush_shell} #{install_nodes}" )
+  $logger.info( "#{rush_shell} #{install_nodes}" )
+  Kernel.system( "#{rush_shell} #{install_nodes} 2>&1" )
 end
 
 ## Parse the config file

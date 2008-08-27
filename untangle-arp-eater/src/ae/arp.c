@@ -1,20 +1,14 @@
 /*
- * $HeadURL: svn://chef/work/src/libnetcap/src/netcap_shield.c $
- * Copyright (c) 2003-2008 Untangle, Inc. 
+ * Copyright (c) 2003-2008 Untangle, Inc.
+ * All rights reserved.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License, version 2,
- * as published by the Free Software Foundation.
+ * This software is the confidential and proprietary information of
+ * Untangle, Inc. ("Confidential Information"). You shall
+ * not disclose such Confidential Information.
  *
- * This program is distributed in the hope that it will be useful, but
- * AS-IS and WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE, TITLE, or
- * NONINFRINGEMENT.  See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ * $Id: ADConnectorImpl.java 15443 2008-03-24 22:53:16Z amread $
  */
+
 #include <pthread.h>
 
 #include <unistd.h>
@@ -480,7 +474,7 @@ static void* _host_handler_thread (void* arg)
         go = 0;
         return (void*)perrlog("mailbox_put");
     }
-    settings->is_enabled = 1;
+    settings->is_enabled = 0;
     
     while (go) {
         /**
@@ -496,16 +490,24 @@ static void* _host_handler_thread (void* arg)
          * Message received
          */
         if (ret) {
+            int was_enabled; 
+
             switch (ret) {
             case _HANDLER_MESG_REFRESH_CONFIG:
                 debug( 3, "HOST: Host (%s) Config Refresh\n", unet_inet_ntoa(host->addr.s_addr));
                 err = 0;
                 
+                was_enabled = settings->is_enabled;
                 if ( arpeater_ae_manager_get_ip_settings( &host->addr, settings ) < 0)
                     err = errlog(ERR_CRITICAL, "arpeater_ae_manager_get_ip_settings");
 
                 if ( _host_handler_reset_timer( host ) < 0 )
                     err = errlog(ERR_CRITICAL, "_host_handler_reset_timer");
+
+                /* if was enabled but not is not, send undo arps */
+                if (was_enabled && !settings->is_enabled) {
+                    _host_handler_undo_arps(host);
+                }
 
                 if (settings->is_enabled) {
                     if ( _arp_lookup( &host->host_mac, settings->address.s_addr ) < 0 ) 
@@ -514,11 +516,24 @@ static void* _host_handler_thread (void* arg)
                     if ( _arp_lookup( &host->gateway_mac, settings->gateway.s_addr ) < 0 ) 
                         err = errlog(ERR_CRITICAL, "Failed to lookup MAC of gateway (%s) (%s)\n",unet_inet_ntoa(settings->gateway.s_addr),errstr);
                 }
-                
+
                 if (err) {
-                    go = 0;
-                    settings->is_enabled = 0;
-                    break;
+                    if ( _host_handler_is_broadcast( host ) ) {
+                        /* broadcast thread doesn't exit on error, try again later */
+                        sleep( 3 );
+                        if ( mailbox_put(&host->mbox,(void*)_HANDLER_MESG_REFRESH_CONFIG) < 0 ) {
+                            go = 0;
+                            return (void*)perrlog("mailbox_put");
+                        }
+                        settings->is_enabled = 0;
+                        break;
+                    }
+                    else {
+                        /* all other host handlers exit on error */
+                        go = 0;
+                        settings->is_enabled = 0;
+                        break;
+                    }
                 }
                 
                 if (settings->is_enabled) {
@@ -568,6 +583,8 @@ static void* _host_handler_thread (void* arg)
             _host_handler_send_arps(host);
         
     } /* while (go) */
+
+    debug( 3, "HOST: Host handler (%s) exiting.\n", unet_next_inet_ntoa(host->addr.s_addr));
 
     if ( ht_remove( &host_handlers, (void*)host->addr.s_addr) < 0 )
         perrlog("ht_remove");

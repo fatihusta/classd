@@ -48,14 +48,6 @@ class OSLibrary::Debian::ArpEaterManager < OSLibrary::ArpEaterManager
 
     os["override_manager"].write_file( SingleNICFlag, settings.enabled, "\n" )
     
-    ## If the arp eater is running, use the request URL.
-    request = { "function" => "set_config", "config" => file_contents, "write_config" => true }.to_json
-    response = make_request( request )
-    return if response["status"] == STATUS_OK
-    
-    ## else
-    logger.debug "ARP Eater is presently not running, restarting the ARP eater."
-
     #### serialize down to the config file.
     os["override_manager"].write_file( get_config_file, header, "\n", file_contents.to_json, "\n" )
   end
@@ -101,7 +93,7 @@ class OSLibrary::Debian::ArpEaterManager < OSLibrary::ArpEaterManager
     gateway = "0.0.0.0" if is_auto( gateway )
     settings_json = { 
       :gateway => gateway, :interface => interface,
-      :enabled => settings.enabled, :broadcast => settings.broadcast 
+      :enabled => settings.enabled, :broadcast => ( settings.enabled && settings.broadcast )
     }
     
     settings_json[:networks] = []
