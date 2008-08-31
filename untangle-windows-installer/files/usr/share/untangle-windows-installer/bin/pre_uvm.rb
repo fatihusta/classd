@@ -17,6 +17,7 @@ require "logger"
 
 SingleNicFlag="/usr/share/untangle-arp-eater/flag"
 
+CreatePopId="/usr/share/untangle/bin/createpopid.rb"
 Activate="/usr/share/untangle/bin/utactivate"
 PopId="/usr/share/untangle/popid"
 
@@ -91,15 +92,12 @@ SQL
 end
 
 def setup_registration( config, dbh )
-  unless File.exists?( Activate )
-    $logger.warn( "Unable to create pop id, missing the script #{Activate}" )
+  unless File.exists?( CreatePopID )
+    $logger.warn( "Unable to create pop id, missing the script #{CreatePopID}" )
     return
   end
 
-  unless ( status = run_command( Activate, 10 * 60 )) == 0
-    $logger.warn( "Non-zero return code from pop id script. #{status}" )
-    return
-  end
+  load( CreatePopID, true )
   
   unless File.exists?( PopId )
     $logger.warn( "POPID file doesn't exists: #{PopId}" )
@@ -162,6 +160,13 @@ def setup_registration( config, dbh )
   File.rm_f( RegistrationInfo )
   File.rm_f( RegistrationDone )
   File.open( RegistrationInfo, "w" ) { |f| f.puts url_string.join( "&" ) }
+
+  unless File.exists?( Activate )
+    $logger.warn( "Unable to activate, missing the script #{Activate}" )
+    return
+  end
+  
+  run_command( Activate, 60 )
 end
 
 def setup_alpaca( config_file )
