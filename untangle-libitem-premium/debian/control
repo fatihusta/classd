@@ -95,7 +95,7 @@ Section: premium/admin
 Architecture: all
 Depends: untangle-node-boxbackup
 Provides: untangle-libitem-trial30-boxbackup, untangle-libitem-trial14-boxbackup
-XB-View-Position: 1015
+XB-View-Position: 1021
 XB-Display-Name: Configuration Backup
 XB-Untangle-Type: lib_item
 XB-Is-Core: true
@@ -182,7 +182,7 @@ Section: premium/admin
 Architecture: all
 Depends: untangle-node-portal
 Provides: untangle-libitem-trial30-portal, untangle-libitem-trial14-portal
-XB-View-Position: 1015
+XB-View-Position: 1018
 XB-Display-Name: Remote Access Portal
 XB-Untangle-Type: lib_item
 XB-Is-Core: true
@@ -257,7 +257,7 @@ Section: premium/admin
 Architecture: all
 Depends: untangle-node-adconnector
 Provides: untangle-libitem-trial14-adconnector
-XB-View-Position: 1015
+XB-View-Position: 1017
 XB-Display-Name: Active Directory (AD) Connector
 XB-Untangle-Type: lib_item
 XB-Is-Core: true
@@ -313,7 +313,7 @@ Section: premium/admin
 Architecture: all
 Depends: untangle-node-policy
 Provides: untangle-libitem-trial14-policy
-XB-View-Position: 1015
+XB-View-Position: 1016
 XB-Display-Name: Policy Manager
 XB-Untangle-Type: lib_item
 XB-Is-Core: true
@@ -586,7 +586,7 @@ Package: untangle-libitem-trial14-portal
 Section: premium/admin
 Architecture: all
 Depends: untangle-node-portal
-XB-View-Position: 75
+XB-View-Position: 1018
 XB-Display-Name: Remote Access Portal 14-Day Trial
 XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-portal
@@ -668,7 +668,7 @@ Package: untangle-libitem-trial14-boxbackup
 Section: premium/admin
 Architecture: all
 Depends: untangle-node-boxbackup
-XB-View-Position: 1015
+XB-View-Position: 1021
 XB-Display-Name: Configuration Backup 14-Day Trial
 XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-boxbackup
@@ -755,7 +755,7 @@ Package: untangle-libitem-trial14-adconnector
 Section: premium/admin
 Architecture: all
 Depends: untangle-node-adconnector
-XB-View-Position: 1015
+XB-View-Position: 1017
 XB-Display-Name: Active Directory (AD) Connector 14-Day Trial
 XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-adconnector
@@ -811,7 +811,7 @@ Package: untangle-libitem-trial14-policy
 Section: premium/admin
 Architecture: all
 Depends: untangle-node-policy
-XB-View-Position: 1015
+XB-View-Position: 1016
 XB-Display-Name: Policy Manager 14-Day Trial
 XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-policy
