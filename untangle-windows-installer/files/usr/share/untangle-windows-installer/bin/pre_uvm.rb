@@ -21,6 +21,9 @@ CreatePopId="/usr/share/untangle/bin/createpopid.rb"
 Activate="/usr/share/untangle/bin/utactivate"
 PopId="/usr/share/untangle/popid"
 
+SetTimezone="/usr/share/untangle/bin/uttimezone"
+
+
 RegistrationInfo="/usr/share/untangle/registration.info"
 RegistrationDone="/usr/share/untangle/.regdone"
 
@@ -187,6 +190,21 @@ rake --trace -s alpaca:preconfigure RAILS_ENV=${MONGREL_ENV} CONFIG_FILE="#{conf
 EOF
 end
 
+def set_timezone( config )
+  unless File.exists?( SetTimezone )
+    $logger.warn( "Unable to set the timezone, missing the script #{SetTimezone}" )
+    return
+  end
+
+  current_timezone = config["timezone"]
+  if ( current_timezone.nil? || !File.exists?( "/usr/share/zoneinfo/#{current_timezone}" ))
+    current_timezone = "GMT"
+  end
+
+  ## Initialize the timezone using uttimezone
+  Kernel.system( "#{SetTimezone} #{current_timezone}" )
+end
+
 usage if ARGV.length != 1
 
 config_file = ARGV[0]
@@ -224,4 +242,6 @@ set_password_hash( config, dbh )
 setup_registration( config, dbh )
 
 setup_alpaca( config_file )
+
+set_timezone( config )
 
