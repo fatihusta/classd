@@ -95,12 +95,12 @@ SQL
 end
 
 def setup_registration( config, dbh )
-  unless File.exists?( CreatePopID )
-    $logger.warn( "Unable to create pop id, missing the script #{CreatePopID}" )
+  unless File.exists?( CreatePopId )
+    $logger.warn( "Unable to create pop id, missing the script #{CreatePopId}" )
     return
   end
 
-  load( CreatePopID, true )
+  load( CreatePopId, true )
   
   unless File.exists?( PopId )
     $logger.warn( "POPID file doesn't exists: #{PopId}" )
