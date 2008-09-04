@@ -17,8 +17,12 @@ require "logger"
 
 SingleNicFlag="/usr/share/untangle-arp-eater/flag"
 
+CreatePopId="/usr/share/untangle/bin/createpopid.rb"
 Activate="/usr/share/untangle/bin/utactivate"
 PopId="/usr/share/untangle/popid"
+
+SetTimezone="/usr/share/untangle/bin/uttimezone"
+
 
 RegistrationInfo="/usr/share/untangle/registration.info"
 RegistrationDone="/usr/share/untangle/.regdone"
@@ -91,15 +95,12 @@ SQL
 end
 
 def setup_registration( config, dbh )
-  unless File.exists?( Activate )
-    $logger.warn( "Unable to create pop id, missing the script #{Activate}" )
+  unless File.exists?( CreatePopId )
+    $logger.warn( "Unable to create pop id, missing the script #{CreatePopId}" )
     return
   end
 
-  unless ( status = run_command( Activate, 10 * 60 )) == 0
-    $logger.warn( "Non-zero return code from pop id script. #{status}" )
-    return
-  end
+  load( CreatePopId, true )
   
   unless File.exists?( PopId )
     $logger.warn( "POPID file doesn't exists: #{PopId}" )
@@ -162,6 +163,13 @@ def setup_registration( config, dbh )
   File.rm_f( RegistrationInfo )
   File.rm_f( RegistrationDone )
   File.open( RegistrationInfo, "w" ) { |f| f.puts url_string.join( "&" ) }
+
+  unless File.exists?( Activate )
+    $logger.warn( "Unable to activate, missing the script #{Activate}" )
+    return
+  end
+  
+  run_command( Activate, 60 )
 end
 
 def setup_alpaca( config_file )
@@ -180,6 +188,21 @@ rake --trace -s alpaca:preconfigure RAILS_ENV=${MONGREL_ENV} CONFIG_FILE="#{conf
   exit -2
 }
 EOF
+end
+
+def set_timezone( config )
+  unless File.exists?( SetTimezone )
+    $logger.warn( "Unable to set the timezone, missing the script #{SetTimezone}" )
+    return
+  end
+
+  current_timezone = config["timezone"]
+  if ( current_timezone.nil? || !File.exists?( "/usr/share/zoneinfo/#{current_timezone}" ))
+    current_timezone = "GMT"
+  end
+
+  ## Initialize the timezone using uttimezone
+  Kernel.system( "#{SetTimezone} #{current_timezone}" )
 end
 
 usage if ARGV.length != 1
@@ -219,4 +242,6 @@ set_password_hash( config, dbh )
 setup_registration( config, dbh )
 
 setup_alpaca( config_file )
+
+set_timezone( config )
 
