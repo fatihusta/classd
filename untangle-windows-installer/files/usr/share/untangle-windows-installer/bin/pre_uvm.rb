@@ -239,9 +239,10 @@ install_packages( config )
 
 set_password_hash( config, dbh )
 
-setup_registration( config, dbh )
-
 setup_alpaca( config_file )
+
+## Register after configuring the alpaca so the network is up.
+setup_registration( config, dbh )
 
 set_timezone( config )
 
