@@ -73,7 +73,7 @@ def install_packages( config )
   run_command( "echo '' > /etc/apt/sources.list" )
 end
 
-def set_password_hash( config, dbh ) 
+def set_password_hash( config, dbh )
   password_hash = config["password"]
   if ( password_hash.nil? || /^[0-9a-fA-F]{48}$/.match( password_hash ).nil? )
     $logger.warn( "Invalid password hash: #{password_hash}" )
@@ -81,7 +81,9 @@ def set_password_hash( config, dbh )
   end
 
   v = ""
-  ( password_hash.length / 2 ).times { |n| v << ( "%c" % password_hash[2*n .. ( 2*n ) + 1].to_i( 16 )) }  
+  ( password_hash.length / 2 ).times { |n| v << ( "%c" % password_hash[2*n .. ( 2*n ) + 1].to_i( 16 )) }
+
+  database_string = v.dump.gsub( /^"(.*)"$/, '\1' )
 
   admin_settings_id = dbh.select_one(<<SQL).first
 SELECT nextval('hibernate_sequence');
@@ -91,7 +93,7 @@ SQL
   dbh.do("DELETE FROM u_admin_settings")
 
   dbh.do("INSERT INTO u_admin_settings (admin_settings_id) VALUES (#{admin_settings_id})")  
-  dbh.do("INSERT INTO u_user ( id, login, password, email, name, read_only, notes, send_alerts, admin_setting_id ) VALUES ( nextval('hibernate_sequence'),'admin','#{v.dump.gsub( "\"", "" )}','[no email]', 'System Administrator',false, '[no description]',false,#{admin_settings_id} )")
+  dbh.do("INSERT INTO u_user ( id, login, password, email, name, read_only, notes, send_alerts, admin_setting_id ) VALUES ( nextval('hibernate_sequence'),'admin','#{database_string}','[no email]', 'System Administrator',false, '[no description]',false,#{admin_settings_id} )")
 end
 
 def setup_registration( config, dbh )
