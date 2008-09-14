@@ -73,6 +73,8 @@ def install_packages( config )
   run_command( "echo '' > /etc/apt/sources.list" )
 end
 
+## Modify this function with extreme caution, escaping  binary characters has caused numerous
+## delays and random password errors
 def set_password_hash( config, dbh )
   password_hash = config["password"]
   if ( password_hash.nil? || /^[0-9a-fA-F]{48}$/.match( password_hash ).nil? )
@@ -80,10 +82,10 @@ def set_password_hash( config, dbh )
     return
   end
 
-  v = ""
-  ( password_hash.length / 2 ).times { |n| v << ( "%c" % password_hash[2*n .. ( 2*n ) + 1].to_i( 16 )) }
-
-  database_string = v.dump.gsub( /^"(.*)"$/, '\1' )
+  database_string = ""
+  ( password_hash.length / 2 ).times do |n|
+    database_string << '\\\\%03o' % password_hash[2*n .. ( 2*n ) + 1].to_i( 16 )
+  end
 
   admin_settings_id = dbh.select_one(<<SQL).first
 SELECT nextval('hibernate_sequence');
@@ -93,7 +95,8 @@ SQL
   dbh.do("DELETE FROM u_admin_settings")
 
   dbh.do("INSERT INTO u_admin_settings (admin_settings_id) VALUES (#{admin_settings_id})")  
-  dbh.do("INSERT INTO u_user ( id, login, password, email, name, read_only, notes, send_alerts, admin_setting_id ) VALUES ( nextval('hibernate_sequence'),'admin','#{database_string}','[no email]', 'System Administrator',false, '[no description]',false,#{admin_settings_id} )")
+  
+  dbh.do("INSERT INTO u_user ( id, login, password, email, name, read_only, notes, send_alerts, admin_setting_id ) VALUES ( nextval('hibernate_sequence'),'admin','#{database_string}','[no email]', 'System Administrator',false, '[no description]',false, ? )", admin_settings_id )
 end
 
 def setup_registration( config, dbh )
