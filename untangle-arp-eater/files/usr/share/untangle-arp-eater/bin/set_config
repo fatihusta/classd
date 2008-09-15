@@ -20,6 +20,6 @@ set_config() {
 EOF
 }
 
-
 set_config $1 | sed -e 's|,|,\n|g' -e 's|}$|}\n|'
 
+true
