@@ -1,6 +1,6 @@
 #!/bin/dash
 
-echo "[`date`] Updating the ARP Eater."
+echo "[DEBUG: `date`] Updating the ARP Eater."
 
 ## Reload the arp eater when the network info changes.
 ARP_EATER_CONFIG_FILE=/etc/untangle-arp-eater.conf
@@ -9,6 +9,7 @@ if [ -f /etc/default/untangle-arp-eater ]; then
     . /etc/default/untangle-arp-eater
 fi
 
-/usr/share/untangle-arp-eater/bin/set_config ${ARP_EATER_CONFIG_FILE}
+mkdir -p /var/log/untangle-net-alpaca
+/usr/share/untangle-arp-eater/bin/set_config ${ARP_EATER_CONFIG_FILE} >> /var/log/untangle-net-alpaca/dhcp.log 2>&1
 
 true
