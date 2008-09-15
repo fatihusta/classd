@@ -179,7 +179,13 @@ end
 
 def setup_alpaca( config_file )
   ## Initialize the settings for the alpaca.
-Kernel.system(<<EOF)
+  begin
+    Kernel.system(<<EOF)
+
+/etc/init.d/untangle-net-alpaca stop
+
+sleep 2
+
 BASE_DIR="/var/lib/rails/untangle-net-alpaca"
 MONGREL_ENV="production"
 [ -f /etc/default/untangle-net-alpaca ] && . /etc/default/untangle-net-alpaca
@@ -193,6 +199,11 @@ rake --trace -s alpaca:preconfigure RAILS_ENV=${MONGREL_ENV} CONFIG_FILE="#{conf
   exit -2
 }
 EOF
+  ensure
+    Kernel.system(<<EOF)
+/etc/init.d/untangle-net-alpaca restart
+EOF
+  end
 end
 
 def set_timezone( config )
@@ -220,6 +231,9 @@ unless File.exist?( config_file )
   $logger.info( "The config_file: #{config_file} doesn't exists." )
   exit 0
 end
+
+$logger.info( "Using the config file" )
+Kernel.system( "cat #{config_file}" )
 
 File.open( config_file, "r" ) { |f| f.each_line { |l| config << l }}
 config = ::JSON.parse( config )
