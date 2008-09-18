@@ -117,7 +117,7 @@ EOF
 
     def action( table_data, view )
       <<EOF
-<div onclick="#{view.remote_function( :url => { :action => :refresh_active_hosts } )}" class="add-button">
+<div onclick="#{view.remote_function( :url => { :action => :refresh_active_hosts } )}" class="refresh-button">
   #{"Refresh".t}
 </div>
 EOF
