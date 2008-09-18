@@ -23,7 +23,12 @@ if [ ! -f ${ARP_EATER_CONFIG_FILE} ]; then
 fi
 
 if [ -x "/etc/init.d/untangle-arp-eater" ]; then
-    update-rc.d untangle-arp-eater defaults >/dev/null
+    ## Moving the startup from its defaults to start later and stop earlier.
+    update-rc.d -f untangle-arp-eater remove >/dev/null
+    
+    ## Start failry late, and stop fairly early.
+    update-rc.d untangle-arp-eater defaults 96 4 >/dev/null
+    
     ourInit untangle-arp-eater stop > /dev/null 2>&1 || exit 0
     ourInit untangle-arp-eater start || exit 0
 fi
