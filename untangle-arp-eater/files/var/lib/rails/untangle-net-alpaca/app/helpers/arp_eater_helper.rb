@@ -16,7 +16,7 @@ module ArpEaterHelper
 EOF
       end
 
-      columns << Alpaca::Table::Column.new( "spoof", "Spoof".t ) do |entry,options|
+      columns << Alpaca::Table::Column.new( "spoof", "Re-Route".t ) do |entry,options|
         row_id = options[:row_id]
         view = options[:view]
 
@@ -57,7 +57,7 @@ EOF
       
       columns << Alpaca::Table::DeleteColumn.new
       
-      super(  "ArpEater", "arp-eater-networks", "", "arp-eater-network", columns )
+      super(  "Active Hosts", "arp-eater-networks", "", "arp-eater-network", columns )
     end
 
     def row_id( row )
@@ -108,7 +108,7 @@ EOF
         "<span>#{entry.gateway}</span>"
       end
       
-      super(  "ArpEater", "arp-eater-active-hosts", "", "arp-eater-active-host read-only", columns )
+      super(  "Re-Router", "arp-eater-active-hosts", "", "arp-eater-active-host read-only", columns )
     end
 
     def row_id( row )
