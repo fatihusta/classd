@@ -1,6 +1,6 @@
 #!/bin/dash
 
-ARPEATER_BIND_PORT=3002
+ARP_EATER_BIND_PORT=3002
 
 if [ $# != 1  ]; then
     echo "USAGE: $0 <config file name>"
@@ -12,7 +12,7 @@ if [ -f /etc/default/untangle-arp-eater ]; then
 fi
 
 set_config() {
-    curl -s -F 'json_request=@-' -m 10 "http://localhost:${ARPEATER_BIND_PORT}" <<EOF || echo "Unable to connect to host"
+    curl -s -F 'json_request=@-' -m 10 "http://localhost:${ARP_EATER_BIND_PORT}" <<EOF || echo "Unable to connect to host"
 { "function" : "set_config",
 "config" : 
 `cat $1`

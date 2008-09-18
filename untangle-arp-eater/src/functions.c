@@ -38,7 +38,7 @@
 
 static struct json_object *_hello_world( struct json_object* request );
 
-static struct json_object *_update_network_settings( struct json_object* request );
+static struct json_object *_refresh_system_state( struct json_object* request );
 
 static struct json_object *_get_network_settings( struct json_object* request );
 
@@ -56,6 +56,10 @@ static struct json_object *_list_functions( struct json_object* request );
 
 static struct json_object *_shutdown( struct json_object* request );
 
+/* Utility function that reloads all of the system state required for
+ * the ARP eater to work. */
+static int __refresh_system_state( void );
+
 extern void arpeater_main_shutdown( void );
 
 static struct
@@ -72,7 +76,7 @@ static struct
         { .name = "get_config", .function = _get_config },
         { .name = "set_config", .function = _set_config },
         { .name = "set_debug_level", .function = _set_debug_level },
-        { .name = "update_network_settings", .function = _update_network_settings },
+        { .name = "refresh_system_state", .function = _refresh_system_state },
         { .name = "get_network_settings", .function = _get_network_settings },
         { .name = "get_active_hosts", .function = _get_active_hosts },
         { .name = "add_active_hosts", .function = _add_active_hosts },
@@ -243,12 +247,12 @@ static struct json_object *_set_config( struct json_object* request )
             return 0;
         }
 
-        if ( arp_refresh_config() < 0 ) {
-            errlog( ERR_CRITICAL, "arp_refresh_config\n" );
+        if ( __refresh_system_state() < 0 ) {
+            errlog( ERR_CRITICAL, "_refresh_system_state\n" );
             strncpy( message, "Unable to refresh JSON config.", message_size );
             return 0;
         }
-
+        
         if ( arpeater_ae_manager_get_config( &config ) < 0 ) {
             errlog( ERR_CRITICAL, "arpeater_ae_manager_get_config\n" );
             strncpy( message, "Unable to get config for reserialization.", message_size );
@@ -299,12 +303,14 @@ static struct json_object *_set_config( struct json_object* request )
     return response;
 }
 
-static struct json_object *_update_network_settings( struct json_object* request )
+static struct json_object *_refresh_system_state( struct json_object* request )
 {
     struct json_object* response = NULL;
 
-    if ( arpeater_ae_manager_reload_gateway() < 0 ) {
-        if (( response = json_server_build_response( STATUS_ERR, 0, "Unable to update network settings." )) == NULL ) {
+    
+    if ( __refresh_system_state() < 0 ) {
+        errlog( ERR_CRITICAL, "__refresh_system_state\n" );
+        if (( response = json_server_build_response( STATUS_ERR, 0, "Unable to refresh system state." )) == NULL ) {
             return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
         }
 
@@ -585,4 +591,15 @@ static struct json_object *_shutdown( struct json_object* request )
     }
 
     return response;
+}
+
+static int __refresh_system_state( void )
+{
+    if ( arpeater_ae_manager_reload_gateway() < 0 ) {
+        return errlog( ERR_CRITICAL, "arpeater_ae_manager_reload_gateway\n" );
+    }
+
+    if ( arp_refresh_config() < 0 ) return errlog( ERR_CRITICAL, "arp_refresh_config\n" );
+
+    return 0;
 }
