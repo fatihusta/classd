@@ -1,0 +1,6 @@
+#!/bin/sh
+
+/usr/share/untangle/bin/xpd usf-trial.ulg 0x6f8e1db825b26656 f433ee1967d2d7de937ef2fd25db4c92
+
+/usr/bin/ucli -t 30 reloadLicenses > /dev/null 2>&1
+true

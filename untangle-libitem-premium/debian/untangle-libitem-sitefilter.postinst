@@ -1,0 +1,6 @@
+#!/bin/sh
+
+/usr/share/untangle/bin/xpd usf-sub.ulg 0x4cf872170e6b0685 329a4e8a7a9de1aab6e3c5945c5b523b
+
+/usr/bin/ucli -t 30 reloadLicenses > /dev/null 2>&1
+true
