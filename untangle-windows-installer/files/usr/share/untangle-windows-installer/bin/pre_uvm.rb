@@ -154,7 +154,7 @@ def setup_registration( config, dbh )
     end
   end
 
-  [ "regKey", "email", "name", "firstName", "lastName", "numseats", "find_untangle", "country", "purpose" ].each do |key|
+  [ "regKey", "email", "name", "firstName", "lastName", "numseats", "find_untangle", "country", "environment" ].each do |key|
     param = registration[key]
 
     next if param.nil?
