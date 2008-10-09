@@ -323,7 +323,7 @@ Architecture: all
 Depends: untangle-node-adconnector
 Provides: untangle-libitem-trial14-adconnector
 XB-View-Position: 1017
-XB-Display-Name: Active Directory (AD) Connector
+XB-Display-Name: AD Connector
 XB-Untangle-Type: lib_item
 XB-Is-Core: true
 XB-Desc-Icon: R0lGODlhKgAqAPcAAB4SIWClzwA9mt6/VG08aFgyVI1miVCj2MXX6mFYjsZYAMzM
@@ -887,7 +887,7 @@ Section: premium/admin
 Architecture: all
 Depends: untangle-node-adconnector
 XB-View-Position: 1017
-XB-Display-Name: Active Directory (AD) Connector 14-Day Trial
+XB-Display-Name: AD Connector 14-Day Trial
 XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-adconnector
 XB-Is-Core: true
