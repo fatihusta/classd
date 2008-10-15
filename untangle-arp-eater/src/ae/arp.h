@@ -35,9 +35,9 @@ typedef enum
 {
     _HANDLER_MESG_REFRESH_CONFIG =  1, /* re read your config */  
     _HANDLER_MESG_KILL           =  2, /* exit - send cleanups */
-    _HANDLER_MESG_KILL_NOW       =  3  /* exit - don't send cleanups */
+    _HANDLER_MESG_KILL_NOW       =  3, /* exit - don't send cleanups */
+    _HANDLER_MESG_SEND_ARPS      =  4  /* send arps immediately */
 } handler_message_t;
-
 
 /**
  * This initializes the arp sniffing and host handling

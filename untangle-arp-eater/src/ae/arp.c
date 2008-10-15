@@ -37,7 +37,6 @@
 #include "manager.h"
 
 static ht_t  host_handlers;
-static sem_t host_handlers_sem;
 
 static struct
 {
@@ -47,6 +46,7 @@ static struct
     ht_t hosts;
     pthread_t sniff_thread; 
     pcap_t* handle;
+    in_addr_t gateway;
 } _globals ;
 
 struct arp_eth_payload
@@ -65,17 +65,13 @@ static int   _arp_lookup ( struct ether_addr *dest, in_addr_t ip );
 static int   _arp_table_lookup ( struct ether_addr *dest, in_addr_t ip );
 static int   _host_handler_start ( in_addr_t addr );
 
+static int HOST_HANDLER_DELAY = 10000; /* usec */
+static int HOST_HANDLER_SLEEP = 3; /* sec */
 
 int arp_init ( void )
 {
     bzero(&_globals,sizeof(_globals));
 
-    /**
-     * Initialize host_handlers lock
-     */
-    if ( sem_init( &host_handlers_sem, 0, 1) < 0 )
-        return perrlog( "sem_init" ); 
-    
     /**
      * Initialize host_handlers table
      */
@@ -93,9 +89,7 @@ int arp_init ( void )
 
 int arp_shutdown ( void )
 {
-    list_t* hosts;
-    list_node_t* step;
-    int ret = 0;
+    int count = 0;
 
     /**
      * kill sniffer thread
@@ -105,40 +99,23 @@ int arp_shutdown ( void )
         _globals.handle = NULL;
     }
 
-    /**
-     * kill all host handlers
-     * and wait for them to die.
-     * after this it is never released
-     */
-    if ( sem_wait( &host_handlers_sem ) < 0 )
-        perrlog("sem_wait");
+    /* wait for the threads (up to 2 seconds) */
+    for ( count = 0 ; count < 20 ; count++ ) {
+        int n;
+        arp_host_handler_send_message_all( _HANDLER_MESG_KILL );
 
-    hosts = arp_host_handlers_get_all();
+        n = ht_num_entries(&host_handlers);
 
-    if (hosts) {
-        int count = 0;
-        pthread_t threads[list_size(hosts)];
-
-        /* terminate the threads */
-        for ( step = list_head(hosts), count=0 ; step ; step = list_node_next(step), count++ ) {
-            host_handler_t* host = list_node_val(step);
-            threads[count] = host->thread;
-            arp_host_handler_send_message( host, _HANDLER_MESG_KILL );
+        debug(10,"Sending Kill (num_entries: %i)\n",n);
+        if (n == 0) 
+            break;
             
-        }
-
-        /* wait for the threads */
-        for (count = 0 ; count < list_size(hosts) ; count++) {
-            if ( pthread_join(threads[count], (void**)&ret) < 0 )
-                perrlog("pthread_join");
-        }
-    }
-    else {
-        perrlog("arp_get_host_handlers");
+        usleep(.1 * 1000000); /* .1 seconds */
     }
 
-    list_raze(hosts);
-
+    if (ht_num_entries(&host_handlers) != 0)
+        errlog(ERR_WARNING,"Failed to kill all host handlers (%i remain), exitting anyway\n", ht_num_entries(&host_handlers));
+    
     /**
      * free resources
      */
@@ -183,9 +160,11 @@ int arp_refresh_config ( void )
     if ( arpeater_ae_manager_get_config(&config) < 0)
         return perrlog("arpeater_ae_manager_get_config");
 
+    _globals.gateway = config.gateway.s_addr;
+    
     strncpy(_globals.interface,config.interface,IF_NAMESIZE);
     _globals.device.sll_family = AF_PACKET;
-
+    
     if ( (pf = socket( PF_PACKET, SOCK_RAW, htons(ETH_P_ALL) )) < 0 ) 
         return errlog(ERR_CRITICAL, "Could not create packet socket\n");
 
@@ -307,9 +286,6 @@ int arp_host_handler_send_message_all ( handler_message_t mesg )
     list_t* hosts; 
     list_node_t* step;
 
-    if ( sem_wait( &host_handlers_sem ) < 0 )
-        perrlog("sem_wait");
-
     if ( (hosts = arp_host_handlers_get_all()) == NULL ) 
         perrlog("arp_get_host_handlers");
     else {
@@ -319,9 +295,6 @@ int arp_host_handler_send_message_all ( handler_message_t mesg )
         }
     }
     
-    if ( sem_post( &host_handlers_sem ) < 0 )
-        perrlog("sem_post");
-
     if (hosts)
         list_raze(hosts);
 
@@ -332,7 +305,6 @@ int arp_host_handler_send_message ( host_handler_t* host, handler_message_t mesg
 {
     return mailbox_put (&host->mbox, (void*)mesg);
 }
-
 
 /**
  * Reset the timeout time of that host handler
@@ -447,7 +419,7 @@ static int _host_handler_undo_arps (host_handler_t* host)
                 perrlog("_arp_send");
         }
 
-        sleep (.2);
+        usleep (HOST_HANDLER_DELAY);
     }
 
     return 0;
@@ -478,11 +450,11 @@ static void* _host_handler_thread (void* arg)
     
     while (go) {
         /**
-         * If this thread should be active only wait for 3 seconds then send ARPs
+         * If this thread should be active only wait for SLEEP seconds then send ARPs
          * Otherwise wait for a message
          */
         if (settings->is_enabled)
-            ret = (int)mailbox_timed_get(&host->mbox,3);
+            ret = (int)mailbox_timed_get(&host->mbox,HOST_HANDLER_SLEEP);
         else
             ret = (int)mailbox_get(&host->mbox);
 
@@ -493,6 +465,7 @@ static void* _host_handler_thread (void* arg)
             int was_enabled; 
 
             switch (ret) {
+
             case _HANDLER_MESG_REFRESH_CONFIG:
                 debug( 3, "HOST: Host (%s) Config Refresh\n", unet_inet_ntoa(host->addr.s_addr));
                 err = 0;
@@ -557,11 +530,16 @@ static void* _host_handler_thread (void* arg)
                 if (settings->is_enabled) 
                     _host_handler_undo_arps(host);
                 /* fall through */
+
             case _HANDLER_MESG_KILL_NOW:
                 debug( 3, "HOST: Host Handler (%s) Exiting\n", unet_inet_ntoa(host->addr.s_addr));
                 
                 go = 0;
                 settings->is_enabled = 0;
+                break;
+
+            case _HANDLER_MESG_SEND_ARPS:
+                /* no action required - arps will be sent if enabled below */
                 break;
             } /* switch (ret)  */
         } /* if (ret) */
@@ -581,17 +559,21 @@ static void* _host_handler_thread (void* arg)
          */
         if (settings->is_enabled) 
             _host_handler_send_arps(host);
-        
+
+        usleep(HOST_HANDLER_DELAY);
     } /* while (go) */
 
     debug( 3, "HOST: Host handler (%s) exiting.\n", unet_next_inet_ntoa(host->addr.s_addr));
 
     if ( ht_remove( &host_handlers, (void*)host->addr.s_addr) < 0 )
         perrlog("ht_remove");
-
+    
     if ( mailbox_destroy ( &host->mbox ) < 0)
         perrlog("mailbox_destroy");
 
+    /* sleep for lingering host references */
+    sleep(2);
+    
     free (host);
     
     pthread_exit(NULL);
@@ -607,9 +589,6 @@ static int _host_handler_start ( in_addr_t addr )
     host_handler_t* newhost;
     int ret = 0;
 
-    if ( sem_wait( &host_handlers_sem ) < 0 )
-        perrlog("sem_wait");
-    
     do {
         if ( (newhost = (host_handler_t*) ht_lookup( &host_handlers, (void*) addr)) != NULL ) {
             _host_handler_reset_timer( newhost ); /* just saw an ARP - reset timer of current */
@@ -649,9 +628,6 @@ static int _host_handler_start ( in_addr_t addr )
         }
 
     } while (0);
-
-    if ( sem_post( &host_handlers_sem ) < 0 )
-        perrlog("sem_post");
 
     return ret;
 }
@@ -817,7 +793,8 @@ static void _arp_listener_handler ( u_char* args, const struct pcap_pkthdr* head
     struct ethhdr* eth_hdr;
     struct arphdr* arp_hdr;
     struct arp_eth_payload* arp_payload;
-    in_addr_t victim;
+    struct in_addr victim;
+    host_handler_t* host;
     
     /* min size ethhdr + arphdr + arp payload */
     if ( header->len < (sizeof(struct ethhdr) + sizeof(struct arphdr) + sizeof(struct arp_eth_payload)) ) {
@@ -866,12 +843,27 @@ static void _arp_listener_handler ( u_char* args, const struct pcap_pkthdr* head
            unet_next_inet_ntoa(*(in_addr_t*)&arp_payload->ar_tip),
            unet_next_inet_ntoa(*(in_addr_t*)&arp_payload->ar_sip));
 
-    victim = *(in_addr_t*)&arp_payload->ar_sip;
+    victim.s_addr = *(in_addr_t*)&arp_payload->ar_sip;
 
-    if ( ht_lookup( &host_handlers, (void*) victim) == NULL ) {
-        debug( 3, "SNIFF: New host (%s) found.\n", unet_inet_ntoa(victim));
+    /**
+     * fix for bug #4814 - host pay attention to gateway arp requests
+     * must force all host handlers to send immediately
+     */
+    if (victim.s_addr == _globals.gateway) {
+        debug ( 2, "SNIFF: Detected gateway ARP request - Forcing all ARP replies\n");
+        arp_host_handler_send_message_all(_HANDLER_MESG_SEND_ARPS);
+    }
+    host = (host_handler_t*) ht_lookup( &host_handlers, (void*) victim.s_addr);
+    if (host) {
+        debug ( 2, "SNIFF: Detected host    ARP request - Forcing ARP reply to gateway\n");
+        arp_host_handler_send_message(host, _HANDLER_MESG_SEND_ARPS);
+    }
 
-        _host_handler_start( victim );
+    
+    if ( ht_lookup( &host_handlers, (void*) victim.s_addr) == NULL ) {
+        debug( 3, "SNIFF: New host (%s) found.\n", unet_inet_ntoa(victim.s_addr));
+
+        _host_handler_start( victim.s_addr );
     }
     
     return;
