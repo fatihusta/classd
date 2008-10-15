@@ -636,7 +636,7 @@ static int _host_handler_start ( in_addr_t addr )
             break;
         }   
         
-        if ( pthread_create( &newhost->thread, NULL, _host_handler_thread, (void*)newhost ) != 0 ) {
+        if ( pthread_create( &newhost->thread, &uthread_attr.other.medium, _host_handler_thread, (void*)newhost ) != 0 ) {
             ret = perrlog("pthread_create");
             free(newhost);
             break;
