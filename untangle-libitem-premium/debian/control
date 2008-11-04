@@ -93,7 +93,7 @@ Section: premium/admin
 Architecture: all
 Depends: untangle-node-sitefilter
 XB-View-Position: 60
-XB-Display-Name: ESoft Site Filter
+XB-Display-Name: eSoft Web Filter
 XB-Untangle-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAMAAADyHTlpAAAAA3NCSVQICAjb4U/gAAABgFBMVEUI
  FyqQqbk5cp0pYZTD0+IjUYwZQXVfdZrj7PUROWyVrM5PYo1qhrimxNxTcaVAZasoVJMzY6MYRIE4
@@ -123,8 +123,8 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAMAAADyHTlpAAAAA3NCSVQICAjb4U/gAA
  BQz9OOWkqnkHItWpNYRhmMcyru1gGH4JcPZ3hgUQK1gRKXQIU0umaqaOWSq6fFZ5BP+g7ljqFNIF
  oIZzAHaCKfpuTba6npxUH1gYYk08Q4KWOgZkkOHgZ3D2DO9AaBE4+l+icK73TyTyL6IdzTPRwtT0
  AAAAAElFTkSuQmCC
-Description: ESoft Site Filter
- The ESoft Site Filter Library Item.
+Description: eSoft Web Filter
+ The eSoft Web Filter Library Item.
 
 Package: untangle-libitem-boxbackup
 Section: premium/admin
@@ -646,7 +646,7 @@ Section: premium/admin
 Architecture: all
 Depends: untangle-node-sitefilter
 XB-View-Position: 60
-XB-Display-Name: ESoft Site Filter
+XB-Display-Name: eSoft Web Filter
 XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-sitefilter
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAMAAADyHTlpAAAAA3NCSVQICAjb4U/gAAABgFBMVEUI
@@ -677,8 +677,8 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAMAAADyHTlpAAAAA3NCSVQICAjb4U/gAA
  BQz9OOWkqnkHItWpNYRhmMcyru1gGH4JcPZ3hgUQK1gRKXQIU0umaqaOWSq6fFZ5BP+g7ljqFNIF
  oIZzAHaCKfpuTba6npxUH1gYYk08Q4KWOgZkkOHgZ3D2DO9AaBE4+l+icK73TyTyL6IdzTPRwtT0
  AAAAAElFTkSuQmCC
-Description: Esoft Site Filter
- The ESoft Site Filter 14-Day Trial Library Item.
+Description: eSoft Web Filter
+ The eSoft Web Filter 14-Day Trial Library Item.
 
 Package: untangle-libitem-trial30-portal
 Section: premium/admin
