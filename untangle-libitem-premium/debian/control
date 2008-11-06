@@ -9,7 +9,7 @@ Standards-Version: 3.8.0
 Package: untangle-libitem-professional-package
 Section: premium/admin
 Architecture: all
-Depends: untangle-libitem-portal, untangle-libitem-boxbackup, untangle-libitem-support, untangle-libitem-adconnector, untangle-libitem-policy
+Depends: untangle-libitem-portal, untangle-libitem-boxbackup, untangle-libitem-support, untangle-libitem-adconnector, untangle-libitem-policy, untangle-libitem-branding
 XB-View-Position: 20
 XB-Display-Name: Professional Package
 XB-Untangle-Type: lib_item
