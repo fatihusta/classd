@@ -13,6 +13,8 @@ Depends: untangle-libitem-portal, untangle-libitem-boxbackup, untangle-libitem-s
 XB-View-Position: 20
 XB-Display-Name: Professional Package
 XB-Untangle-Type: lib_item
+XB-Is-Bundle: true
+XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: R0lGODlhKgAqAPcAAAAAALKHAKurtltcVUpKSsLCO5RsADQ2TcbGxmttiHxdGrOt
  NcHFP4heAJKPTPz87zMzM6+LEmtra+XXmcrKVe/vw4t1MxYXIXd3VnJ0jZKUWM6u
  Ejo9V01Rclpce2hhX9PFIr29OpR6KUhLa9HR0sekDNTUdfLy/MebAJSUUpGTpoyM
@@ -62,6 +64,8 @@ Replaces: untangle-libitem-hauri
 XB-View-Position: 60
 XB-Display-Name: Kaspersky Virus Blocker
 XB-Untangle-Type: lib_item
+XB-Is-Security: true
+XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAAAXNSR0IArs4c
  6QAAA7xJREFUWMPN2U1PG0ccBvBnZ8awpoCXJsQuq1ZJFtMkh+YQca1UCdrm
  jUocEJeSVL0UkzSfou0XqKpKqXqCBnAbqcWmVe18hBxSRWkTzCksXgNeCdmp
@@ -95,6 +99,7 @@ Depends: untangle-node-sitefilter
 XB-View-Position: 60
 XB-Display-Name: eSoft Web Filter
 XB-Untangle-Type: lib_item
+XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAMAAADyHTlpAAAAA3NCSVQICAjb4U/gAAABgFBMVEUI
  FyqQqbk5cp0pYZTD0+IjUYwZQXVfdZrj7PUROWyVrM5PYo1qhrimxNxTcaVAZasoVJMzY6MYRIE4
  c615i73V3+tCY6YwU407YZJbg7T///h+ob9Td7NLcq0fSHwOGyyirb+ovc5Kc6Fgi7YZSo0wZJZs
@@ -134,6 +139,8 @@ Provides: untangle-libitem-trial30-boxbackup, untangle-libitem-trial14-boxbackup
 XB-View-Position: 1021
 XB-Display-Name: Configuration Backup
 XB-Untangle-Type: lib_item
+XB-Is-Core: true
+XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABGdBTUEAANbY1E9YMgAAABl0
  RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAA81SURBVHjaxFlpeFRlln5v7Xul
  UpWkshKSkARIBNIhiIAhgY6KoiAu0GyDjbRAq087M4yiA+0Itri0PfbTiihid9s2IkGwRxFD
@@ -220,6 +227,8 @@ Provides: untangle-libitem-trial30-portal, untangle-libitem-trial14-portal
 XB-View-Position: 1018
 XB-Display-Name: Remote Access Portal
 XB-Untangle-Type: lib_item
+XB-Is-Core: true
+XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAIAAABKoV4MAAAABGdBTUEAANbY1E9YMgAAABl0
  RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAy9SURBVHjaxFjbb1xXvV5rr7X2
  da72jMexE8fNxSEBQlWgPRxaQaqiQwsvoAr1ASH60OdK/VMAgXjgAV4KCKQSSsU5oofLoUlL
@@ -294,6 +303,8 @@ Provides: untangle-libitem-trial14-adconnector
 XB-View-Position: 1017
 XB-Display-Name: AD Connector
 XB-Untangle-Type: lib_item
+XB-Is-Core: true
+XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: R0lGODlhKgAqAPcAAB4SIWClzwA9mt6/VG08aFgyVI1miVCj2MXX6mFYjsZYAMzM
  zDovORJ9u32q3Me9pnxPdo94mjxvlsGocF2HvHlbZsSvlEl/oxE/gvf18JXH2jBn
  nqWmp+GPKHVEcH5bei+Mx52dnFqLrWo7ZTQfM9jMoG5Idk8sSubt8/Xui7lIANmM
@@ -349,6 +360,8 @@ Provides: untangle-libitem-trial14-policy
 XB-View-Position: 1016
 XB-Display-Name: Policy Manager
 XB-Untangle-Type: lib_item
+XB-Is-Core: true
+XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: R0lGODlhKgAqAPcAAAAAAMVrB2SOABJEeV2KuFxlASAyU8WDa1I0Eoi2CI9XBfmW
  ADJkljtZdcCCJ5uhW2SKMQ4XJ3FgP7q6s4EWCN2FAFNtnn2mAPzJaK25xhNBdHth
  KTxRei4aANeKGWM4ETNLZFyCAIVQBJnMAGOILUxaeNeQJkZjTWeOPxouQO23bbJt
@@ -397,6 +410,8 @@ Provides: untangle-libitem-trial14-support
 XB-View-Position: 1015
 XB-Display-Name: Untangle Support
 XB-Untangle-Type: lib_item
+XB-Is-Core: true
+XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon:  R0lGODlhKgAqAPcAAB4PCJytc32ERl9oHru4u08cCK+tre7u54GHb2ITA4l5NFha
  ICArBnJ0R9XVzoWGfISQTKezhHNvP15VIYiGiVxjRUpSMDMzM3BsPJU9BrO+hURJ
  DHN3VUxJJujz94qLUpKXW5uakujn3l1gTEtQFpWhdH5ICLtrCWtoJDU4Dc3NxKay
@@ -457,6 +472,8 @@ Provides: untangle-libitem-trial14-pcremote
 XB-View-Position: 1010
 XB-Display-Name: PC Remote
 XB-Untangle-Type: lib_item
+XB-Is-Core: true
+XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: R0lGODlhKgAqAPcAAAsMGpmZmUpFPyUrasXOznZzbhgbQnWa1kpTpU2AxCMnLEdM
  fYqs4ebm5jI4abW1tSYxQVlxlTpAdBkZGa2trVtbW4OHpzxCk3eSxlhdg/f39yIo
  Y7W8zIObxoWFhS01gjMzM1FarEVLnEJCQr29vRwhUt7e3nN2kYKZy0lKXqeuyjpB
@@ -512,6 +529,7 @@ Depends: untangle-node-branding
 XB-View-Position: 1030
 XB-Display-Name: Branding Manager
 XB-Untangle-Type: lib_item
+XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAMAAADyHTlpAAAAA3NCSVQICAjb4U/gAAABgFBMVEUA
  AACHp7ZbrUFFhzCAAARBQ0Le3t5qk1t8fHwhOxh3t2HMzMwzAACLiYrxAgVYozru7u5Ob06Uznk5
  OTm0xqxrtk3MAAAqKirW8c6CgoIQEBBSUlJgjFG8vLynqqMsYSv29va1tbXm5uY1IAPA1Lt9JzCZ
@@ -558,6 +576,8 @@ XB-View-Position: 10
 XB-Display-Name: Professional Package 14-Day Trial
 XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-professional-package
+XB-Is-Bundle: true
+XB-Untangle-Pkg-Type: trial
 XB-Desc-Icon: R0lGODlhKgAqAPcAAAAAALKHAKurtltcVUpKSsLCO5RsADQ2TcbGxmttiHxdGrOt
  NcHFP4heAJKPTPz87zMzM6+LEmtra+XXmcrKVe/vw4t1MxYXIXd3VnJ0jZKUWM6u
  Ejo9V01Rclpce2hhX9PFIr29OpR6KUhLa9HR0sekDNTUdfLy/MebAJSUUpGTpoyM
@@ -615,6 +635,8 @@ XB-View-Position: 60
 XB-Display-Name: Kaspersky Virus Blocker 14-Day Trial
 XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-kav
+XB-Is-Security: true
+XB-Untangle-Pkg-Type: trial
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAAAXNSR0IArs4c
  6QAAA7xJREFUWMPN2U1PG0ccBvBnZ8awpoCXJsQuq1ZJFtMkh+YQca1UCdrm
  jUocEJeSVL0UkzSfou0XqKpKqXqCBnAbqcWmVe18hBxSRWkTzCksXgNeCdmp
@@ -649,6 +671,7 @@ XB-View-Position: 60
 XB-Display-Name: eSoft Web Filter
 XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-sitefilter
+XB-Untangle-Pkg-Type: trial
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAMAAADyHTlpAAAAA3NCSVQICAjb4U/gAAABgFBMVEUI
  FyqQqbk5cp0pYZTD0+IjUYwZQXVfdZrj7PUROWyVrM5PYo1qhrimxNxTcaVAZasoVJMzY6MYRIE4
  c615i73V3+tCY6YwU407YZJbg7T///h+ob9Td7NLcq0fSHwOGyyirb+ovc5Kc6Fgi7YZSo0wZJZs
@@ -695,6 +718,8 @@ XB-View-Position: 1018
 XB-Display-Name: Remote Access Portal 14-Day Trial
 XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-portal
+XB-Is-Security: true
+XB-Untangle-Pkg-Type: trial
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAIAAABKoV4MAAAABGdBTUEAANbY1E9YMgAAABl0
  RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAy9SURBVHjaxFjbb1xXvV5rr7X2
  da72jMexE8fNxSEBQlWgPRxaQaqiQwsvoAr1ASH60OdK/VMAgXjgAV4KCKQSSsU5oofLoUlL
@@ -776,6 +801,8 @@ XB-View-Position: 1021
 XB-Display-Name: Configuration Backup 14-Day Trial
 XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-boxbackup
+XB-Is-Core: true
+XB-Untangle-Pkg-Type: trial
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABGdBTUEAANbY1E9YMgAAABl0
  RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAA81SURBVHjaxFlpeFRlln5v7Xul
  UpWkshKSkARIBNIhiIAhgY6KoiAu0GyDjbRAq087M4yiA+0Itri0PfbTiihid9s2IkGwRxFD
@@ -862,6 +889,8 @@ XB-View-Position: 1017
 XB-Display-Name: AD Connector 14-Day Trial
 XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-adconnector
+XB-Is-Core: true
+XB-Untangle-Pkg-Type: trial
 XB-Desc-Icon: R0lGODlhKgAqAPcAAB4SIWClzwA9mt6/VG08aFgyVI1miVCj2MXX6mFYjsZYAMzM
  zDovORJ9u32q3Me9pnxPdo94mjxvlsGocF2HvHlbZsSvlEl/oxE/gvf18JXH2jBn
  nqWmp+GPKHVEcH5bei+Mx52dnFqLrWo7ZTQfM9jMoG5Idk8sSubt8/Xui7lIANmM
@@ -917,6 +946,8 @@ XB-View-Position: 1016
 XB-Display-Name: Policy Manager 14-Day Trial
 XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-policy
+XB-Is-Core: true
+XB-Untangle-Pkg-Type: trial
 XB-Desc-Icon: R0lGODlhKgAqAPcAAAAAAMVrB2SOABJEeV2KuFxlASAyU8WDa1I0Eoi2CI9XBfmW
  ADJkljtZdcCCJ5uhW2SKMQ4XJ3FgP7q6s4EWCN2FAFNtnn2mAPzJaK25xhNBdHth
  KTxRei4aANeKGWM4ETNLZFyCAIVQBJnMAGOILUxaeNeQJkZjTWeOPxouQO23bbJt
@@ -965,6 +996,8 @@ XB-View-Position: 1015
 XB-Display-Name: Untangle Support
 XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-support
+XB-Is-Core: true
+XB-Untangle-Pkg-Type: trial
 XB-Desc-Icon:  R0lGODlhKgAqAPcAAB4PCJytc32ERl9oHru4u08cCK+tre7u54GHb2ITA4l5NFha
  ICArBnJ0R9XVzoWGfISQTKezhHNvP15VIYiGiVxjRUpSMDMzM3BsPJU9BrO+hURJ
  DHN3VUxJJujz94qLUpKXW5uakujn3l1gTEtQFpWhdH5ICLtrCWtoJDU4Dc3NxKay
@@ -1025,6 +1058,8 @@ XB-View-Position: 1010
 XB-Display-Name: PC Remote 14 Day Trial
 XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-pcremote
+XB-Is-Core: true
+XB-Untangle-Pkg-Type: trial
 XB-Desc-Icon: R0lGODlhKgAqAPcAAAsMGpmZmUpFPyUrasXOznZzbhgbQnWa1kpTpU2AxCMnLEdM
  fYqs4ebm5jI4abW1tSYxQVlxlTpAdBkZGa2trVtbW4OHpzxCk3eSxlhdg/f39yIo
  Y7W8zIObxoWFhS01gjMzM1FarEVLnEJCQr29vRwhUt7e3nN2kYKZy0lKXqeuyjpB
@@ -1081,6 +1116,8 @@ Depends: untangle-node-test
 XB-View-Position: 2002
 XB-Display-Name: Test
 XB-Untangle-Type: lib_item
+XB-Is-Core: true
+XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAACXBIWXMAAAsTAAALEwEAmpwY
  AAAABGdBTUEAALGOfPtRkwAAACBjSFJNAAB6JQAAgIMAAPn/AACA6QAAdTAAAOpgAAA6mAAA
  F2+SX8VGAAATyklEQVR42oyZe5RdVZ3nP/s877vurXdVUpVK5R3IgyQkwUgHGGiglYFuXT5Q
@@ -1187,6 +1224,8 @@ Architecture: all
 XB-View-Position: 1015
 XB-Display-Name: Premium Signature Service
 XB-Untangle-Type: lib_item
+XB-Is-Core: true
+XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA
  BGdBTUEAALGOfPtRkwAAACBjSFJNAAB6JQAAgIMAAPn/AACA6QAAdTAAAOpgAAA6mAAAF2+SX8VG
  AAAJW0lEQVR42sSZyXMU1x3HP6+7p2fTzGjf0IbEgCQQCMxuKINdtuM4W6XKrlyTHHJIVS5OLjnl
