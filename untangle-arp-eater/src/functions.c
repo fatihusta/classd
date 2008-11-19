@@ -16,6 +16,9 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+/* including stdarg.h here, since recent libmicrohttpd-dev in sid doesn't do
+   it on its own. -- Seb, Wed, 19 Nov 2008 15:10:30 -0800 */
+#include <stdarg.h>
 #include <microhttpd.h>
 
 #include <mvutil/debug.h>
