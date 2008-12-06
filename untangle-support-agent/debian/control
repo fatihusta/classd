@@ -21,4 +21,3 @@ Description: IRC bot written in ruby
  It comes with several classical plugins, like DNS queries,
  Babelfish translation, Google searching, Karma, Weather,
  quotes, slashdot news, and many more.
-

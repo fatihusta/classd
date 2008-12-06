@@ -14,3 +14,4 @@ Conflicts: bootsplash-mv
 Replaces: bootsplash-mv
 Description: The Untangle bootsplash utilities
  The Untangle bootsplash utilities using at boot time.
+
