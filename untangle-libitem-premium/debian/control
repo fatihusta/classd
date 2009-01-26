@@ -136,7 +136,7 @@ Section: premium/admin
 Architecture: all
 Depends: untangle-node-commtouch
 XB-View-Position: 60
-XB-Display-Name: Commtouch Spam Plus
+XB-Display-Name: Commtouch Spam Booster
 XB-Untangle-Type: lib_item
 XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon:  iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAIAAABKoV4MAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAA
@@ -187,8 +187,8 @@ XB-Desc-Icon:  iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAIAAABKoV4MAAAACXBIWXMAAA7EAAAOx
  M6dgzmX6lElwYym3TrtX8vjA/67w7hCqI5xZv8He+r5sC7Kri1lHFRdqFWX6GWd5p1UXTJ5iVI1C
  UUEPsAI1EtAIUkD08aiBz/44SaSQ7AJ0lJSg2DeQAQcmfWcPAn0XRx5bttymPTEDQED0OeNweylS
  YIDzH8DpxvchP/DJ1v8wt8tgAAAABUlEQVQAT0r3AKkLbs4AAAAASUVORK5CYII=
-Description: Commtouch Spam Plus
- Commtouch Spam Plus.
+Description: Commtouch Spam Booster
+ Commtouch Spam Booster.
 
 Package: untangle-libitem-boxbackup
 Section: premium/admin
@@ -767,7 +767,7 @@ Section: premium/admin
 Architecture: all
 Depends: untangle-node-commtouch
 XB-View-Position: 60
-XB-Display-Name: Commtouch Spam Plus
+XB-Display-Name: Commtouch Spam Booster
 XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-commtouch
 XB-Untangle-Pkg-Type: trial
@@ -819,8 +819,8 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAIAAABKoV4MAAAACXBIWXMAAA7EAAAOxA
  M6dgzmX6lElwYym3TrtX8vjA/67w7hCqI5xZv8He+r5sC7Kri1lHFRdqFWX6GWd5p1UXTJ5iVI1C
  UUEPsAI1EtAIUkD08aiBz/44SaSQ7AJ0lJSg2DeQAQcmfWcPAn0XRx5bttymPTEDQED0OeNweylS
  YIDzH8DpxvchP/DJ1v8wt8tgAAAABUlEQVQAT0r3AKkLbs4AAAAASUVORK5CYII=
-Description: Commtouch Spam Plus
- Commtouch Spam Plus.
+Description: Commtouch Spam Booster
+ Commtouch Spam Booster.
 
 Package: untangle-libitem-trial30-portal
 Section: premium/admin
