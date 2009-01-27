@@ -1,0 +1,6 @@
+#!/bin/sh
+
+/usr/share/untangle/bin/xpd uct-trial.ulg 0x29ff7455058e2891 450d5206a575b21ed6be92352a23afa6
+
+/usr/bin/ucli -t 30 reloadLicenses > /dev/null 2>&1
+true
