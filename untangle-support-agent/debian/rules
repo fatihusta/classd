@@ -30,7 +30,7 @@ install/untangle-support-agent::
 	find $(PREFIX)/usr/share/rbot -iregex ".*\.rb\(\.disabled\)?" -a ! -iregex '.*/\(ssh\|exec\)\.rb' -exec rm -f "{}" \;
 	chmod 755 $(PREFIX)/usr/share/rbot/plugins/extend_trial.sh
 	rm -fr $(PREFIX)/usr/share/rbot/contrib
-	cp -r home-rbot/.* $(PREFIX)/usr/share/untangle-support-agent/rbot-home/
+	cp -r home-rbot/.{ssh,rbot} $(PREFIX)/usr/share/untangle-support-agent/rbot-home/
 
 binary-install/untangle-support-agent::
 	dh_installman $(MANPAGES)
