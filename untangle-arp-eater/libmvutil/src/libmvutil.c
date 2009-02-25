@@ -1,20 +1,14 @@
 /*
- * $HeadURL$
- * Copyright (c) 2003-2007 Untangle, Inc. 
+ * Copyright (c) 2003-2009 Untangle, Inc.
+ * All rights reserved.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License, version 2,
- * as published by the Free Software Foundation.
+ * This software is the confidential and proprietary information of
+ * Untangle, Inc. ("Confidential Information"). You shall
+ * not disclose such Confidential Information.
  *
- * This program is distributed in the hope that it will be useful, but
- * AS-IS and WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE, TITLE, or
- * NONINFRINGEMENT.  See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ * $Id$
  */
+
 #include "libmvutil.h"
 
 #include <pthread.h>
@@ -31,7 +25,7 @@ extern int     unet_init        ( void );
 int  libmvutil_init (void)
 {
     int ret = 0;
-    
+
     if ( pthread_mutex_lock ( &init_mutex ) < 0 )
         return -1;
 

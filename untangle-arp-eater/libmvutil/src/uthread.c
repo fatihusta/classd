@@ -1,20 +1,14 @@
 /*
- * $HeadURL$
- * Copyright (c) 2003-2007 Untangle, Inc. 
+ * Copyright (c) 2003-2009 Untangle, Inc.
+ * All rights reserved.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License, version 2,
- * as published by the Free Software Foundation.
+ * This software is the confidential and proprietary information of
+ * Untangle, Inc. ("Confidential Information"). You shall
+ * not disclose such Confidential Information.
  *
- * This program is distributed in the hope that it will be useful, but
- * AS-IS and WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE, TITLE, or
- * NONINFRINGEMENT.  See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ * $Id$
  */
+
 #include "mvutil/uthread.h"
 
 #include <pthread.h>
@@ -82,7 +76,7 @@ int uthread_init (void)
          pthread_attr_setschedpolicy( &uthread_attr.other.high, SCHED_OTHER ) < 0 ) {
         return perrlog( "pthread_attr_setschedpolicy" );
     }
-    
+
     if ( pthread_attr_setschedparam ( &uthread_attr.rr.low, &rr_low_priority ) < 0 ||
          pthread_attr_setschedparam ( &uthread_attr.rr.medium, &rr_medium_priority ) < 0 ||
          pthread_attr_setschedparam ( &uthread_attr.rr.high, &rr_high_priority ) < 0 ||
@@ -106,30 +100,30 @@ void* uthread_tls_get( pthread_key_t tls_key, size_t size, int(*init)(void *buf,
 {
     void* buf;
     void* verify;
-    
+
     if ( size < 0 )
         return errlogargs_null();
-        
-    
+
+
     if (( buf = pthread_getspecific( tls_key )) == NULL ) {
         /* Buffer is not set yet, allocate a new buffer */
         if (( buf = malloc( size )) == NULL ) {
             return errlogmalloc_null();
         }
-        
+
         /* Set the data on the key */
         if ( pthread_setspecific( tls_key, buf ) != 0 ) {
             free( buf );
             return perrlog_null( "pthread_setspecific" );
         }
-        
+
         /* Just a sanity check to make sure the correct value is returned */
         if (( verify = pthread_getspecific( tls_key )) != buf ) {
             free( buf );
             return errlog_null( ERR_CRITICAL, "pthread_getspecific returned different val: %#10x->%#10x",
                                 buf, verify );
         }
-        
+
         /* If necessary, call the initializer function, call this last so if the initializer
          * allocates more memory it doesn't have to be freed if one of the previous errors occured */
         if (( init != NULL ) && ( init( buf, size ) < 0 )) {

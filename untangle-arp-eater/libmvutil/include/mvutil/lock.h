@@ -1,20 +1,14 @@
 /*
- * $HeadURL$
- * Copyright (c) 2003-2007 Untangle, Inc. 
+ * Copyright (c) 2003-2009 Untangle, Inc.
+ * All rights reserved.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License, version 2,
- * as published by the Free Software Foundation.
+ * This software is the confidential and proprietary information of
+ * Untangle, Inc. ("Confidential Information"). You shall
+ * not disclose such Confidential Information.
  *
- * This program is distributed in the hope that it will be useful, but
- * AS-IS and WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE, TITLE, or
- * NONINFRINGEMENT.  See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ * $Id$
  */
+
 #ifndef __LOCK_H
 #define __LOCK_H
 
@@ -42,7 +36,7 @@
 #define LOCK_FLAG_NOTRACK_READERS  1
 
 typedef struct lock {
- 
+
     pthread_rwlock_t rwlock;
 
     pthread_t wr_owner;
@@ -50,11 +44,11 @@ typedef struct lock {
     char flags;
 
     struct hash_table rd_owners;
-    
+
 } lock_t;
 
 /**
- * create a new lock 
+ * create a new lock
  * still requires initialization
  * needs to be freed after being destroyed
  * @returns the new lock or NULL on error
@@ -68,7 +62,7 @@ lock_t* lock_create (void);
 void    lock_free (lock_t* lock);
 
 /**
- * initialize the lock 
+ * initialize the lock
  * see sem_init
  * @variable lock      the lock to be initialized
  * @variable pshared   see sem_init
@@ -77,7 +71,7 @@ void    lock_free (lock_t* lock);
 int lock_init (lock_t* lock, int flags);
 
 /**
- * destroys the lock 
+ * destroys the lock
  * see sem_init
  * @variable lock      the lock to be initialized
  * @returns  0 or -1 on error
@@ -85,25 +79,25 @@ int lock_init (lock_t* lock, int flags);
 int lock_destroy (lock_t* lock);
 
 /**
- * acquires a readlock 
+ * acquires a readlock
  * if the current thread already owns it -2 is returned
- * otherwise it will block 
+ * otherwise it will block
  * @variable lock      the lock to be acquired
  * @returns  0 or -1 on error
  */
 int lock_rdlock (lock_t* lock);
 
 /**
- * acquires a lock 
+ * acquires a lock
  * if the current thread already owns it -2 is returned
- * otherwise it will block 
+ * otherwise it will block
  * @variable lock      the lock to be acquired
  * @returns  0 or -1 on error
  */
 int lock_wrlock (lock_t* lock);
 
 /**
- * trys to obtain a read lock 
+ * trys to obtain a read lock
  * on failure to obtain the lock -1 is returned
  * if you already own the lock -2 is returned
  * @variable lock      the lock to be acquired
@@ -112,7 +106,7 @@ int lock_wrlock (lock_t* lock);
 int lock_try_rdlock (lock_t* lock);
 
 /**
- * trys to obtain a write lock 
+ * trys to obtain a write lock
  * on failure to obtain the lock -1 is returned
  * if you already own the lock -2 is returned
  * @variable lock      the lock to be acquired
@@ -129,9 +123,9 @@ int lock_try_wrlock (lock_t* lock);
 int lock_unlock (lock_t* lock);
 
 /**
- * tests if the current thread owns the lock 
+ * tests if the current thread owns the lock
  * see sem_trywait
- * @variable lock      the lock 
+ * @variable lock      the lock
  * @return  1 if owned by the current thread, 0 otherwise
  * @returns 0 if it is not owned by anyone
  */

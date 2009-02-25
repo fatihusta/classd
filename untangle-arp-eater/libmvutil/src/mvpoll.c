@@ -1,20 +1,14 @@
 /*
- * $HeadURL$
- * Copyright (c) 2003-2007 Untangle, Inc. 
+ * Copyright (c) 2003-2009 Untangle, Inc.
+ * All rights reserved.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License, version 2,
- * as published by the Free Software Foundation.
+ * This software is the confidential and proprietary information of
+ * Untangle, Inc. ("Confidential Information"). You shall
+ * not disclose such Confidential Information.
  *
- * This program is distributed in the hope that it will be useful, but
- * AS-IS and WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE, TITLE, or
- * NONINFRINGEMENT.  See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ * $Id$
  */
+
 #include "mvutil/mvpoll.h"
 
 #include <pthread.h>
@@ -41,7 +35,7 @@ typedef struct mvpoll_keystate {
      * The key for this keystate
      */
     mvpoll_key_t* key;
-    
+
     /**
      * This stores the listening event mask of this userspace key
      */
@@ -80,11 +74,11 @@ mvpoll_id_t mvpoll_create (int size)
     struct epoll_event ev;
 
     if (( mvp = malloc( sizeof( mvpoll_t ))) == NULL ) return errlogmalloc_null();
-    
+
     if ((mvp->epfd = epoll_create(256))<0)
         return perrlog_null("epoll_create");
     debug(8,"MVPOLL: epoll_create: %i\n",mvp->epfd);
-    
+
     if (list_init(&mvp->keys,0)<0)
         return perrlog_null("list_init");
     if (list_init(&mvp->rdy,0)<0)
@@ -100,7 +94,7 @@ mvpoll_id_t mvpoll_create (int size)
     ev.data.fd  = mvp->event_fd;
     if (ev.data.fd < 0)
         return perrlog_null("pipe");
-        
+
     if (ht_init(&mvp->keystate_table,size+1,_key_hash_func,_key_equ_func,HASH_FLAG_NO_LOCKS|HASH_FLAG_KEEP_LIST)<0)
         return perrlog_null("hash_init");
 
@@ -109,7 +103,7 @@ mvpoll_id_t mvpoll_create (int size)
         return perrlog_null("epoll_ctl");
 
     if ( pthread_mutex_init( &mvp->mutex, NULL ) < 0 ) return perrlog_null( "pthread_mutex_init\n" );
-    
+
     return mvp;
 }
 
@@ -127,7 +121,7 @@ int         mvpoll_wait (mvpoll_id_t mvp, mvpoll_event_t* event, int maxevent, i
 int         mvpoll_ctl (mvpoll_id_t mvp, int op, mvpoll_key_t* key, eventmask_t event)
 {
     int ret;
-    
+
     if (!mvp || !key)
         return errlogargs();
 
@@ -151,7 +145,7 @@ int         mvpoll_ctl (mvpoll_id_t mvp, int op, mvpoll_key_t* key, eventmask_t 
         memset(&ev,0,sizeof(ev));
         ev.data.ptr = key;
         ev.events = event;
-        
+
         debug(8,"MVPOLL: epoll_ctl(%i,%s,%i,0x%08x)\n",mvp->epfd,MVPOLL_CTL_STR[op],key->data,event);
         if (epoll_ctl(mvp->epfd,op,key->data.fd,&ev)<0)
             ret = perrlog("epoll_ctl");
@@ -163,7 +157,7 @@ int         mvpoll_ctl (mvpoll_id_t mvp, int op, mvpoll_key_t* key, eventmask_t 
 int         mvpoll_raze (mvpoll_id_t mvp)
 {
     list_node_t* step;
-    
+
     if (!mvp)
         return errlogargs();
 
@@ -174,7 +168,7 @@ int         mvpoll_raze (mvpoll_id_t mvp)
 
     if (close(mvp->epfd)<0)
         perrlog("close");
-    
+
     if (list_destroy(&mvp->keys)<0)
         perrlog("list_destroy");
     if (list_destroy(&mvp->rdy)<0)
@@ -185,7 +179,7 @@ int         mvpoll_raze (mvpoll_id_t mvp)
         perrlog("close");
     if (( mvp->notify_pipe[1] >= 0 ) && ( close( mvp->notify_pipe[1] ) < 0 ))
         perrlog("close");
-            
+
     free(mvp);
 
     return 0;
@@ -195,7 +189,7 @@ list_t*     mvpoll_get_keylist (mvpoll_id_t mvp)
 {
     if (!mvp)
         return errlogargs_null();
-    
+
     return ht_get_key_list(&mvp->keystate_table);
 }
 
@@ -203,7 +197,7 @@ int         mvpoll_key_exists (mvpoll_id_t mvp, struct mvpoll_key* key)
 {
     if (!mvp || !key)
         return errlogargs();
-                      
+
     if (ht_lookup(&mvp->keystate_table,key))
         return 1;
     else
@@ -221,7 +215,7 @@ int           mvpoll_key_base_init   ( mvpoll_key_t* key )
     key->type            = 0;
     key->special_destroy = NULL;
     key->poll            = _null_poll;
-    
+
     return 0;
 }
 
@@ -252,7 +246,7 @@ int           mvpoll_key_fd_init   ( mvpoll_key_t* key, int fd )
     key->poll            = _null_poll;
     key->data.fd         = fd;
     key->arg             = NULL;
-    
+
     return 0;
 }
 
@@ -313,7 +307,7 @@ int  mvpoll_key_expire (mvpoll_key_t* key)
     list_node_t* step;
     list_node_t* next;
     int ret = 0;
-    
+
     if (!key)
         return errlogargs();
 
@@ -338,12 +332,12 @@ int  mvpoll_key_destroy (mvpoll_key_t* key)
 {
     int ret = 0;
 
-    if (!key) 
+    if (!key)
         return errlogargs();
 
     if (key->special_destroy)
         ret += key->special_destroy(key);
-    
+
     ret += mvpoll_key_expire(key);
 
     if (list_destroy(&key->observers)<0)
@@ -356,7 +350,7 @@ int  mvpoll_key_raze (mvpoll_key_t* key)
 {
     int ret;
 
-    if (!key) 
+    if (!key)
         return errlogargs();
 
     if (( ret = mvpoll_key_destroy( key )) < 0 ) errlog( ERR_CRITICAL, "mvpoll_key_destroy\n" );
@@ -377,7 +371,7 @@ static int _mvpoll_collect_events ( mvpoll_t* mvp, mvpoll_event_t* event, int ma
     int evcount,step,evstep=0;
     int maxkeys = list_length(&mvp->keys);  /* FIXME are fd's in keys? */
     struct epoll_event localevent[maxkeys+1]; /* +1 for mailbox */
-    
+
     debug(10,"MVPOLL: epoll_wait(epfd=%i,timeout=%i)\n",mvp->epfd,timeout);
 
     if ( list_length( &mvp->rdy ) > 0 ) {
@@ -404,14 +398,14 @@ static int _mvpoll_collect_events ( mvpoll_t* mvp, mvpoll_event_t* event, int ma
             }
         }
     }
-    
+
     /**
      * theres stuff in the mailbox, copy to event
      */
     if ( if_rdy == 1 ) {
         mvpoll_event_t* ev;
         list_node_t* node_step;
-        
+
         if ( pthread_mutex_lock( &mvp->mutex ) < 0 ) perrlog( "pthread_mutex_lock\n" );
 
         for ( node_step = list_head(&mvp->rdy) ; node_step ; node_step = list_node_next(node_step)) {
@@ -437,7 +431,7 @@ static int _mvpoll_collect_events ( mvpoll_t* mvp, mvpoll_event_t* event, int ma
 static int _mvpoll_notify_status (mvpoll_t* mvp, mvpoll_key_t* key, int evstate)
 {
     mvpoll_keystate_t* keystate;
-    
+
     if (!mvp || !key)
         return errlogargs();
 
@@ -455,36 +449,36 @@ static int _mvpoll_update_status (mvpoll_t* mvp, mvpoll_keystate_t* keystate, in
 {
     int _critical_section() {
         u_int32_t ev;
-        
+
         if (!mvp || !keystate)
             return errlogargs();
-        
+
         ev = (evstate & keystate->eventmask);
-        
+
         debug(10,"MVPOLL: update_status (0x%08x) ev = 0x%08x, node = 0x%08x\n",mvp,ev,keystate->node);
-        
+
         /**
          * If there is some event and its not in the list, add one
          */
         if (ev && !keystate->node) {
-            
+
             keystate->event.key = keystate->key;
             keystate->event.events   = ev;
-            
+
             /**
              * Add the event and wakeup mvp if necessary
              */
             if (!(keystate->node = list_add_tail(&mvp->rdy,&keystate->event)))
                 return perrlog("mailbox_put");
-            
+
             /**
              * If this is the first event, we need to send a wakeup signal
              */
             if (list_size(&mvp->rdy) == 1)
                 _mvpoll_wake(mvp);
-            
+
             debug(10,"MVPOLL: Add to rdy list\n");
-            
+
             return 0;
         }
         /**
@@ -492,25 +486,25 @@ static int _mvpoll_update_status (mvpoll_t* mvp, mvpoll_keystate_t* keystate, in
          */
         else if  (!ev && keystate->node) {
             list_node_t* node = keystate->node;
-            
+
             keystate->node = NULL;
             keystate->event.key = NULL;
             keystate->event.events   = 0;
-            
+
             /**
              * Remove from the ready event list
              */
             if (list_remove(&mvp->rdy,node)<0)
                 perrlog("list_remove");
-            
+
             debug(10,"MVPOLL: Remove from rdy list\n");
-            
+
             /**
-             * If there are no ready events, clear the wakeup 
+             * If there are no ready events, clear the wakeup
              */
             if (list_size(&mvp->rdy) == 0)
                 _mvpoll_clear_event_fd(mvp);
-            
+
         }
         /**
          * Else 1) its in the list and there is an event
@@ -523,9 +517,9 @@ static int _mvpoll_update_status (mvpoll_t* mvp, mvpoll_keystate_t* keystate, in
 
         return 0;
     }
-    
+
     int ret = 0;
-    
+
     if ( pthread_mutex_lock( &mvp->mutex ) < 0 ) return perrlog( "pthread_mutex_lock\n" );
     ret = _critical_section();
     if ( pthread_mutex_unlock( &mvp->mutex ) < 0 ) return perrlog( "pthread_mutex_unlock\n" );
@@ -547,7 +541,7 @@ static int _mvpoll_ctl_add (mvpoll_t* mvp, mvpoll_key_t* key, eventmask_t event)
     if (list_contains(&mvp->keys,key))
         return errlog(ERR_CRITICAL,"Duplicate key\n");
 
-    if (!(keystate = malloc(sizeof(mvpoll_keystate_t)))) 
+    if (!(keystate = malloc(sizeof(mvpoll_keystate_t))))
         return errlogmalloc();
 
     keystate->mvp = mvp;

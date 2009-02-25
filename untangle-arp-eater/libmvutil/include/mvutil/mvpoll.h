@@ -1,20 +1,14 @@
 /*
- * $HeadURL$
- * Copyright (c) 2003-2007 Untangle, Inc. 
+ * Copyright (c) 2003-2009 Untangle, Inc.
+ * All rights reserved.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License, version 2,
- * as published by the Free Software Foundation.
+ * This software is the confidential and proprietary information of
+ * Untangle, Inc. ("Confidential Information"). You shall
+ * not disclose such Confidential Information.
  *
- * This program is distributed in the hope that it will be useful, but
- * AS-IS and WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE, TITLE, or
- * NONINFRINGEMENT.  See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ * $Id$
  */
+
 #ifndef __MVPOLL_H_
 #define __MVPOLL_H_
 
@@ -63,7 +57,7 @@ struct mvpoll {
 
     list_t    keys;
 
-    ht_t      keystate_table; 
+    ht_t      keystate_table;
 
     int       epfd;
 
@@ -71,7 +65,7 @@ struct mvpoll {
 #define       event_fd notify_pipe[0]
 
     pthread_mutex_t mutex;
-    
+
     int (*notify_status) (mvpoll_t* mvp, mvpoll_key_t* key, int evstate);
 };
 
@@ -114,7 +108,7 @@ struct mvpoll_key {
      * List of observers, all keys must keep track of observers for notify
      */
     list_t observers;
-    
+
     /**
      * The event mask returned for this key for this TICK.  This value should
      * ONLY be used to determine vector received a HUP or ERR on this key.

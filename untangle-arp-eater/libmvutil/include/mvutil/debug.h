@@ -1,19 +1,12 @@
 /*
- * $HeadURL$
- * Copyright (c) 2003-2007 Untangle, Inc. 
+ * Copyright (c) 2003-2009 Untangle, Inc.
+ * All rights reserved.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License, version 2,
- * as published by the Free Software Foundation.
+ * This software is the confidential and proprietary information of
+ * Untangle, Inc. ("Confidential Information"). You shall
+ * not disclose such Confidential Information.
  *
- * This program is distributed in the hope that it will be useful, but
- * AS-IS and WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE, TITLE, or
- * NONINFRINGEMENT.  See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ * $Id$
  */
 
 /* $Id$ */
@@ -35,18 +28,18 @@ extern int  _debug_init(void);
 #endif
 
 /**
- * usage: like printf except the first argument is the debug level 
- * lower debug level should be more important 
- * example: debug(3,"number: %i \n",n) 
- * if level is less than __DEBUG_LEVEL then it will be printed 
+ * usage: like printf except the first argument is the debug level
+ * lower debug level should be more important
+ * example: debug(3,"number: %i \n",n)
+ * if level is less than __DEBUG_LEVEL then it will be printed
  */
 extern int  _debug(int pkg,int level,char *lpszFmt, ...);
 
 /**
- * usage: like printf except the first argument is the debug level 
- * lower debug level should be more important 
- * example: debug(3,"number: %i \n",n) 
- * if level is less than __DEBUG_LEVEL then it will be printed 
+ * usage: like printf except the first argument is the debug level
+ * lower debug level should be more important
+ * example: debug(3,"number: %i \n",n)
+ * if level is less than __DEBUG_LEVEL then it will be printed
  * This prints a backtrace at the end
  */
 extern int  _debug_backtrace(int pkg,int level,char *lpszFmt, ...);
@@ -62,7 +55,7 @@ extern int  _debug_nodate(int pkg,int level,char *lpszFmt, ...);
 extern void _debug_set_output(int pkg,FILE * out);
 
 /**
- * set the debug level - only things with a debug level 
+ * set the debug level - only things with a debug level
  * less than this level are printed(inclusive)
  */
 extern void _debug_set_level(int pkg,int lev);
@@ -73,7 +66,7 @@ extern void _debug_set_level(int pkg,int lev);
 extern int _debug_get_level( int pkg );
 
 /**
- * turns the date prefix on/off 
+ * turns the date prefix on/off
  */
 extern void _debug_date_toggle(int pkg,int onoff);
 

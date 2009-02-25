@@ -1,20 +1,14 @@
 /*
- * $HeadURL$
- * Copyright (c) 2003-2007 Untangle, Inc. 
+ * Copyright (c) 2003-2009 Untangle, Inc.
+ * All rights reserved.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License, version 2,
- * as published by the Free Software Foundation.
+ * This software is the confidential and proprietary information of
+ * Untangle, Inc. ("Confidential Information"). You shall
+ * not disclose such Confidential Information.
  *
- * This program is distributed in the hope that it will be useful, but
- * AS-IS and WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE, TITLE, or
- * NONINFRINGEMENT.  See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ * $Id$
  */
+
 #include "mvutil/hash.h"
 
 #include <stdlib.h>
@@ -68,17 +62,17 @@ ht_t*   ht_create ()
         errno = ENOMEM;
         return errlogmalloc_null ();
     }
-    
+
     return new_table;
 }
 
 int     ht_init (ht_t* table,int size,ht_hash_func_t h_func,ht_equal_func_t e_func,u_int flags)
 {
     int num;
-    
-    if (!table || !size || !h_func || !e_func) 
+
+    if (!table || !size || !h_func || !e_func)
         return errlog(ERR_CRITICAL,"Invalid arguments\n");
-    
+
     num = pthread_rwlock_init(&table->lock,NULL);
     if (num)
         return perrlog("pthread_rwlock_init");
@@ -86,13 +80,13 @@ int     ht_init (ht_t* table,int size,ht_hash_func_t h_func,ht_equal_func_t e_fu
     if (flags & HASH_FLAG_KEEP_LIST)
         if (list_init(&table->list,0)<0)
             return perrlog("list_init");
-    
+
     table->buckets = (bucket_t**)calloc(1,size* sizeof(void*));
     if (!table->buckets) {
         errno = ENOMEM; /* some mallocs don't set */
         return errlogmalloc();
     }
-    
+
     table->size = size;
     table->num_entries = 0;
     table->equal_func = e_func;
@@ -107,21 +101,21 @@ int     ht_init (ht_t* table,int size,ht_hash_func_t h_func,ht_equal_func_t e_fu
         table->lock_on = 0;
     else
         table->lock_on = 1;
-    
+
     return 0;
 }
 
 ht_t*   ht_create_and_init (int size,ht_hash_func_t h_func,ht_equal_func_t e_func,u_int flags)
 {
     ht_t* table = ht_create();
-    if (!table) 
+    if (!table)
         return NULL;
-    
+
     if (ht_init(table,size,h_func,e_func,flags)<0) {
         free(table);
         return NULL;
     }
-    
+
     return table;
 }
 
@@ -146,42 +140,42 @@ int     ht_free (ht_t* table)
     free(table);
     return ret;
 }
-    
+
 int     ht_add (ht_t* table,void* key,void* contents)
 {
     int ret;
-    
+
     if (!table)
     {errno = EINVAL; return errlog(ERR_CRITICAL,"Invalid arguments\n");}
-    
+
     TABLE_WRLOCK(table);
     ret = _ht_add(table,key,contents);
     TABLE_UNLOCK(table);
-    
+
     return ret;
 }
 
 int     ht_add_replace (ht_t* table,void* key,void* contents)
 {
     int ret;
-    
+
     if (!table)
     {errno = EINVAL; return errlog(ERR_CRITICAL,"Invalid arguments\n");}
-    
+
     TABLE_WRLOCK(table);
     ret = _ht_add_replace(table,key,contents);
     TABLE_UNLOCK(table);
-    
+
     return ret;
 }
 
 int     ht_remove (ht_t* table,void* key)
 {
     int ret;
-    
+
     if (!table)
     {errno = EINVAL; return errlog(ERR_CRITICAL,"Invalid arguments\n");}
-    
+
     TABLE_WRLOCK(table);
     ret =  _ht_remove(table,key);
     TABLE_UNLOCK(table);
@@ -198,7 +192,7 @@ void*   ht_lookup (ht_t* table,void* key)
         return errlog_null(ERR_CRITICAL,"Invalid arguments\n");
     } else
         errno = 0;
-    
+
     TABLE_RDLOCK_NULL(table);
     ret = _ht_lookup(table,key);
     TABLE_UNLOCK_NULL(table);
@@ -209,23 +203,23 @@ void*   ht_lookup (ht_t* table,void* key)
 void*   ht_lookup_key (ht_t* table,void* key)
 {
     void* ret;
-    
+
     if (!table) {
         errno = EINVAL;
         return errlog_null(ERR_CRITICAL,"Invalid arguments\n");
     } else
         errno = 0;
- 
+
     TABLE_RDLOCK_NULL(table);
     ret = _ht_lookup_key(table,key);
     TABLE_UNLOCK_NULL(table);
-    
+
     return ret;
 }
 
 int     ht_size (ht_t* table)
 {
-    if (!table) 
+    if (!table)
     {errno = EINVAL; return errlog(ERR_CRITICAL,"Invalid arguments\n");}
 
     return table->size;
@@ -233,7 +227,7 @@ int     ht_size (ht_t* table)
 
 int     ht_num_entries (ht_t* table)
 {
-    if (!table) 
+    if (!table)
     {errno = EINVAL; return errlog(ERR_CRITICAL,"Invalid arguments\n");}
 
     return table->num_entries;
@@ -241,7 +235,7 @@ int     ht_num_entries (ht_t* table)
 
 list_t* ht_get_bucket_list (ht_t* table)
 {
-    if (!table) 
+    if (!table)
     {errno = EINVAL; return errlogargs_null();}
 
     if (!table->keep_list_flag)
@@ -266,12 +260,12 @@ u_long  string_hash_func (const void* input)
     char* sn = (char* )input;
     int i;
     int len = strlen(sn);
-    
+
     u_long total = 1;
 
     for(i=0;i<len && i<5;i++)
         total*= sn[i];
-        
+
     return total;
 }
 
@@ -308,9 +302,9 @@ static u_char fake_equ_func (const void* input,const void* input2)
 static int   _ht_destroy(ht_t* table)
 {
     int ret;
-    
+
     /**
-     * free all the elements in each bucket 
+     * free all the elements in each bucket
      */
     ret = _remove_all_buckets(table);
     free(table->buckets);
@@ -318,7 +312,7 @@ static int   _ht_destroy(ht_t* table)
     /**
      * free the list
      */
-    if (table->keep_list_flag) 
+    if (table->keep_list_flag)
         if (list_destroy(&table->list)<0)
             errlog(ERR_CRITICAL,"list_destroy failed\n");
 
@@ -332,7 +326,7 @@ static int   _ht_destroy(ht_t* table)
     table->hash_func = fake_hash_func;
     table->equal_func = fake_equ_func;
     table->num_entries = 0;
-    
+
     return ret;
 }
 
@@ -342,7 +336,7 @@ static int   _ht_add (ht_t* table,void* key,void* contents)
     bucket_t* newbuck;
     void* res;
     u_char add_front = 1;
-    
+
     modkey = table->hash_func(key) % table->size;
 
     /**
@@ -352,13 +346,13 @@ static int   _ht_add (ht_t* table,void* key,void* contents)
         errno = EPERM;
         return _HASH_FAILURE; //entry alread present
     }
-    
+
     /**
-     * if its a dup but its allowed - add it at the end 
+     * if its a dup but its allowed - add it at the end
      */
-    if (res && table->allow_dups_flag) 
+    if (res && table->allow_dups_flag)
         add_front = 0;
-  
+
     newbuck = (bucket_t*) calloc(1,sizeof(bucket_t));
     if (!newbuck) {
         errno = ENOMEM;
@@ -374,12 +368,12 @@ static int   _ht_add (ht_t* table,void* key,void* contents)
             errlog(ERR_CRITICAL,"list_add_head failed\n");
         newbuck->list_node = node;
     }
-    
+
     if (add_front) {
         /**
          * put it first on the list
          */
-        newbuck->next = table->buckets[modkey]; 
+        newbuck->next = table->buckets[modkey];
         table->buckets[modkey] = newbuck;
     }
     else {
@@ -391,10 +385,10 @@ static int   _ht_add (ht_t* table,void* key,void* contents)
             free(newbuck);
             return _HASH_FAILURE;
         }
-        
+
         for(;step->next;) step = step->next;
         step->next = newbuck;
-        
+
     }
 
     table->num_entries++;
@@ -416,10 +410,10 @@ static int   _ht_remove (ht_t* table,void* key)
 
     modkey = table->hash_func(key) % table->size;
     firstbucket = table->buckets[modkey];
-  
+
     if (!firstbucket)  //no buckets for that key
         return _HASH_FAILURE;
-    
+
     if (table->equal_func(key,firstbucket->key)) {
         //its the first in the table
         table->buckets[modkey] = firstbucket->next;
@@ -438,7 +432,7 @@ static int   _ht_remove (ht_t* table,void* key)
             table->num_entries--;
             return _HASH_SUCCESS;
         }
-      
+
         firstbucket=nextbucket;
         nextbucket=nextbucket->next;
     }
@@ -457,43 +451,43 @@ static void* _ht_lookup (ht_t* table,void* key)
         errlog(ERR_CRITICAL,"Constraint failed: NULL func! (0x%08x,0x%08x)\n",table->hash_func,table->equal_func);
         _ht_print_table(table);
         return NULL;
-    }    
-        
+    }
+
     idx = table->hash_func(key);
     buck = table->buckets[(idx % table->size)];
 #else
     buck = _LOOKUP(table,key);
 #endif
-    
+
     while(buck) {
         if (table->equal_func(key,buck->key)) {
             return buck->contents;
         }
         else buck=buck->next;
     }
-  
+
     return NULL;
 }
 
 static void* _ht_lookup_key (ht_t* table,void* key)
 {
     bucket_t* buck;
-    
+
 #ifdef DEBUG_ON
     bucket_t** buckets = table->buckets;
     int size = table->size;
     int idx = (table->hash_func(key))%size;
     buck = buckets[idx];
 #else
-    buck = _LOOKUP(table,key); 
+    buck = _LOOKUP(table,key);
 #endif
-    
+
     while(buck) {
-        if (table->equal_func(key,buck->key)) 
+        if (table->equal_func(key,buck->key))
             return buck->key;
         else buck=buck->next;
     }
-  
+
     return NULL;
 }
 
@@ -502,7 +496,7 @@ static list_t* _ht_get_content_list (ht_t* table, int content_or_key)
     list_t* ll = ht_get_bucket_list(table);
     list_node_t* step;
     bucket_t* buck;
-    
+
     if (!ll)
         return NULL;
 
@@ -529,7 +523,7 @@ static int   _ht_print_table (ht_t* table)
 {
     if (!table)
         return -1;
-    
+
     errlog(ERR_INFORM,"table           : 0x%08x\n",table);
     errlog(ERR_INFORM,"table->size     : %i\n",table->size);
     errlog(ERR_INFORM,"table->buckets  : 0x%08x\n",table->buckets);
@@ -549,7 +543,7 @@ static int   _remove_all_buckets (ht_t* table)
     bucket_t* nextbuck;
     int i;
     int rm_count = 0;
-    
+
     /**
      * if there is a list, use it, otherwise
      * run down the buckets array
@@ -567,9 +561,9 @@ static int   _remove_all_buckets (ht_t* table)
     else {
         int size = table->size;
 
-        for(i=0;i<size;i++) 
+        for(i=0;i<size;i++)
             for(buck = table->buckets[i] ; buck ; buck = nextbuck ) {
-                nextbuck = buck->next; 
+                nextbuck = buck->next;
                 _remove_bucket(table,buck);
                 rm_count++;
             }
@@ -587,7 +581,7 @@ static void  _remove_bucket (ht_t* table,bucket_t* buck)
     if (table->keep_list_flag)
         if (buck->list_node && (list_remove(&table->list,buck->list_node)<0))
             errlog(ERR_CRITICAL,"list_remove failed\n");
-    
+
     free(buck);
 }
 

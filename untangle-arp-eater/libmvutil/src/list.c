@@ -1,20 +1,14 @@
 /*
- * $HeadURL$
- * Copyright (c) 2003-2007 Untangle, Inc. 
+ * Copyright (c) 2003-2009 Untangle, Inc.
+ * All rights reserved.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License, version 2,
- * as published by the Free Software Foundation.
+ * This software is the confidential and proprietary information of
+ * Untangle, Inc. ("Confidential Information"). You shall
+ * not disclose such Confidential Information.
  *
- * This program is distributed in the hope that it will be useful, but
- * AS-IS and WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE, TITLE, or
- * NONINFRINGEMENT.  See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ * $Id$
  */
+
 #include "mvutil/list.h"
 
 #include <stdlib.h>
@@ -61,7 +55,7 @@ list_t*      list_malloc ()
 {
     list_t* tmp = malloc(sizeof(list_t));
 
-    if (!tmp) 
+    if (!tmp)
         return errlogmalloc_null();
 
     return tmp;
@@ -101,7 +95,7 @@ int          list_init (list_t* ll, u_int flags)
     ll->tail   = NULL;
     ll->length = 0;
     ll->flags  = flags;
- 
+
     num = pthread_rwlock_init(&ll->lock,NULL);
     if (num)
         return perrlog("pthread_rwlock_init");
@@ -150,7 +144,7 @@ list_node_t* list_head (list_t* ll)
     LIST_RDLOCK_NULL(ll);
     ret = _list_head(ll);
     LIST_UNLOCK_NULL(ll);
-    
+
     return ret;
 }
 
@@ -165,7 +159,7 @@ void*        list_head_val ( list_t* ll)
     node = _list_head( ll );
     ret  = ( node == NULL ) ? NULL : _list_node_val( node );
     LIST_UNLOCK_NULL(ll);
-    
+
     return ret;
 }
 
@@ -179,7 +173,7 @@ list_node_t* list_tail (list_t* ll)
     LIST_RDLOCK_NULL(ll);
     ret = _list_tail(ll);
     LIST_UNLOCK_NULL(ll);
-    
+
     return ret;
 }
 
@@ -194,7 +188,7 @@ void*        list_tail_val ( list_t* ll)
     node = _list_tail( ll );
     ret  = ( node == NULL ) ? NULL : _list_node_val( node );
     LIST_UNLOCK_NULL(ll);
-    
+
     return ret;
 }
 
@@ -207,7 +201,7 @@ list_node_t* list_node_next (list_node_t* ln)
     LIST_RDLOCK_NULL(ln->mylist);
     ret = _list_node_next(ln);
     LIST_UNLOCK_NULL(ln->mylist);
-    
+
     return ret;
 }
 
@@ -220,7 +214,7 @@ list_node_t* list_node_prev (list_node_t* ln)
     LIST_RDLOCK_NULL(ln->mylist);
     ret = _list_node_prev(ln);
     LIST_UNLOCK_NULL(ln->mylist);
-    
+
     return ret;
 }
 
@@ -233,7 +227,7 @@ void*        list_node_val  (list_node_t* ln)
     LIST_RDLOCK_NULL(ln->mylist);
     ret = _list_node_val(ln);
     LIST_UNLOCK_NULL(ln->mylist);
-    
+
     return ret;
 }
 
@@ -242,11 +236,11 @@ int          list_node_val_set  (list_node_t* ln, void* val)
     if (!ln) {errno = EINVAL; return errlogargs();}
     if (!val && !(ln->mylist->flags & LIST_FLAG_ALLOW_NULL))
         return errlog(ERR_CRITICAL,"Null not allowed\n");
-    
+
     LIST_WRLOCK(ln->mylist);
     ln->val = val;
     LIST_UNLOCK(ln->mylist);
-    
+
     return 0;
 }
 
@@ -256,11 +250,11 @@ list_node_t* list_add_head (list_t* ll, void* val)
     if (!ll) {errno = EINVAL; return errlogargs_null();}
     if (!val && !(ll->flags & LIST_FLAG_ALLOW_NULL))
         return errlog_null(ERR_CRITICAL,"Null not allowed\n");
-    
+
     LIST_WRLOCK_NULL(ll);
     ret = _list_add_head(ll,val);
     LIST_UNLOCK_NULL(ll);
-    
+
     return ret;
 }
 
@@ -274,7 +268,7 @@ list_node_t* list_add_tail (list_t* ll, void* val)
     LIST_WRLOCK_NULL(ll);
     ret = _list_add_tail(ll,val);
     LIST_UNLOCK_NULL(ll);
-    
+
     return ret;
 }
 
@@ -288,7 +282,7 @@ list_node_t* list_add_before ( list_t* ll, list_node_t* beforeme, void* val )
     LIST_WRLOCK_NULL( ll );
     ret = _list_add_before( ll, beforeme, val );
     LIST_UNLOCK_NULL( ll );
-    
+
     return ret;
 }
 
@@ -302,7 +296,7 @@ list_node_t* list_add_after  ( list_t* ll, list_node_t* afterme, void* val )
     LIST_WRLOCK_NULL( ll );
     ret = _list_add_after( ll, afterme, val );
     LIST_UNLOCK_NULL( ll );
-    
+
     return ret;
 }
 
@@ -315,7 +309,7 @@ int          list_move_head  (list_t* ll, list_node_t** node, void* val )
     if ( !val && !(ll->flags & LIST_FLAG_ALLOW_NULL)) {
         return errlog(ERR_CRITICAL,"Null not allowed.\n");
     }
-    
+
     LIST_WRLOCK( ll );
     if ( *node == NULL ) {
         return errlog(ERR_CRITICAL,"Attempting to move a NULL node\n");
@@ -332,13 +326,13 @@ int          list_move_head  (list_t* ll, list_node_t** node, void* val )
     if ( ll->flags & LIST_FLAG_FREE_VAL && _list_node_val ( *node ) == val ) {
         (*node)->val = NULL;
     }
-    
+
     ret = _list_remove ( ll, *node );
-    
+
     /* Add the item to the head (Only if there wasn't an error) */
     if ( (ret == 0 ) && ((*node = _list_add_head(ll,val)) == NULL)) ret = -1;
     LIST_UNLOCK( ll );
-    
+
     return ret;
 }
 
@@ -367,26 +361,26 @@ int          list_move_tail  (list_t* ll, list_node_t** node, void* val )
     if ( ll->flags & LIST_FLAG_FREE_VAL && _list_node_val ( *node ) == val ) {
         (*node)->val = NULL;
     }
-    
+
     ret = _list_remove ( ll, *node );
-        
+
     /* Add the item to the tail (Only if there wasn't an error) */
     if ( (ret == 0 ) && ((*node = _list_add_tail(ll,val)) == NULL)) ret = -1;
     LIST_UNLOCK( ll );
-    
+
     return ret;
 }
 
 int          list_remove (list_t* ll, list_node_t* ln)
 {
     int ret;
-    if (!ll || !ln) 
+    if (!ll || !ln)
     {errno = EINVAL; return errlogargs();}
 
     LIST_WRLOCK(ll);
     ret = _list_remove(ll,ln);
     LIST_UNLOCK(ll);
-    
+
     return ret;
 }
 
@@ -404,7 +398,7 @@ int          list_remove_all (list_t* ll)
         ret = _list_remove(ll,node);
     }
     LIST_UNLOCK(ll);
-    
+
     return ret;
 }
 
@@ -412,13 +406,13 @@ int          list_remove_val       (list_t* ll, void* val)
 {
     list_node_t* node;
     int ret = -1;
-    
+
     if (!ll) {errno = EINVAL; return errlogargs();}
     if (!val && !(ll->flags & LIST_FLAG_ALLOW_NULL))
         return errlog(ERR_CRITICAL,"Null not allowed\n");
 
     LIST_WRLOCK(ll);
-    for (node = _list_head(ll); node; node = _list_node_next(node)) 
+    for (node = _list_head(ll); node; node = _list_node_next(node))
         if (_list_node_val(node) == val) {
             ret = _list_remove(ll,node);
             break;
@@ -441,7 +435,7 @@ int          list_remove_val_dups  (list_t* ll, void* val)
     LIST_WRLOCK(ll);
     for (node = _list_head(ll); node; node = next) {
         next = _list_node_next(node);
-        if (_list_node_val(node) == val) 
+        if (_list_node_val(node) == val)
             ret = _list_remove(ll,node);
     }
     LIST_UNLOCK(ll);
@@ -458,18 +452,18 @@ int          list_pop_head   ( list_t* ll, void** val )
     if ( ll == NULL || val == NULL ) { errno = EINVAL; return errlogargs(); }
 
     LIST_WRLOCK ( ll );
-    
+
     head = _list_head ( ll );
-    
+
     if ( head != NULL ) {
         *val = _list_node_val(head);
 
         /* Do not free the value on removal */
         if ( ll->flags & LIST_FLAG_FREE_VAL ) head->val = NULL;
-        
-        ret = _list_remove ( ll, head );        
+
+        ret = _list_remove ( ll, head );
     }
-    
+
     LIST_UNLOCK ( ll );
 
     return ret;
@@ -483,18 +477,18 @@ int          list_pop_tail   ( list_t* ll, void** val )
     if ( ll == NULL || val == NULL ) { errno = EINVAL; return errlogargs(); }
 
     LIST_WRLOCK ( ll );
-    
+
     tail = _list_tail ( ll );
-    
+
     if ( tail != NULL ) {
         *val = _list_node_val( tail );
 
         /* Do not free the value on removal */
         if ( ll->flags & LIST_FLAG_FREE_VAL ) tail->val = NULL;
-        
+
         ret = _list_remove ( ll, tail );
     }
-    
+
     LIST_UNLOCK ( ll );
 
     return ret;
@@ -508,7 +502,7 @@ int          list_apply (list_t* ll, list_apply_func_t func)
     LIST_WRLOCK(ll);
     ret = _list_apply(ll,func);
     LIST_UNLOCK(ll);
-    
+
     return ret;
 }
 
@@ -517,7 +511,7 @@ list_t*      list_dup (list_t* src)
     list_t* dst = list_create(0);
     list_node_t* node;
     int i;
-    
+
     if (!dst)
         return NULL;
 
@@ -624,15 +618,15 @@ static int          _list_remove (list_t* ll, list_node_t* ln)
 
     if (ln->mylist != ll)
         return errlog(ERR_CRITICAL,"Node from different list\n");
-    
+
     next = ln->next;
     prev = ln->prev;
-    
-    if (next) 
+
+    if (next)
         next->prev = prev;
-    if (prev) 
+    if (prev)
         prev->next = next;
-    
+
     if (ll->length == 1) {
         /* last element */
         ll->head = NULL;
@@ -644,23 +638,23 @@ static int          _list_remove (list_t* ll, list_node_t* ln)
         if (ll->tail == ln)
             ll->tail = prev;
     }
-    
+
     if (ll->flags & LIST_FLAG_FREE_VAL && (ln->val !=NULL ))
         free(ln->val);
     free(ln);
-    
+
     ll->length--;
     if (ll->length < 0)
         return errlog(ERR_CRITICAL,"Negative Length\n");
-    
+
     return 0;
 }
 
 static int          _list_apply (list_t* ll, list_apply_func_t func)
 {
     list_node_t* node;
-    
-    for (node = _list_head(ll);node;node=_list_node_next(node)) 
+
+    for (node = _list_head(ll);node;node=_list_node_next(node))
         func(_list_node_val(node));
 
     return 0;
@@ -671,8 +665,8 @@ static list_node_t* _list_add_before (list_t* ll, list_node_t* beforeme, void* v
     list_node_t* ln = _list_node_create(val,ll);
     list_node_t* next = NULL;
     list_node_t* prev = NULL;
-    
-    if (!ln) 
+
+    if (!ln)
         return NULL;
 
     if (ll->length == 0) {
@@ -694,15 +688,15 @@ static list_node_t* _list_add_before (list_t* ll, list_node_t* beforeme, void* v
 
         ln->next = next;
         ln->prev = prev;
-    
-        if (next) 
+
+        if (next)
             next->prev = ln;
-        if (prev) 
+        if (prev)
             prev->next = ln;
         if (next == ll->head)
             ll->head = ln;
     }
-    
+
     ll->length++;
     return ln;
 }
@@ -712,8 +706,8 @@ static list_node_t* _list_add_after (list_t* ll, list_node_t* afterme, void* val
     list_node_t* ln = _list_node_create(val,ll);
     list_node_t* next = NULL;
     list_node_t* prev = NULL;
-    
-    if (!ln) 
+
+    if (!ln)
         return NULL;
 
     if (ll->length == 0) {
@@ -735,15 +729,15 @@ static list_node_t* _list_add_after (list_t* ll, list_node_t* afterme, void* val
 
         ln->next = next;
         ln->prev = prev;
-    
-        if (next) 
+
+        if (next)
             next->prev = ln;
-        if (prev) 
+        if (prev)
             prev->next = ln;
         if (prev == ll->tail)
             ll->tail = ln;
     }
-    
+
     ll->length++;
     return ln;
 }
@@ -751,10 +745,10 @@ static list_node_t* _list_add_after (list_t* ll, list_node_t* afterme, void* val
 static list_node_t* _list_node_create (void* val, list_t* mylist)
 {
     list_node_t* ln = calloc(1,sizeof(list_node_t));
-    if (!ln) return errlogmalloc_null(); 
-    
+    if (!ln) return errlogmalloc_null();
+
     ln->val = val;
     ln->mylist = mylist;
-    
+
     return ln;
 }

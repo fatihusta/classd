@@ -1,19 +1,12 @@
 /*
- * $HeadURL$
- * Copyright (c) 2003-2007 Untangle, Inc. 
+ * Copyright (c) 2003-2009 Untangle, Inc.
+ * All rights reserved.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License, version 2,
- * as published by the Free Software Foundation.
+ * This software is the confidential and proprietary information of
+ * Untangle, Inc. ("Confidential Information"). You shall
+ * not disclose such Confidential Information.
  *
- * This program is distributed in the hope that it will be useful, but
- * AS-IS and WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE, TITLE, or
- * NONINFRINGEMENT.  See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ * $Id$
  */
 
 /* $Id$ */
@@ -67,7 +60,7 @@ int _errlog (char* fmt, char* file, int lineno, int level, char*lpszFmt, ...)
 
     fprintf(errlog_output,fmt,file,lineno);
     fprintf(errlog_output,SECOND_PREFIX,err_strs[level]);
-  
+
     va_start(argptr, lpszFmt);
     vfprintf(errlog_output,lpszFmt, argptr);
     va_end(argptr);
@@ -107,12 +100,12 @@ void _errlog_set_output (FILE* out)
 
 void _errlog_date_toggle (int onoff)
 {
-    errlog_date = onoff;  
+    errlog_date = onoff;
 }
 
 int  _errlog_init (void)
 {
-    errlog_output = stderr; 
+    errlog_output = stderr;
 
 
     return 0;

@@ -1,20 +1,14 @@
 /*
- * $HeadURL$
- * Copyright (c) 2003-2007 Untangle, Inc. 
+ * Copyright (c) 2003-2009 Untangle, Inc.
+ * All rights reserved.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License, version 2,
- * as published by the Free Software Foundation.
+ * This software is the confidential and proprietary information of
+ * Untangle, Inc. ("Confidential Information"). You shall
+ * not disclose such Confidential Information.
  *
- * This program is distributed in the hope that it will be useful, but
- * AS-IS and WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE, TITLE, or
- * NONINFRINGEMENT.  See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ * $Id$
  */
+
 #ifndef __UTIL_LIST_H
 #define __UTIL_LIST_H
 
@@ -25,15 +19,15 @@ typedef struct list_node {
 
     struct list_node* prev;
     struct list_node* next;
-    
+
     void* val;
-    
+
     struct list* mylist;
 
 } list_node_t;
 
 typedef struct list {
-    
+
     struct list_node* head;
     struct list_node* tail;
 
@@ -78,7 +72,7 @@ list_node_t* list_add_tail   (list_t* ll, void* val);
 list_node_t* list_add_before (list_t* ll, list_node_t* beforeme, void* val);
 list_node_t* list_add_after  (list_t* ll, list_node_t* afterme, void* val);
 int          list_move_head  (list_t* ll, list_node_t** node, void* val );
-int          list_move_tail  (list_t* ll, list_node_t** node, void* val ); 
+int          list_move_tail  (list_t* ll, list_node_t** node, void* val );
 int          list_remove     (list_t* ll, list_node_t* ln);
 int          list_remove_all (list_t* ll);
 int          list_remove_val (list_t* ll, void* val);

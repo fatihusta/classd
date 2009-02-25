@@ -1,19 +1,12 @@
 /*
- * $HeadURL$
- * Copyright (c) 2003-2007 Untangle, Inc. 
+ * Copyright (c) 2003-2009 Untangle, Inc.
+ * All rights reserved.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License, version 2,
- * as published by the Free Software Foundation.
+ * This software is the confidential and proprietary information of
+ * Untangle, Inc. ("Confidential Information"). You shall
+ * not disclose such Confidential Information.
  *
- * This program is distributed in the hope that it will be useful, but
- * AS-IS and WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE, TITLE, or
- * NONINFRINGEMENT.  See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ * $Id$
  */
 
 #include <sys/types.h>
@@ -25,12 +18,12 @@
 unsigned long utime_usec_diff (struct timeval* earlier, struct timeval* later)
 {
     u_long usec_diff = 0;
-    
+
     if (!earlier || !later) return 0;
-    
+
     usec_diff  = (later->tv_sec - earlier->tv_sec)*1000000;
     usec_diff += (later->tv_usec) - (earlier->tv_usec);
-    
+
     return usec_diff;
 }
 
@@ -40,7 +33,7 @@ unsigned long utime_usec_diff_now (struct timeval* earlier)
 
     if ( gettimeofday( &tv, NULL ) < 0 )
         return 0;
-    
+
     return utime_usec_diff(earlier,&tv);
 }
 
@@ -59,7 +52,7 @@ int utime_usec_add (struct timeval* tv, long microsec )
         /* just in case?*/
         tv->tv_usec = 0;
     }
-    
+
     return 0;
 }
 
@@ -87,7 +80,7 @@ int utime_msec_add_now( struct timeval* tv, long millisec )
 void*         utime_timer_start_sem(void* utime_timer_struct)
 {
     struct utime_timer* t = (struct utime_timer*) utime_timer_struct;
-    
+
     usleep(t->usec);
     sem_post(t->sem_to_post);
     return NULL;
