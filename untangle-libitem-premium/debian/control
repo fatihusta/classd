@@ -134,7 +134,7 @@ Description: eSoft Web Filter
 Package: untangle-libitem-commtouch
 Section: premium/admin
 Architecture: all
-Depends: untangle-node-commtouch
+Depends: untangle-libitem-spamassassin, untangle-node-commtouch
 XB-View-Position: 60
 XB-Display-Name: Commtouch Spam Booster
 XB-Untangle-Type: lib_item
