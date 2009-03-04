@@ -26,6 +26,7 @@
 #define FAILD_TEST_CLASS_NAME_SIZE  32
 #define FAILD_TEST_LIB_NAME_SIZE  32
 
+
 typedef struct
 {
     /* This is the os ifindex index of the interface (/sys/class/net/eth0/ifindex). */
@@ -176,6 +177,9 @@ typedef struct
     int (*get_test_classes)( faild_uplink_test_class_t **test_classes );
 } faild_uplink_test_lib_t;
 
+/* This is the typedef of the function that gets the definition from the shared lib */
+typedef faild_uplink_test_lib_t* (*faild_uplink_test_prototype_t)( void );
+
 /* Initialize a configuration object */
 faild_config_t* faild_config_malloc( void );
 int faild_config_init( faild_config_t* config );
@@ -186,5 +190,11 @@ int faild_config_load_json( faild_config_t* config, struct json_object* json_con
 
 /* Serialize back to JSON */
 struct json_object* faild_config_to_json( faild_config_t* config );
+
+/* test class handling functions */
+int faild_libs_init( void );
+
+int faild_libs_load_test_classes( char* lib_dir_name );
+
 
 #endif // __FAILD_H_

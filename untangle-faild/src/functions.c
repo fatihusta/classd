@@ -36,8 +36,6 @@
 
 static struct json_object *_hello_world( struct json_object* request );
 
-static struct json_object *_refresh_system_state( struct json_object* request );
-
 static struct json_object *_get_config( struct json_object* request );
 
 static struct json_object *_set_config( struct json_object* request );
@@ -46,11 +44,14 @@ static struct json_object *_set_debug_level( struct json_object* request );
 
 static struct json_object *_list_functions( struct json_object* request );
 
+static struct json_object *_get_status( struct json_object* request );
+
+static struct json_object *_set_active_link( struct json_object* request );
+
+static struct json_object *_get_available_tests( struct json_object* request );
+
 static struct json_object *_shutdown( struct json_object* request );
 
-/* Utility function that reloads all of the system state required for
- * the ARP eater to work. */
-static int __refresh_system_state( void );
 
 extern void faild_main_shutdown( void );
 
@@ -68,8 +69,10 @@ static struct
         { .name = "get_config", .function = _get_config },
         { .name = "set_config", .function = _set_config },
         { .name = "set_debug_level", .function = _set_debug_level },
-        { .name = "refresh_system_state", .function = _refresh_system_state },
         { .name = "list_functions", .function = _list_functions },
+        { .name = "get_status", .function = _get_status },
+        { .name = "set_active_link", .function = _set_active_link },
+        { .name = "get_available_tests", .function = _get_available_tests },
         { .name = "shutdown", .function = _shutdown },
         { .name = NULL, .function = NULL }
     }
@@ -168,12 +171,6 @@ static struct json_object *_set_config( struct json_object* request )
             strncpy( message, "Unable to load json configuration.", message_size );
             return 0;
         }
-
-        if ( __refresh_system_state() < 0 ) {
-            errlog( ERR_CRITICAL, "_refresh_system_state\n" );
-            strncpy( message, "Unable to refresh JSON config.", message_size );
-            return 0;
-        }
         
         if ( faild_manager_get_config( &config ) < 0 ) {
             errlog( ERR_CRITICAL, "faild_manager_get_config\n" );
@@ -220,27 +217,6 @@ static struct json_object *_set_config( struct json_object* request )
         json_object_put( new_config_json );
         json_object_put( response );
         return errlog_null( ERR_CRITICAL, "json_object_utils_add\n" );
-    }
-
-    return response;
-}
-
-static struct json_object *_refresh_system_state( struct json_object* request )
-{
-    struct json_object* response = NULL;
-
-    
-    if ( __refresh_system_state() < 0 ) {
-        errlog( ERR_CRITICAL, "__refresh_system_state\n" );
-        if (( response = json_server_build_response( STATUS_ERR, 0, "Unable to refresh system state." )) == NULL ) {
-            return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
-        }
-
-        return response;
-    }
-
-    if (( response = json_server_build_response( STATUS_OK, 0, "Updated network settings." )) == NULL ) {
-        return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
     }
 
     return response;
@@ -315,6 +291,39 @@ static struct json_object *_list_functions( struct json_object* request )
     return response;    
 }
 
+static struct json_object *_get_status( struct json_object* request )
+{
+    struct json_object* response = NULL;
+
+    if (( response = json_server_build_response( STATUS_ERR, 0, "Implement get status" )) == NULL ) {
+        return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
+    }
+
+    return response;    
+}
+
+static struct json_object *_set_active_link( struct json_object* request )
+{
+    struct json_object* response = NULL;
+
+    if (( response = json_server_build_response( STATUS_ERR, 0, "Implement set active link" )) == NULL ) {
+        return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
+    }
+
+    return response;
+}
+
+static struct json_object *_get_available_tests( struct json_object* request )
+{
+    struct json_object* response = NULL;
+
+    if (( response = json_server_build_response( STATUS_ERR, 0, "Implement get available tests" )) == NULL ) {
+        return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
+    }
+
+    return response;    
+}
+
 static struct json_object *_shutdown( struct json_object* request )
 {
     faild_main_shutdown();
@@ -325,9 +334,4 @@ static struct json_object *_shutdown( struct json_object* request )
     }
 
     return response;
-}
-
-static int __refresh_system_state( void )
-{
-    return 0;
 }

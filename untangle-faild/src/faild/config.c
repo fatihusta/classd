@@ -29,7 +29,6 @@ static int _interface_array_get_size( void *c_array );
 
 static int _test_config_array_get_size( void *c_array );
 
-
 static json_serializer_string_t _os_string = {
     .offset = offsetof( faild_interface_t, os_name ),
     .len = sizeof((( faild_interface_t *)0)->os_name )
@@ -127,8 +126,6 @@ static json_serializer_array_t _test_config_array_arg =
     .serializer = &_test_config_serializer,
     .item_size = sizeof( faild_test_config_t )
 };
-
-
 
 static json_serializer_t _config_serializer = {
     .name = "config",

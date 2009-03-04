@@ -10,10 +10,10 @@ INC           = ${build_dir}/include src
 INC_FLAGS     = $(patsubst %,-I%,$(INC))
 LDDIR         = lib $(build_lib_path)  
 LDDIR_FLAGS   = $(patsubst %,-L%,$(LDDIR))
-LIBS          = json microhttpd pcap 
+LIBS          = json microhttpd pcap dl
 #LIBS          += efence
 LIBS_FLAGS    = -pthread $(patsubst %,-l%,$(LIBS)) --warn-common
-FLAGS        += 
+FLAGS        += -rdynamic
 CFLAGS        =  $(FLAGS) $(DEFINES) $(WARNINGS) $(OPTIMIZATIONS) $(INC_FLAGS) $(LDDIR_FLAGS)
 
 ifeq ($(strip $(USE_DEBUG)),true)
@@ -29,6 +29,8 @@ endif
 
 object_dir=${build_dir}/objects
 
+library_dir=${build_dir}/libs
+
 ## Libmvutil source
 mvutil_source=libmvutil/src/debug.c libmvutil/src/errlog.c libmvutil/src/hash.c \
 	libmvutil/src/libmvutil.c libmvutil/src/list.c libmvutil/src/lock.c \
@@ -38,24 +40,28 @@ mvutil_source=libmvutil/src/debug.c libmvutil/src/errlog.c libmvutil/src/hash.c 
 ## faild source
 faild_source=src/json/server.c src/json/object_utils.c \
 	src/json/serializer.c src/main.c src/functions.c \
-	src/faild/config.c src/faild/manager.c \
+	src/faild/config.c src/faild/manager.c src/faild/libs.c \
 	${mvutil_source}
 
 faild_objects=$(patsubst %.c,${object_dir}/%.o, ${faild_source})
 faild_binary=faild
 
+## Base Uplink Library
+library_source=src/uplink_libs/base/lib.c
+library_objects=$(patsubst %.c,${object_dir}/%.o, ${library_source})
+library_binary=${library_dir}/base.so
+
 test_source=src/json/server.c src/json/object_utils.c \
 	src/json/serializer.c test/config.c \
-	src/faild/config.c src/faild/manager.c \
+	src/faild/config.c src/faild/manager.c src/faild/libs.c \
 	${mvutil_source}
 
 test_objects=$(patsubst %.c,${object_dir}/%.o, ${test_source})
 test_binary=config
 
-
 default: ${object_dir} mvutil_includes ${faild_binary}
 
-${faild_binary}: ${faild_objects} ${mvutil_source}
+${faild_binary}: ${faild_objects} ${mvutil_source} ${library_binary}
 	@echo "==> gcc ${faild_objects} -> $@"
 	@${CC} ${CFLAGS} ${LIBS_FLAGS} ${faild_objects} -o $@
 
@@ -67,6 +73,15 @@ ${object_dir}/%.o: %.c
 ${object_dir}:
 	@echo "==> Making directory ${object_dir}"
 	@mkdir -p ${object_dir}
+
+${library_dir}:
+	@echo "==> Making directory ${library_dir}"
+	@mkdir -p ${library_dir}
+
+${library_binary}: ${library_dir} ${library_objects} 
+	@echo "==> gcc ${library_objects} -> $@"
+	@${CC} -shared ${CFLAGS} ${LIBS_FLAGS} ${library_objects} -o $@
+
 
 mvutil_includes:
 	@echo "==> cp -a libmvutil/include/ ${build_dir}/include"

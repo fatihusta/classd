@@ -36,9 +36,11 @@
 #include "faild/manager.h"
 
 
-#define DEFAULT_CONFIG_FILE  "/etc/untangle-faild.conf"
+#define DEFAULT_CONFIG_FILE  "/etc/untangle-faild/config.js"
 #define DEFAULT_DEBUG_LEVEL  1
 #define DEFAULT_BIND_PORT 3002
+#define DEFAULT_SWITCH_SCRIPT  "/usr/share/untangle-faild/bin/switch"
+#define DEFAULT_LIB_DIR        "build/libs"
 
 #define FLAG_ALIVE      0x543F00D
 
@@ -55,6 +57,8 @@ static struct
     json_server_t json_server;
     struct MHD_Daemon *daemon;
     sem_t* quit_sem;
+    char *switch_script;
+    char *lib_dir;
 } _globals = {
     .daemon = NULL,
     .config_file = NULL,
@@ -65,7 +69,9 @@ static struct
     .std_out_filename = NULL,
     .std_out = -1,
     .debug_level = DEFAULT_DEBUG_LEVEL,
-    .quit_sem = NULL
+    .quit_sem = NULL,
+    .switch_script = NULL,
+    .lib_dir = NULL
 };
 
 static int _parse_args( int argc, char** argv );
@@ -167,39 +173,74 @@ void faild_main_shutdown( void )
 static int _parse_args( int argc, char** argv )
 {
     int c = 0;
+    int len;
     
-     while (( c = getopt( argc, argv, "dhp:c:o:e:l:" ))  != -1 ) {
-    switch( c ) {
-         case 'd':
-    _globals.daemonize = 1;
-             break;
-
-         case 'h':
-    return -1;
+    while (( c = getopt( argc, argv, "dhp:c:o:e:l:s:t:" ))  != -1 ) {
+        switch( c ) {
+        case 'd':
+            _globals.daemonize = 1;
+            break;
             
-         case 'p':
-    _globals.port = atoi( optarg );
-             break;
+        case 'h':
+            return -1;
             
-         case 'c':
-    _globals.config_file = optarg;
-             break;
-
-         case 'o':
-    _globals.std_out_filename = optarg;
-             break;
-
-         case 'e':
-    _globals.std_err_filename = optarg;
-             break;
-
-         case 'l':
-    _globals.debug_level = atoi( optarg );
-             break;
+        case 'p':
+            _globals.port = atoi( optarg );
+            break;
             
-         case '?':
-    return -1;
+        case 'c':
+            _globals.config_file = optarg;
+            break;
+            
+        case 'o':
+            _globals.std_out_filename = optarg;
+            break;
+            
+        case 'e':
+            _globals.std_err_filename = optarg;
+            break;
+            
+        case 'l':
+            _globals.debug_level = atoi( optarg );
+            break;
+            
+        case 's':
+            len = strnlen( optarg, FILENAME_MAX );
+            if (( _globals.switch_script = calloc( 1, len )) == NULL ) {
+                fprintf( stderr, "Unable to allocate memory\n" );
+                return -1;
+            }
+            strncpy( _globals.switch_script, optarg, len );
+            break;
+
+        case 't':
+            len = strnlen( optarg, FILENAME_MAX );
+            if (( _globals.lib_dir = calloc( 1, len )) == NULL ) {
+                fprintf( stderr, "Unable to allocate memory\n" );
+                return -1;
+            }
+            strncpy( _globals.lib_dir, optarg, len );
+            break;            
+            
+        case '?':
+            return -1;
         }
+    }
+
+    if ( _globals.switch_script == NULL ) {
+        if (( _globals.switch_script = calloc( 1, sizeof( DEFAULT_SWITCH_SCRIPT ))) == NULL ) {
+            fprintf( stderr, "Unable to allocate memory\n" );
+            return -1;
+        }
+        strncpy( _globals.switch_script, DEFAULT_SWITCH_SCRIPT, sizeof( DEFAULT_SWITCH_SCRIPT ));
+    }
+
+    if ( _globals.lib_dir == NULL ) {
+        if (( _globals.lib_dir = calloc( 1, sizeof( DEFAULT_LIB_DIR ))) == NULL ) {
+            fprintf( stderr, "Unable to allocate memory\n" );
+            return -1;
+        }
+        strncpy( _globals.lib_dir, DEFAULT_LIB_DIR, sizeof( DEFAULT_LIB_DIR ));
     }
     
      return 0;
@@ -208,15 +249,17 @@ static int _parse_args( int argc, char** argv )
 static int _usage( char *name )
 {
     fprintf( stderr, "Usage: %s\n", name );
-     fprintf( stderr, "\t-d: daemonize.  Immediately fork on startup.\n" );
-     fprintf( stderr, "\t-p <json-port>: The port to bind to for the JSON interface.\n" );
-     fprintf( stderr, "\t-c <config-file>: Config file to use.\n" );
-     fprintf( stderr, "\t\tThe config-file can be modified through the JSON interface.\n" );
-     fprintf( stderr, "\t-o <log-file>: File to place standard output(more useful with -d).\n" );
-     fprintf( stderr, "\t-e <log-file>: File to place standard error(more useful with -d).\n" );
-     fprintf( stderr, "\t-l <debug-level>: Debugging level.\n" );    
-     fprintf( stderr, "\t-h: Halp (show this message)\n" );
-     return -1;
+    fprintf( stderr, "\t-d: daemonize.  Immediately fork on startup.\n" );
+    fprintf( stderr, "\t-p <json-port>: The port to bind to for the JSON interface.\n" );
+    fprintf( stderr, "\t-c <config-file>: Config file to use.\n" );
+    fprintf( stderr, "\t\tThe config-file can be modified through the JSON interface.\n" );
+    fprintf( stderr, "\t-o <log-file>: File to place standard output(more useful with -d).\n" );
+    fprintf( stderr, "\t-e <log-file>: File to place standard error(more useful with -d).\n" );
+    fprintf( stderr, "\t-l <debug-level>: Debugging level.\n" );
+    fprintf( stderr, "\t-s <switch-script>: An executable that is called when the link status changes.\n" );
+    fprintf( stderr, "\t-t <lib-dir>: Directory containing all of the test libraries.\n" );
+    fprintf( stderr, "\t-h: Halp (show this message)\n" );
+    return -1;
 }
 
 static int _init( int argc, char** argv )
@@ -245,6 +288,13 @@ static int _init( int argc, char** argv )
         
     faild_config_t config;
     if ( faild_config_init( &config ) < 0 ) return errlog( ERR_CRITICAL, "faild_config_init\n" );
+
+    /* Initialize the test libraries */
+    if ( faild_libs_init() < 0 ) return errlog( ERR_CRITICAL, "faild_libs_init\n" );
+
+    if ( faild_libs_load_test_classes( _globals.lib_dir )) {
+        return errlog( ERR_CRITICAL, "faild_libs_load_test_classes\n" );
+    }
 
     if ( faild_manager_init( &config ) < 0 ) {
         return errlog( ERR_CRITICAL, "faild_manager_init\n" );
@@ -320,6 +370,14 @@ static void _destroy( void )
     if ( sem != NULL ) {
         if ( sem_destroy( sem ) < 0 ) perrlog( "sem_destroy" );
         free( sem );
+    }
+
+    if ( _globals.switch_script != NULL ) {
+        free( _globals.switch_script );
+    }
+
+    if ( _globals.lib_dir != NULL ) {
+        free( _globals.lib_dir );
     }
 }
 
