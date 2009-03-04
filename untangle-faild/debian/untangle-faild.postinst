@@ -1,0 +1,36 @@
+#!/bin/sh
+
+ourInit() {
+    if [ -x /usr/sbin/invoke-rc.d ] && [ ! "`readlink /usr/sbin/invoke-rc.d`" = /bin/true ] ; then
+        invoke-rc.d $1 $2
+    else
+        /etc/init.d/$1 $2
+    fi
+}
+
+FAILD_CONFIG_FILE="/etc/untangle-faild.conf"
+FAILD_DEFAULT_CONFIG="/usr/share/untangle-faild/sample-config/default.js"
+
+LOG_FILE=/var/log/untangle-faild/debug.log
+
+mkdir -p `dirname ${LOG_FILE}`
+
+echo "[`date`] DEBUG debian upgrade." >> ${LOG_FILE}
+
+if [ ! -f ${FAILD_CONFIG_FILE} ]; then
+    echo "Copying in ${FAILD_DEFAULT_CONFIG} to ${FAILD_CONFIG_FILE}"
+    cp ${FAILD_DEFAULT_CONFIG} ${FAILD_CONFIG_FILE}
+fi
+
+if [ -x "/etc/init.d/untangle-faild" ]; then
+    ## Moving the startup from its defaults to start later and stop earlier.
+    update-rc.d -f untangle-faild remove >/dev/null
+    
+    ## Start failry late, and stop fairly early.
+    update-rc.d untangle-faild defaults 96 4 >/dev/null
+    
+    ourInit untangle-faild stop > /dev/null 2>&1 || exit 0
+    ourInit untangle-faild start || exit 0
+fi
+
+exit 0

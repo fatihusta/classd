@@ -1,0 +1,6 @@
+
+## Uncomment to change the default configuration file.
+FAILD_CONF_FILE=/etc/untangle-faild.conf
+
+# The default debug level
+FAILD_DEBUG_LEVEL=1
