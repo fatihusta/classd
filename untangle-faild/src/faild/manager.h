@@ -13,7 +13,7 @@
 #define __FAILD_MANAGER_H_
 
 #include <netinet/ip.h>
-#include <faild/config.h>
+#include <faild.h>
 
 typedef struct
 {

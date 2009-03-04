@@ -6,10 +6,14 @@
  * Untangle, Inc. ("Confidential Information"). You shall
  * not disclose such Confidential Information.
  *
- * $Id: serializer.c,v 1.00 2009/03/03 17:31:17 dmorris Exp $
+ * $Id: ADConnectorImpl.java 15443 2008-03-24 22:53:16Z amread $
  */
 
 #include <stdarg.h>
+
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include <mvutil/debug.h>
 #include <mvutil/errlog.h>
@@ -20,6 +24,8 @@
 #include "json/serializer.h"
 
 static int _is_terminator( json_serializer_field_t* field );
+
+static int _validate_array_serializer( json_serializer_array_t* arg );
 
 static int _validate_field( json_serializer_field_t* field );
 
@@ -323,6 +329,158 @@ int json_serializer_to_json_in_addr( struct json_object* json_object, json_seria
 
     return 0;
 }
+
+int json_serializer_to_c_array( struct json_object* json_object, json_serializer_field_t* field, 
+                                void* c_array )
+{
+    if ( json_object == NULL ) return errlogargs();
+    if ( field == NULL ) return errlogargs();
+    if ( c_array == NULL ) return errlogargs();
+    if ( field->fetch_arg == 0 ) return errlog( ERR_CRITICAL, "field->fetch_arg must be set\n" );
+
+    json_serializer_array_t* arg = field->arg;
+
+    if ( arg == NULL ) return errlog( ERR_CRITICAL, "field->arg must be set\n" );
+    
+    if ( _validate_array_serializer( arg ) < 0 ) {
+        return errlog( ERR_CRITICAL, "_validate_array_serializer" );
+    }
+
+    if ( json_object_is_type( json_object, json_type_array ) == 0 ) {
+        debug( 9, "The field %s is not an array.\n", field->name );
+        if ( field->if_empty == JSON_SERIALIZER_FIELD_EMPTY_IGNORE ) return 0;
+        return -1;
+    }
+    
+    int length = 0;
+    if (( length = json_object_array_length( json_object )) < 0 ) {
+        return errlog( ERR_CRITICAL, "json_object_array_length\n" );
+    }
+
+    if ( length > arg->max_length ) {
+        errlog( ERR_WARNING, "Too many items %d, limiting to %d\n", length, arg->max_length );
+        length = arg->max_length;
+    }
+
+    int c = 0;
+    int array_size = 0;
+    int* c_length = &((int*)c_array)[arg->length_offset/sizeof( int )];
+    char* data = &((char*)c_array)[arg->data_offset];
+
+    if (( array_size = arg->get_size( c_array )) <= 0 ) {
+        return errlog( ERR_CRITICAL, "arg->get_array_size\n" );
+    }
+
+    *c_length = 0;
+    
+    bzero( data, array_size );
+
+    struct json_object* item_json = NULL;
+    for ( c = 0 ; c < length ; c++ ) {
+        if (( item_json = json_object_array_get_idx( json_object, c )) == NULL ) {
+            return errlog( ERR_CRITICAL, "json_object_array_get_idx\n" );
+        }
+
+        char *item = &((char*)data)[c * arg->item_size];
+        
+        if ( arg->default_value != NULL ) {
+            memcpy( item, arg->default_value, arg->item_size );
+        }
+
+        if ( json_serializer_to_c( arg->serializer, item_json, item ) < 0 ) {
+            return errlog( ERR_CRITICAL, "json_serializer_to_c\n" );
+        }
+    }
+    
+    *c_length = length;
+    
+    return 0;    
+}
+
+int json_serializer_to_json_array( struct json_object* json_object, json_serializer_field_t* field, 
+                                   void* c_array )
+{
+    if ( json_object == NULL ) return errlogargs();
+    if ( field == NULL ) return errlogargs();
+    if ( c_array == NULL ) return errlogargs();
+
+    json_serializer_array_t* arg = field->arg;
+
+    if ( _validate_array_serializer( arg ) < 0 ) {
+        return errlog( ERR_CRITICAL, "_validate_array_serializer" );
+    }
+
+    int* c_length = &((int*)c_array)[arg->length_offset/sizeof( int )];
+
+    if (( *c_length < 0 ) || ( *c_length > arg->max_length )) {
+        return errlogargs();
+    }
+
+    struct json_object* array_json = NULL;
+    struct json_object* item_json = NULL;
+    if (( array_json = json_object_new_array()) == NULL ) {
+        return errlog( ERR_CRITICAL, "json_object_new_array\n" );
+    }
+
+    char* data = &((char*)c_array)[arg->data_offset];
+    
+    int _critical_section() {
+        int c = 0;
+        for ( c = 0 ; c < *c_length ; c++ ) {
+            if (( item_json = json_serializer_to_json( arg->serializer, &data[c * arg->item_size] )) ==
+                NULL ) {
+                return errlog( ERR_CRITICAL, "json_serializer_to_json\n" );
+            }
+
+            if ( json_object_array_add( array_json, item_json ) < 0 ) {
+                return errlog( ERR_CRITICAL, "json_object_array_add\n" );
+            }
+            
+            item_json = NULL;
+        }
+
+        json_object_object_add( json_object, field->name, array_json );
+        
+        return 0;
+    }
+
+    if ( _critical_section() < 0 ) {
+        json_object_put( array_json );
+        if ( item_json != NULL ) json_object_put( item_json );
+        return errlog( ERR_CRITICAL, "_critical_section\n" );
+    }
+
+    return 0;
+}
+
+static int _validate_array_serializer( json_serializer_array_t* arg )
+{
+    if ( arg == NULL ) return errlog( ERR_CRITICAL, "NULL json serializer array arg\n" );
+    
+    if ( arg->data_offset < 0 ) {
+        return errlog( ERR_CRITICAL, "Invalid data offset %d\n", arg->data_offset );
+    }
+    if ( arg->length_offset < 0 ) {
+        return errlog( ERR_CRITICAL, "Invalid length offset %d\n", arg->length_offset );
+    }
+    if ( arg->get_size == NULL) {
+        return errlog( ERR_CRITICAL, "Invalid get_size function\n", arg->get_size );
+    }
+    if ( arg->serializer == NULL ) {
+        return errlog( ERR_CRITICAL, "Invalid serializer\n" );
+    }
+
+    if ( arg->max_length <= 0 ) {
+        return errlog( ERR_CRITICAL, "Invaid args->max_length: %d\n", arg->max_length );
+    }
+
+    if ( arg->item_size <= 0 ) {
+        return errlog( ERR_CRITICAL, "Invalid arg->item_size: %d\n", arg->item_size );
+    }
+    
+    return 0;
+}
+
 
 static int _is_terminator( json_serializer_field_t* field )
 {

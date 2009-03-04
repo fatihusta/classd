@@ -22,7 +22,7 @@
 #include <mvutil/errlog.h>
 #include <mvutil/unet.h>
 
-#include "faild/config.h"
+#include "faild.h"
 #include "faild/manager.h"
 
 

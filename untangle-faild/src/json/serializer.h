@@ -6,7 +6,7 @@
  * Untangle, Inc. ("Confidential Information"). You shall
  * not disclose such Confidential Information.
  *
- * $Id: serializer.h,v 1.00 2009/03/03 17:31:25 dmorris Exp $
+ * $Id: ADConnectorImpl.java 15443 2008-03-24 22:53:16Z amread $
  */
 
 #ifndef __JSON_SERIALIZER_H
@@ -48,13 +48,23 @@ typedef struct
     int offset;
 } json_serializer_string_t;
 
-
 typedef struct
 {
     char name[JSON_SERIALIZER_NAME_LENGTH];    
     /* A variable sized array of serializer, the last one must be JSON_SERIALIZER_FIELD_TERM */
     json_serializer_field_t fields[];
 } json_serializer_t;
+
+typedef struct
+{
+    int max_length;
+    int data_offset;
+    int length_offset;
+    int (*get_size)( void *c_array );
+    void *default_value;
+    json_serializer_t* serializer;
+    int item_size;
+} json_serializer_array_t;
 
 /* Create a new JSON object and fill in the fields from c_struct */
 struct json_object* json_serializer_to_json( json_serializer_t* serializer, void* c_data );
@@ -92,6 +102,10 @@ int json_serializer_to_c_in_addr( struct json_object* json_object, json_serializ
 int json_serializer_to_json_in_addr( struct json_object* json_object, json_serializer_field_t* field, 
                                      void* c_data );
 
+int json_serializer_to_c_array( struct json_object* json_object, json_serializer_field_t* field, 
+                                void* c_data );
 
+int json_serializer_to_json_array( struct json_object* json_object, json_serializer_field_t* field, 
+                                   void* c_data );
 
 #endif

@@ -44,6 +44,15 @@ faild_source=src/json/server.c src/json/object_utils.c \
 faild_objects=$(patsubst %.c,${object_dir}/%.o, ${faild_source})
 faild_binary=faild
 
+test_source=src/json/server.c src/json/object_utils.c \
+	src/json/serializer.c test/config.c \
+	src/faild/config.c src/faild/manager.c \
+	${mvutil_source}
+
+test_objects=$(patsubst %.c,${object_dir}/%.o, ${test_source})
+test_binary=config
+
+
 default: ${object_dir} mvutil_includes ${faild_binary}
 
 ${faild_binary}: ${faild_objects} ${mvutil_source}
@@ -70,4 +79,8 @@ clean:
 
 install:
 	@echo "Installing"
+
+${test_binary}: ${test_objects} ${mvutil_source}
+	@echo "==> gcc ${test_objects} -> $@"
+	@${CC} ${CFLAGS} ${LIBS_FLAGS} ${test_objects} -o $@
 

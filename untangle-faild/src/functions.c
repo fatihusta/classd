@@ -25,7 +25,7 @@
 #include "json/serializer.h"
 #include "json/server.h"
 
-#include "faild/config.h"
+#include "faild.h"
 #include "faild/manager.h"
 
 /* ten-4 */
