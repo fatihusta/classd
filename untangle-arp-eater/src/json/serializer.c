@@ -6,7 +6,7 @@
  * Untangle, Inc. ("Confidential Information"). You shall
  * not disclose such Confidential Information.
  *
- * $Id: ADConnectorImpl.java 15443 2008-03-24 22:53:16Z amread $
+ * $Id: serializer.c,v 1.00 2009/03/03 17:31:17 dmorris Exp $
  */
 
 #include <stdarg.h>
