@@ -108,4 +108,15 @@ int json_serializer_to_c_array( struct json_object* json_object, json_serializer
 int json_serializer_to_json_array( struct json_object* json_object, json_serializer_field_t* field, 
                                    void* c_data );
 
+int json_serializer_to_c_array( struct json_object* json_object, json_serializer_field_t* field, 
+                                void* c_data );
+
+/* Just copy the JSON data in as is */
+int json_serializer_to_c_json( struct json_object* json_object, json_serializer_field_t* field, 
+                                void* c_data );
+
+/* Just copy the JSON data in as is */
+int json_serializer_to_json_json( struct json_object* json_object, json_serializer_field_t* field, 
+                                  void* c_data );
+
 #endif

@@ -47,7 +47,7 @@ faild_objects=$(patsubst %.c,${object_dir}/%.o, ${faild_source})
 faild_binary=faild
 
 ## Base Uplink Library
-library_source=src/uplink_libs/base/lib.c
+library_source=src/uplink_libs/base/lib.c src/uplink_libs/base/arp.c
 library_objects=$(patsubst %.c,${object_dir}/%.o, ${library_source})
 library_binary=${library_dir}/base.so
 

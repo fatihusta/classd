@@ -335,8 +335,8 @@ int json_serializer_to_c_array( struct json_object* json_object, json_serializer
 {
     if ( json_object == NULL ) return errlogargs();
     if ( field == NULL ) return errlogargs();
-    if ( c_array == NULL ) return errlogargs();
     if ( field->fetch_arg == 0 ) return errlog( ERR_CRITICAL, "field->fetch_arg must be set\n" );
+    if ( c_array == NULL ) return errlogargs();
 
     json_serializer_array_t* arg = field->arg;
 
@@ -402,6 +402,7 @@ int json_serializer_to_json_array( struct json_object* json_object, json_seriali
 {
     if ( json_object == NULL ) return errlogargs();
     if ( field == NULL ) return errlogargs();
+    if ( field->fetch_arg == 0 ) return errlog( ERR_CRITICAL, "field->fetch_arg must be set\n" );
     if ( c_array == NULL ) return errlogargs();
 
     json_serializer_array_t* arg = field->arg;
@@ -481,6 +482,49 @@ static int _validate_array_serializer( json_serializer_array_t* arg )
     return 0;
 }
 
+/* Just copy the JSON data in as is */
+int json_serializer_to_c_json( struct json_object* json_object, json_serializer_field_t* field, 
+                               void* c_data )
+{
+    if ( json_object == NULL ) return errlogargs();
+    if ( field == NULL ) return errlogargs();
+    if ( field->fetch_arg == 0 ) return errlog( ERR_CRITICAL, "field->fetch_arg must be set\n" );
+    if ( c_data == NULL ) return errlogargs();
+
+    int offset = (int)field->arg / sizeof( struct json_object* );
+    if ( offset < 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", offset );
+
+    if ((((struct json_object**)c_data)[offset] = json_object_get( json_object )) == NULL ) {
+        return errlog( ERR_CRITICAL, "json_obect_get\n" );
+    }
+
+    return 0;
+}
+
+
+/* Just copy the JSON data in as is */
+int json_serializer_to_json_json( struct json_object* json_object, json_serializer_field_t* field, 
+                                  void* c_data )
+{
+    if ( json_object == NULL ) return errlogargs();
+    if ( field == NULL ) return errlogargs();
+    if ( field->fetch_arg == 0 ) return errlog( ERR_CRITICAL, "field->fetch_arg must be set\n" );
+    if ( c_data == NULL ) return errlogargs();
+
+    int offset = (int)field->arg / sizeof( struct json_object* );
+    if ( offset < 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", offset );
+    
+    struct json_object* json = ((struct json_object**)c_data)[offset];
+    if (( json = json_object_get( json )) == NULL ) {
+        return errlog( ERR_CRITICAL, "json_object_get\n" );
+    }
+    
+    if ( json_object_utils_add_object( json_object, field->name, json ) < 0 ) {
+        return errlog( ERR_CRITICAL, "json_object_utils_add_object\n" );
+    }
+
+    return 0;
+}
 
 static int _is_terminator( json_serializer_field_t* field )
 {

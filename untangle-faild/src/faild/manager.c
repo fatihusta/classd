@@ -40,13 +40,21 @@ static struct
 {
     pthread_mutex_t mutex;
     faild_config_t config;
+
+    int active_argon_interface_id;
+    faild_uplink_status_t status[FAILD_MAX_INTERFACES];
+    faild_uplink_test_instance_t* active_tests[FAILD_MAX_INTERFACES][FAILD_MAX_INTERFACE_TESTS];
 } _globals = {
     .mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP,
+    .active_argon_interface_id = 0
 };
 
 int faild_manager_init( faild_config_t* config )
 {
     if ( config == NULL ) return errlogargs();
+
+    bzero( &_globals.status, sizeof( _globals.status ));
+    bzero( &_globals.active_tests, sizeof( _globals.active_tests ));
 
     memcpy( &_globals.config, config, sizeof( _globals.config ));
 
@@ -69,7 +77,6 @@ int faild_manager_set_config( faild_config_t* config )
 
     if ( pthread_mutex_lock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_lock" );
     int ret = _critical_section();
-    
     if ( pthread_mutex_unlock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_unlock" );
     
     if ( ret < 0 ) return errlog( ERR_CRITICAL, "_critical_section\n" );
@@ -98,6 +105,13 @@ int faild_manager_get_config( faild_config_t* config )
     if ( ret < 0 ) return errlog( ERR_CRITICAL, "_critical_section\n" );
     
     return 0;
+}
+
+
+/* Stop all of the active tests */
+int faild_manager_stop_tests( void )
+{
+    return errlog( ERR_CRITICAL, "Implement me\n" );
 }
 
 

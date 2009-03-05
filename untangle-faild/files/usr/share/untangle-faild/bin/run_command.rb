@@ -12,7 +12,7 @@ class ArpEater
     path = options["path"]
     
     host = "127.0.0.1" if host.nil?
-    port = "3002" if port.nil?
+    port = "3003" if port.nil?
     path = "/" if path.nil?
     
     command_hash = {}

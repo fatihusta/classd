@@ -113,6 +113,13 @@ static json_serializer_t _test_config_serializer = {
             .to_c = json_serializer_to_c_int,
             .to_json = json_serializer_to_json_int,
             .arg = (void*)offsetof( faild_test_config_t, threshold )
+        },{
+            .name = "params",
+            .fetch_arg = 1,
+            .if_empty = JSON_SERIALIZER_FIELD_EMPTY_ERROR,
+            .to_c = json_serializer_to_c_json,
+            .to_json = json_serializer_to_json_json,
+            .arg = (void*)offsetof( faild_test_config_t, params )
         }, JSON_SERIALIZER_FIELD_TERM}
 };
 

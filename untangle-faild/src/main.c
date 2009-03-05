@@ -38,7 +38,7 @@
 
 #define DEFAULT_CONFIG_FILE  "/etc/untangle-faild/config.js"
 #define DEFAULT_DEBUG_LEVEL  1
-#define DEFAULT_BIND_PORT 3002
+#define DEFAULT_BIND_PORT 3003
 #define DEFAULT_SWITCH_SCRIPT  "/usr/share/untangle-faild/bin/switch"
 #define DEFAULT_LIB_DIR        "build/libs"
 

@@ -138,7 +138,7 @@ typedef struct
 
     /* Initialize this instance of the test.  Allocate any variables, etc. */
     int (*init)( faild_uplink_test_instance_t *instance );
-
+    
     /* Run one iteration of the test.  Timeouts are automatically
      * handled outside of the test. */
     int (*run)( faild_uplink_test_instance_t *instance, struct in_addr* primary_address, 
@@ -178,7 +178,7 @@ typedef struct
 } faild_uplink_test_lib_t;
 
 /* This is the typedef of the function that gets the definition from the shared lib */
-typedef faild_uplink_test_lib_t* (*faild_uplink_test_prototype_t)( void );
+typedef int (*faild_uplink_test_prototype_t)( faild_uplink_test_lib_t* lib );
 
 /* Initialize a configuration object */
 faild_config_t* faild_config_malloc( void );
@@ -191,10 +191,30 @@ int faild_config_load_json( faild_config_t* config, struct json_object* json_con
 /* Serialize back to JSON */
 struct json_object* faild_config_to_json( faild_config_t* config );
 
-/* test class handling functions */
+/* test lib handling functions */
 int faild_libs_init( void );
-
 int faild_libs_load_test_classes( char* lib_dir_name );
 
+/* test class utility functions */
+faild_uplink_test_class_t* faild_uplink_test_class_malloc( void );
+int faild_uplink_test_class_init( faild_uplink_test_class_t* test_class, char* name,
+                                  int (*init)( faild_uplink_test_instance_t *instance ),
+                                  int (*run)( faild_uplink_test_instance_t *instance,
+                                              struct in_addr* primary_address, 
+                                              struct in_addr* default_gateway ),
+                                  int (*cleanup)( faild_uplink_test_instance_t *instance ),
+                                  int (*destroy)( faild_uplink_test_instance_t *instance ),
+                                  struct json_array* params );
+
+
+faild_uplink_test_class_t* 
+faild_uplink_test_class_create( char* name,
+                                int (*init)( faild_uplink_test_instance_t *instance ),
+                                int (*run)( faild_uplink_test_instance_t *instance,
+                                            struct in_addr* primary_address, 
+                                            struct in_addr* default_gateway ),
+                                int (*cleanup)( faild_uplink_test_instance_t *instance ),
+                                int (*destroy)( faild_uplink_test_instance_t *instance ),
+                                struct json_array* params );
 
 #endif // __FAILD_H_

@@ -7,7 +7,7 @@ NAME="faild"
 
 load_defaults()
 {
-    FAILD_BIND_PORT="3002"
+    FAILD_BIND_PORT="3003"
     FAILD_CONF_FILE="/etc/untangle-faild.conf"
     FAILD_LOG_OUT="/var/log/untangle-faild/debug.log"
     FAILD_LOG_ERR="/var/log/untangle-faild/error.log"
