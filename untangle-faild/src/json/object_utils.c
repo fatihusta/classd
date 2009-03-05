@@ -374,13 +374,27 @@ int json_object_equ( struct json_object* object_1, struct json_object* object_2 
 
     case json_type_object: {
         struct json_object* val_2;
+        int length = 0;
+
         json_object_object_foreach( object_1, key, val_1 ) {
             if (( val_2 = json_object_object_get( object_2, key )) == NULL ) {
                 return 0;
             }
             
             if ( json_object_equ( val_1, val_2 ) != 1 ) return 0;
+
+            length++;
         }
+
+        /* Make a new variable scope, otherwise there is a compilation error. */
+        do {
+            /* Now check if both objects have the same number of keys */
+            json_object_object_foreach( object_2, key, val_2 ) {
+                length--;
+            }
+        } while ( 0 );
+        if ( length != 0 ) return 0;
+
         break;
     }
         
