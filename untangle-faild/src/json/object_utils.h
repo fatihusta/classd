@@ -99,5 +99,10 @@ struct json_object* json_object_utils_create_timeval( struct timeval* timeval );
  */
 int json_object_utils_parse_timeval( struct json_object* object, struct timeval* timeval );
 
-
+/**
+ * Determine if two json objects are equal to one another.
+ * Return 1 if they are the same, zero otherwise.
+ */
+int json_object_equ( struct json_object* object_1, struct json_object* object_2 );
+    
 #endif

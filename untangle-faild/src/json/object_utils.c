@@ -14,7 +14,6 @@
 #include <mvutil/debug.h>
 #include <mvutil/errlog.h>
 
-
 #include "json/object_utils.h"
 
 #define DEFAULT_BUFFER_SIZE 128
@@ -335,4 +334,84 @@ int json_object_utils_parse_timeval( struct json_object* object, struct timeval*
     return 0;
 }
 
+int json_object_equ( struct json_object* object_1, struct json_object* object_2 )
+{
+    if ( object_1 == object_2 ) {
+        return 1;
+    }
 
+    /* If either of them are NULL, they are unequal because clearly
+     * they don't equal one another */
+    if ( object_1 == NULL || object_2 == NULL ) return 0;
+
+    enum json_type object_type_1 = json_object_get_type( object_1 );
+    enum json_type object_type_2 = json_object_get_type( object_2 );
+    
+    if ( object_type_1 != object_type_2 ) return 0;
+
+    switch( object_type_1 )
+    {
+    case json_type_null:
+        break;
+        
+    case json_type_boolean:
+        if ( json_object_get_boolean( object_1 ) != json_object_get_boolean( object_2 )) {
+            return 0;
+        }
+        break;
+
+    case json_type_double:
+        if ( json_object_get_double( object_1 ) != json_object_get_double( object_2 )) {
+            return 0;
+        }
+        break;
+
+    case json_type_int:
+        if ( json_object_get_int( object_1 ) != json_object_get_int( object_2 )) {
+            return 0;
+        }
+        break;
+
+    case json_type_object: {
+        struct json_object* val_2;
+        json_object_object_foreach( object_1, key, val_1 ) {
+            if (( val_2 = json_object_object_get( object_2, key )) == NULL ) {
+                return 0;
+            }
+            
+            if ( json_object_equ( val_1, val_2 ) != 1 ) return 0;
+        }
+        break;
+    }
+        
+    case json_type_array: {
+        int c = 0;
+        int length = 0;
+        
+        length = json_object_array_length( object_1 );
+        if ( length != json_object_array_length( object_2 )) return 0;
+
+        for ( c = 0 ; c < length ; c++ ) {
+            if ( json_object_equ( json_object_array_get_idx( object_1, c ),
+                                  json_object_array_get_idx( object_2, c )) != 1 ) {
+                return 0;
+            }
+        }
+        break;
+    }
+        
+    case json_type_string: {
+        char* string_1 = json_object_get_string( object_1 );
+        char* string_2 = json_object_get_string( object_2 );
+        if ( string_1 == NULL || string_2 == NULL ) {
+            errlog( ERR_WARNING, "NULL String\n" );
+            return 0;
+        }
+        if ( strcmp( string_1, string_2 ) != 0 ) return 0;
+        break;
+    }
+    }
+    
+    return 1;
+}
+    

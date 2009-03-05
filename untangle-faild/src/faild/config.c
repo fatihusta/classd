@@ -44,12 +44,12 @@ static json_serializer_t _interface_serializer = {
             .to_json = json_serializer_to_json_string,
             .arg = &_os_string
         },{
-            .name = "alpaca_interface_index",
+            .name = "alpaca_interface_id",
             .fetch_arg = 1,
             .if_empty = JSON_SERIALIZER_FIELD_EMPTY_ERROR,
             .to_c = json_serializer_to_c_int,
             .to_json = json_serializer_to_json_int,
-            .arg = (void*)offsetof( faild_interface_t, alpaca_interface_index )
+            .arg = (void*)offsetof( faild_interface_t, alpaca_interface_id )
         }, JSON_SERIALIZER_FIELD_TERM }
 };
 
@@ -72,12 +72,12 @@ static json_serializer_string_t _test_class_name = {
 static json_serializer_t _test_config_serializer = {
     .name = "test",
     .fields = {{
-            .name = "alpaca_interface_index",
+            .name = "alpaca_interface_id",
             .fetch_arg = 1,
             .if_empty = JSON_SERIALIZER_FIELD_EMPTY_ERROR,
             .to_c = json_serializer_to_c_int,
             .to_json = json_serializer_to_json_int,
-            .arg = (void*)offsetof( faild_test_config_t, alpaca_interface_index )
+            .arg = (void*)offsetof( faild_test_config_t, alpaca_interface_id )
         },{
             .name = "test_class_name",
             .fetch_arg = 1,

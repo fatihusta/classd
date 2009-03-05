@@ -355,6 +355,9 @@ static void _destroy( void )
     MHD_stop_daemon( _globals.daemon );
     
     json_server_destroy( &_globals.json_server );
+    
+    /* Stop all of the running tests */
+    faild_manager_stop_tests();
 
     libmvutil_cleanup();
 

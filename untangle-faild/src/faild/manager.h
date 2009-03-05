@@ -26,6 +26,8 @@ typedef struct
 
 int faild_manager_init( faild_config_t* config );
 
+int faild_manager_stop_tests( void );
+
 /**
  * Copies in the config to the global config
  */

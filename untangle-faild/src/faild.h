@@ -33,14 +33,14 @@ typedef struct
     int ifindex;
     
     /* This is the index from the alpaca. */
-    int alpaca_interface_index;
+    int alpaca_interface_id;
     
     char os_name[IF_NAMESIZE];
 } faild_interface_t;
 
 typedef struct
 {
-    int alpaca_interface_index;
+    int alpaca_interface_id;
     
     char test_class_name[FAILD_TEST_CLASS_NAME_SIZE];
 
@@ -82,7 +82,7 @@ typedef struct
     /* Path to the script that should be used to change the interface. */
     char* switch_interface_script;
 
-    /* The number of available tests */
+    /* The number of tests */
     int tests_length;
 
     /* Array of all of the current test configurations. */

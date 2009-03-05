@@ -13,7 +13,7 @@ LDDIR_FLAGS   = $(patsubst %,-L%,$(LDDIR))
 LIBS          = json microhttpd dl
 #LIBS          += efence
 LIBS_FLAGS    = -pthread $(patsubst %,-l%,$(LIBS)) --warn-common
-FLAGS        += -rdynamic
+FLAGS        += -rdynamic -std=c99
 CFLAGS        =  $(FLAGS) $(DEFINES) $(WARNINGS) $(OPTIMIZATIONS) $(INC_FLAGS) $(LDDIR_FLAGS)
 
 ifeq ($(strip $(USE_DEBUG)),true)
@@ -52,12 +52,12 @@ library_objects=$(patsubst %.c,${object_dir}/%.o, ${library_source})
 library_binary=${library_dir}/base.so
 
 test_source=src/json/server.c src/json/object_utils.c \
-	src/json/serializer.c test/config.c \
-	src/faild/config.c src/faild/manager.c src/faild/libs.c \
+	src/json/serializer.c test/json_equ.c \
+	src/faild/config.c src/faild/libs.c \
 	${mvutil_source}
 
 test_objects=$(patsubst %.c,${object_dir}/%.o, ${test_source})
-test_binary=config
+test_binary=json_equ
 
 default: ${object_dir} mvutil_includes ${faild_binary}
 

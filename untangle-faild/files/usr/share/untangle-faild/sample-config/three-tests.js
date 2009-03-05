@@ -5,14 +5,14 @@
     
     "interfaces" : [{
         "os_name" : "eth0",
-        "alpaca_interface_index" : 1        
+        "alpaca_interface_id" : 1        
     },{
         "os_name" : "eth2",
-        "alpaca_interface_index" : 3
+        "alpaca_interface_id" : 3
     }],
 
     "tests" : [{
-        "alpaca_interface_index" : 1,
+        "alpaca_interface_id" : 1,
         "test_class_name" : "dns",
         "timeout" : 2000,
         "delay" : 4000,
@@ -25,7 +25,7 @@
             /* DNS Doesn't require any params */
         }
     },{
-        "alpaca_interface_index" : 2,
+        "alpaca_interface_id" : 2,
         "test_class_name" : "dns",
         "timeout" : 2000,
         "delay" : 4000,
@@ -38,7 +38,7 @@
             /* DNS Doesn't require any params */
         }
     },{
-        "alpaca_interface_index" : 1,
+        "alpaca_interface_id" : 1,
         "test_class_name" : "arp",
         "timeout" : 2000,
         "delay" : 4000,
