@@ -19,9 +19,12 @@
 #include <mvutil/debug.h>
 #include <mvutil/errlog.h>
 
-#include "faild.h"
 #include "json/object_utils.h"
 #include "json/serializer.h"
+
+#include "faild.h"
+#include "faild/uplink_results.h"
+
 
 static int _verify_config( faild_config_t* config );
 
@@ -61,7 +64,8 @@ static json_serializer_array_t _interface_array_arg =
     .get_size = _interface_array_get_size,
     .default_value = NULL,
     .serializer = &_interface_serializer,
-    .item_size = sizeof( faild_interface_t )
+    .item_size = sizeof( faild_interface_t ),
+    .is_pointers = 0
 };
 
 static json_serializer_string_t _test_class_name = {
@@ -131,7 +135,8 @@ static json_serializer_array_t _test_config_array_arg =
     .get_size = _test_config_array_get_size,
     .default_value = NULL,
     .serializer = &_test_config_serializer,
-    .item_size = sizeof( faild_test_config_t )
+    .item_size = sizeof( faild_test_config_t ),
+    .is_pointers = 0
 };
 
 static json_serializer_t _config_serializer = {
@@ -212,6 +217,19 @@ int faild_config_load_json( faild_config_t* config, struct json_object* json_con
     return 0;
 }
 
+struct json_object* faild_config_to_json( faild_config_t* config )
+{
+    if ( config == NULL ) return errlogargs_null();
+    
+    struct json_object* json_object = NULL;
+    if (( json_object = json_serializer_to_json( &_config_serializer, config )) == NULL ) {
+        return errlog_null( ERR_CRITICAL, "json_serializer_to_json\n" );
+    }
+
+    return json_object;
+}
+
+
 int faild_test_config_equ( faild_test_config_t* test_config_1, faild_test_config_t* test_config_2 )
 {
     if ( test_config_1 == NULL ) return errlogargs();
@@ -230,18 +248,6 @@ int faild_test_config_equ( faild_test_config_t* test_config_1, faild_test_config
     if ( json_object_equ( test_config_1->params, test_config_2->params ) != 1 ) return 0;
         
     return 1;
-}
-
-struct json_object* faild_config_to_json( faild_config_t* config )
-{
-    if ( config == NULL ) return errlogargs_null();
-    
-    struct json_object* json_object = NULL;
-    if (( json_object = json_serializer_to_json( &_config_serializer, config )) == NULL ) {
-        return errlog_null( ERR_CRITICAL, "json_serializer_to_json\n" );
-    }
-
-    return json_object;
 }
 
 static int _interface_array_get_size( void *c_array )

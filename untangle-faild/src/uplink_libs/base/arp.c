@@ -11,11 +11,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include <mvutil/debug.h>
 #include <mvutil/errlog.h>
 
-
+#include "faild.h"
 #include "uplink_libs/base/arp.h"
 
 static int _init( faild_uplink_test_instance_t *instance );
@@ -36,15 +37,20 @@ int faild_uplink_lib_base_arp_class( faild_uplink_test_class_t* test_class )
 
 static int _init( faild_uplink_test_instance_t *instance )
 {
+    if ( instance == NULL ) return errlogargs();
+
+    instance->ptr = (void*)time( NULL );
     return 0;
 }
 
 static int _run( faild_uplink_test_instance_t *instance,
                  struct in_addr* primary_address, struct in_addr* default_gateway )
 {
-    debug( 8, "ARP is running!.\n" );
+    if ( instance == NULL ) return errlogargs();
 
-    return 0;
+    if ( rand_r( (unsigned int*)&instance->ptr ) > (( RAND_MAX / 10L ) * 7)) return 0;
+    
+    return 1;
 }
 
 static int _cleanup( faild_uplink_test_instance_t *instance )

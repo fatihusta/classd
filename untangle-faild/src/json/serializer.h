@@ -60,6 +60,13 @@ typedef struct
     int max_length;
     int data_offset;
     int length_offset;
+    /* Set to 1 if this is an array of pointers.  If so, this will
+     * not serialize any value that has NULL, and it will serialize
+     * any value that is non-null.  Furthermore, this will
+     * automatically allocate item_size for each entry when going from
+     * JSON to C.  As of 2009.03.07, to_c hsa not been implemented.
+     */
+    int is_pointers;
     int (*get_size)( void *c_array );
     void *default_value;
     json_serializer_t* serializer;
@@ -110,6 +117,12 @@ int json_serializer_to_json_array( struct json_object* json_object, json_seriali
 
 int json_serializer_to_c_array( struct json_object* json_object, json_serializer_field_t* field, 
                                 void* c_data );
+
+int json_serializer_to_c_timeval( struct json_object* json_object, json_serializer_field_t* field, 
+                                void* c_data );
+
+int json_serializer_to_json_timeval( struct json_object* json_object, json_serializer_field_t* field, 
+                                     void* c_data );
 
 /* Just copy the JSON data in as is */
 int json_serializer_to_c_json( struct json_object* json_object, json_serializer_field_t* field, 

@@ -26,6 +26,7 @@
 #include "faild/manager.h"
 #include "faild/test_config.h"
 #include "faild/uplink_results.h"
+#include "faild/uplink_status.h"
 #include "faild/uplink_test_instance.h"
 
 #define _MAX_SHUTDOWN_TIMEOUT     10
@@ -42,7 +43,7 @@ static struct
 
     int init;
 
-    int active_argon_interface_id;
+    int active_alpaca_interface_id;
     faild_uplink_status_t status[FAILD_MAX_INTERFACES];
     faild_uplink_test_instance_t* active_tests[FAILD_MAX_INTERFACES][FAILD_MAX_INTERFACE_TESTS];
 
@@ -53,7 +54,7 @@ static struct
 } _globals = {
     .init = 0,
     .mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP,
-    .active_argon_interface_id = 0,
+    .active_alpaca_interface_id = 0,
     .total_running_tests = 0
 };
 
@@ -216,6 +217,119 @@ int faild_manager_get_config( faild_config_t* config )
     
     if ( ret < 0 ) return errlog( ERR_CRITICAL, "_critical_section\n" );
     
+    return 0;
+}
+
+/**
+ * Retrieve the status of all of the interfaces.
+ */
+int faild_manager_get_status( faild_status_t* status )
+{
+    if ( status == NULL ) return errlogargs();
+
+    faild_uplink_status_t* uplink_status = NULL;
+
+    int _critical_section()
+    {
+        int num_active = 0;
+        status->active_alpaca_interface_id = _globals.active_alpaca_interface_id;
+
+        int c = 0;
+        for ( c = 0 ; c < FAILD_MAX_INTERFACES ; c++ ) {
+            if (( uplink_status == NULL ) && (( uplink_status = faild_uplink_status_create()) == NULL )) {
+                return errlog( ERR_CRITICAL, "faild_uplink_status_create\n" );
+            }
+
+            if ( faild_manager_get_uplink_status( uplink_status, c + 1 ) < 0 ) {
+                return errlog( ERR_CRITICAL, "faild_manager_get_uplink_status\n" );
+            }
+
+            /* Nothing to report about this interface */
+            if ( uplink_status->alpaca_interface_id == 0 ) continue;
+            
+            if ( uplink_status->online == 1 ) num_active++;
+
+            status->uplink_status[c] = uplink_status;
+            
+            uplink_status = NULL;
+        }
+
+        status->num_active_uplinks = num_active;
+
+        return 0;
+    }
+
+    if ( pthread_mutex_lock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_lock" );
+    int ret = _critical_section();
+    if ( pthread_mutex_unlock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_unlock" );
+
+    if ( uplink_status != NULL ) {
+        faild_uplink_status_raze( uplink_status );
+    }
+
+    if ( ret < 0 ) return errlog( ERR_CRITICAL, "_critical_section\n" );
+
+    return 0;
+}
+
+/**
+ * Retrieve the status of a single uplink.
+ */
+int faild_manager_get_uplink_status( faild_uplink_status_t* uplink_status, int alpaca_interface_id )
+{
+    if ( uplink_status == NULL ) return errlogargs();
+    if (( alpaca_interface_id < 1 ) || ( alpaca_interface_id > FAILD_MAX_INTERFACES )) return errlogargs();
+    if ( uplink_status->alpaca_interface_id != 0 ) return errlogargs();
+
+    faild_uplink_results_t* uplink_results = NULL;
+    
+    int _critical_section()
+    {
+        /* Destroy all of the existing results */
+        faild_uplink_status_destroy( uplink_status );
+
+        /* Check all of the active tests to see if there are any results */
+        int c =0;
+        int result_index = 0;
+        faild_uplink_results_t* source_uplink_results = NULL;
+        faild_test_config_t* test_config = NULL;
+
+        for ( c = 0 ; c < FAILD_MAX_INTERFACE_TESTS; c++ ) {
+            if ( _globals.active_tests[alpaca_interface_id-1][c] == NULL ) continue;
+
+            test_config = &_globals.active_tests[alpaca_interface_id-1][c]->config;
+            source_uplink_results = &_globals.active_tests[alpaca_interface_id-1][c]->results;
+            
+            if (( uplink_results = faild_uplink_results_create( source_uplink_results->size )) == NULL ) {
+                return errlog( ERR_CRITICAL, "faild_uplink_results_create\n" );   
+            }
+            
+            /* Copy in the results from the active test */
+            if ( faild_uplink_results_copy( uplink_results, source_uplink_results ) < 0 ) {
+                return errlog( ERR_CRITICAL, "faild_uplink_results_copy\n" );   
+            }
+
+            /* Online as long as one test passes */
+            uplink_status->online |= ( uplink_results->success > test_config->threshold ) ? 1 : 0;
+            
+            uplink_status->results[result_index++] = uplink_results;
+            uplink_results = NULL;
+        }
+
+        /* This means the array contains at least one set of test results */
+        if ( result_index > 0 ) {
+            uplink_status->alpaca_interface_id = alpaca_interface_id;
+        }
+        return 0;
+    }
+
+    if ( pthread_mutex_lock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_lock" );
+    int ret = _critical_section();
+    if ( pthread_mutex_unlock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_unlock" );
+
+    if ( uplink_results != NULL ) faild_uplink_results_raze( uplink_results );
+
+    if ( ret < 0 ) return errlog( ERR_CRITICAL, "_critical_section\n" );
     return 0;
 }
 

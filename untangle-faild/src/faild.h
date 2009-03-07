@@ -110,12 +110,34 @@ typedef struct
 
 typedef struct
 {
+    /* alpaca inteface_id of the interface */
     int alpaca_interface_id;
     
+    /* 1 if this interface interface is online */
     int online;
 
-    faild_uplink_results_t results[FAILD_MAX_INTERFACE_TESTS];
+    /* Number of results in results */
+    int num_results;
+
+    /* Array of interfaces of interfaces */
+    faild_uplink_results_t* results[FAILD_MAX_INTERFACE_TESTS];
 } faild_uplink_status_t;
+
+/* The overall system status */
+typedef struct
+{
+    /* Id of the current active interface. */
+    int active_alpaca_interface_id;
+
+    /* Number of active interfaces */
+    int num_active_uplinks;
+
+    /* Total number of uplinks set in uplink_status */
+    int num_uplinks;
+
+    /* Status for each interface */
+    faild_uplink_status_t* uplink_status[FAILD_MAX_INTERFACES];
+} faild_status_t;
 
 struct faild_uplink_test_class;
 
@@ -135,6 +157,9 @@ typedef struct
 
     /* The class used to run this test. */
     struct faild_uplink_test_class* test_class;
+
+    /* Data the test class can use for whatever it wants */
+    void *ptr;
 } faild_uplink_test_instance_t;
 
 typedef struct faild_uplink_test_class

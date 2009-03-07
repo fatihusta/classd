@@ -330,6 +330,50 @@ int json_serializer_to_json_in_addr( struct json_object* json_object, json_seria
     return 0;
 }
 
+int json_serializer_to_c_timeval( struct json_object* json_object, json_serializer_field_t* field, 
+                                void* c_data )
+{
+    if ( json_object == NULL ) return errlogargs();
+    if ( field == NULL ) return errlogargs();
+    if ( c_data == NULL ) return errlogargs();
+    if ( field->fetch_arg == 0 ) return errlog( ERR_CRITICAL, "field->fetch_arg must be set\n" );
+    int offset = (int)field->arg;
+    if ( offset < 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", offset );
+
+    struct timeval* tv = (struct timeval*)&((char*)c_data)[offset];
+    bzero( tv, sizeof( struct timeval ));
+
+    if ( json_object_utils_parse_timeval( json_object, tv ) < 0 ) {
+        return errlog( ERR_CRITICAL, "json_object_utils_parse_timeval\n" );
+    }
+    
+    return 0;
+}
+
+int json_serializer_to_json_timeval( struct json_object* json_object, json_serializer_field_t* field, 
+                                     void* c_data )
+{
+    if ( json_object == NULL ) return errlogargs();
+    if ( field == NULL ) return errlogargs();
+    if ( c_data == NULL ) return errlogargs();
+    int offset = (int)field->arg;
+    if ( offset < 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", offset );
+    
+    struct timeval* tv = (struct timeval*)&((char*)c_data)[offset];
+
+    struct json_object* tv_json = NULL;
+    if (( tv_json = json_object_utils_create_timeval( tv )) == NULL ) {
+        return errlog( ERR_CRITICAL, "json_object_utils_create_timeval\n" );
+    }
+
+    if ( json_object_utils_add_object( json_object, field->name, tv_json ) < 0 ) {
+        return errlog( ERR_CRITICAL, "json_object_utils_add_object\n" );
+    }
+
+    return 0;    
+}
+
+
 int json_serializer_to_c_array( struct json_object* json_object, json_serializer_field_t* field, 
                                 void* c_array )
 {
@@ -344,6 +388,10 @@ int json_serializer_to_c_array( struct json_object* json_object, json_serializer
     
     if ( _validate_array_serializer( arg ) < 0 ) {
         return errlog( ERR_CRITICAL, "_validate_array_serializer" );
+    }
+
+    if ( arg->is_pointers == 1 ) {
+        return errlog( ERR_CRITICAL, "is_pointers is not implemented for converting to C\n" );
     }
 
     if ( json_object_is_type( json_object, json_type_array ) == 0 ) {
@@ -394,7 +442,7 @@ int json_serializer_to_c_array( struct json_object* json_object, json_serializer
     
     *c_length = length;
     
-    return 0;    
+    return 0;
 }
 
 int json_serializer_to_json_array( struct json_object* json_object, json_serializer_field_t* field, 
@@ -424,11 +472,18 @@ int json_serializer_to_json_array( struct json_object* json_object, json_seriali
     }
 
     char* data = &((char*)c_array)[arg->data_offset];
+    char* item = NULL;
     
     int _critical_section() {
         int c = 0;
         for ( c = 0 ; c < *c_length ; c++ ) {
-            if (( item_json = json_serializer_to_json( arg->serializer, &data[c * arg->item_size] )) ==
+            item = &data[c * arg->item_size];
+            if ( arg->is_pointers == 1 ) {
+                item = ((char**)data)[c];
+                if ( item == NULL ) continue;
+            }
+
+            if (( item_json = json_serializer_to_json( arg->serializer, item )) ==
                 NULL ) {
                 return errlog( ERR_CRITICAL, "json_serializer_to_json\n" );
             }
@@ -446,7 +501,7 @@ int json_serializer_to_json_array( struct json_object* json_object, json_seriali
     }
 
     if ( _critical_section() < 0 ) {
-        json_object_put( array_json );
+        if ( array_json != NULL ) json_object_put( array_json );
         if ( item_json != NULL ) json_object_put( item_json );
         return errlog( ERR_CRITICAL, "_critical_section\n" );
     }

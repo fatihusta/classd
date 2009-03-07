@@ -40,4 +40,11 @@ int faild_manager_set_config( faild_config_t* config );
  */
 int faild_manager_get_config( faild_config_t* config );
 
+/**
+ * Get the status of all of the interfaces
+ */
+int faild_manager_get_status( faild_status_t* status );
+
+int faild_manager_get_uplink_status( faild_uplink_status_t* uplink_status, int alpaca_interface_id );
+
 #endif // #ifndef __FAILD_MANAGER_H_

@@ -27,6 +27,8 @@
 
 #include "faild.h"
 #include "faild/manager.h"
+#include "faild/status.h"
+#include "faild/uplink_status.h"
 
 /* ten-4 */
 #define STATUS_OK 104
@@ -45,6 +47,8 @@ static struct json_object *_set_debug_level( struct json_object* request );
 static struct json_object *_list_functions( struct json_object* request );
 
 static struct json_object *_get_status( struct json_object* request );
+
+static struct json_object *_get_uplink_status( struct json_object* request );
 
 static struct json_object *_set_active_link( struct json_object* request );
 
@@ -71,6 +75,7 @@ static struct
         { .name = "set_debug_level", .function = _set_debug_level },
         { .name = "list_functions", .function = _list_functions },
         { .name = "get_status", .function = _get_status },
+        { .name = "get_uplink_status", .function = _get_uplink_status },
         { .name = "set_active_link", .function = _set_active_link },
         { .name = "get_available_tests", .function = _get_available_tests },
         { .name = "shutdown", .function = _shutdown },
@@ -134,7 +139,7 @@ static struct json_object *_get_config( struct json_object* request )
     struct json_object* config_json = NULL;
     if (( config_json = faild_config_to_json( &config )) == NULL ) {
         json_object_put( response );
-        errlog( ERR_CRITICAL, "json_server_build_response\n" );
+        errlog( ERR_CRITICAL, "faild_config_to_json\n" );
         return json_object_get( _globals.internal_error );
     }
     
@@ -293,14 +298,60 @@ static struct json_object *_list_functions( struct json_object* request )
 
 static struct json_object *_get_status( struct json_object* request )
 {
+    faild_status_t status;
+
+    if ( faild_status_init( &status ) < 0 ) {
+        errlog( ERR_CRITICAL, "faild_status_init\n" );
+        return json_object_get( _globals.internal_error );        
+    }
+
+    struct json_object* response = NULL;
+    struct json_object* status_json = NULL;
+    
+    int _critical_section()
+    {
+        if ( faild_manager_get_status( &status ) < 0 ) {
+            return errlog( ERR_CRITICAL, "faild_manager_get_status\n" );
+        }
+        
+        if (( response = json_server_build_response( STATUS_OK, 0, "Retrieved settings" )) == NULL ) {
+            return errlog( ERR_CRITICAL, "json_server_build_response\n" );
+        }
+        
+        
+        if (( status_json = faild_status_to_json( &status )) == NULL ) {
+            return errlog( ERR_CRITICAL, "faild_status_to_json\n" );
+        }
+    
+        json_object_object_add( response, "status", status_json );
+        status_json = NULL;
+        return 0;
+    } 
+
+    int ret = _critical_section();
+
+    faild_status_destroy( &status );
+
+    if ( ret < 0 ) {
+        if ( response != NULL ) json_object_put( response );
+        if ( status_json != NULL ) json_object_put( status_json );
+        return json_object_get( _globals.internal_error );
+    }
+
+    return response;
+}
+
+static struct json_object *_get_uplink_status( struct json_object* request )
+{
     struct json_object* response = NULL;
 
-    if (( response = json_server_build_response( STATUS_ERR, 0, "Implement get status" )) == NULL ) {
+    if (( response = json_server_build_response( STATUS_ERR, 0, "Implement uplink status" )) == NULL ) {
         return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
     }
 
     return response;    
 }
+
 
 static struct json_object *_set_active_link( struct json_object* request )
 {

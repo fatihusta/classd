@@ -42,8 +42,8 @@ faild_source=src/json/server.c src/json/object_utils.c \
 	src/json/serializer.c src/main.c src/functions.c \
 	src/faild/config.c src/faild/manager.c src/faild/libs.c \
 	src/faild/uplink_test_instance.c src/faild/test_config.c \
-	src/faild/uplink_results.c \
-	${mvutil_source}
+	src/faild/uplink_results.c src/faild/uplink_status.c \
+	src/faild/status.c ${mvutil_source}
 
 faild_objects=$(patsubst %.c,${object_dir}/%.o, ${faild_source})
 faild_binary=faild
