@@ -117,6 +117,8 @@ typedef struct
     faild_uplink_results_t results[FAILD_MAX_INTERFACE_TESTS];
 } faild_uplink_status_t;
 
+struct faild_uplink_test_class;
+
 typedef struct
 {
     /* Flag that indicates whether this test is alive */
@@ -130,17 +132,22 @@ typedef struct
     
     /* The configuration for this test. */
     faild_test_config_t config;
+
+    /* The class used to run this test. */
+    struct faild_uplink_test_class* test_class;
 } faild_uplink_test_instance_t;
 
-typedef struct
+typedef struct faild_uplink_test_class
 {
     char name[FAILD_TEST_CLASS_NAME_SIZE];
 
     /* Initialize this instance of the test.  Allocate any variables, etc. */
     int (*init)( faild_uplink_test_instance_t *instance );
     
-    /* Run one iteration of the test.  Timeouts are automatically
-     * handled outside of the test. */
+    /* Run one iteration of the test.
+     * If the test returns 0, the test failed.
+     * If the test returns 1, the test passed if it returns within the defined timeout.
+     */
     int (*run)( faild_uplink_test_instance_t *instance, struct in_addr* primary_address, 
                 struct in_addr* default_gateway );
 
@@ -185,6 +192,9 @@ faild_config_t* faild_config_malloc( void );
 int faild_config_init( faild_config_t* config );
 faild_config_t* faild_config_create( void );
 
+/* Compare two test configurations */
+int faild_test_config_equ( faild_test_config_t* test_config_1, faild_test_config_t* test_config_2 );
+
 /* Load a configuration */
 int faild_config_load_json( faild_config_t* config, struct json_object* json_config );
 
@@ -194,6 +204,12 @@ struct json_object* faild_config_to_json( faild_config_t* config );
 /* test lib handling functions */
 int faild_libs_init( void );
 int faild_libs_load_test_classes( char* lib_dir_name );
+
+/* Lookup the test class
+ * Returns < 0 on error.
+ * Puts the test class into test_class.
+ */
+int faild_libs_get_test_classes( char* test_class_name, faild_uplink_test_class_t** test_class );
 
 /* test class utility functions */
 faild_uplink_test_class_t* faild_uplink_test_class_malloc( void );

@@ -23,7 +23,10 @@
 #define MSEC_TO_SEC(msec)  ((msec) / M_SEC)
 #define SEC_TO_MSEC(sec)   ((sec)  * M_SEC)
 
-#define USEC_TO_MSEC(msec) ((msec) / (U_SEC/M_SEC))
+#define NSEC_TO_MSEC(nsec) ((nsec) / (N_SEC/M_SEC))
+#define MSEC_TO_NSEC(msec) ((msec) * (N_SEC/M_SEC))
+
+#define USEC_TO_MSEC(msec) ((usec) / (U_SEC/M_SEC))
 #define MSEC_TO_USEC(msec) ((msec) * (U_SEC/M_SEC))
 
 #define USEC_TO_SEC(usec)  ((usec) / U_SEC)
@@ -77,5 +80,21 @@ int           utime_msec_add_now( struct timeval* tv, long millisec );
  * starts a thread that waits usec microseconds and then posts the semaphore
  */
 void*         utime_timer_start_sem(void* utime_timer_struct);
+
+/**
+ * Return the number of nanoseconds between time_1 and time_2
+ */
+long long utime_timespec_diff( struct timespec* time_1, struct timespec* time_2 );
+
+/**
+ * Add nanoseconds to a timespec (dest can equal time_1)
+ */
+int utime_timespec_add( struct timespec* dest, struct timespec* time_1, long long nsecs );
+
+/**
+ * Add two timespecs together (dest can equal time_1 or time_2)
+ */
+int utime_timespec_add_timespec( struct timespec* dest, struct timespec* time_1, struct timespec* time_2 );
+                                 
 
 #endif

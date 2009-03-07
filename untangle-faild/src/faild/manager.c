@@ -24,6 +24,9 @@
 
 #include "faild.h"
 #include "faild/manager.h"
+#include "faild/test_config.h"
+#include "faild/uplink_results.h"
+#include "faild/uplink_test_instance.h"
 
 #define _MAX_SHUTDOWN_TIMEOUT     10
 
@@ -69,9 +72,12 @@ int faild_manager_init( faild_config_t* config )
     bzero( &_globals.status, sizeof( _globals.status ));
     bzero( &_globals.active_tests, sizeof( _globals.active_tests ));
 
-    memcpy( &_globals.config, config, sizeof( _globals.config ));
-
     _globals.init = 1;
+
+    if ( faild_manager_set_config( config ) < 0 ) {
+        return errlog( ERR_CRITICAL, "faild_manager_set_config\n" );
+    }
+    
 
     return 0;
 }
@@ -82,6 +88,8 @@ int faild_manager_init( faild_config_t* config )
 int faild_manager_set_config( faild_config_t* config )
 {
     if ( config == NULL ) return errlogargs();
+
+    faild_uplink_test_instance_t* test_instance = NULL;
     
     int _critical_section() {
         debug( 9, "Loading new config\n" );
@@ -121,24 +129,54 @@ int faild_manager_set_config( faild_config_t* config )
         for ( c = 0 ; c < FAILD_MAX_INTERFACES; c++ ) {
             for ( d = 0 ; d < FAILD_MAX_INTERFACE_TESTS ; d++ ) {
                 if ( is_active[c][d] == 1 ) continue;
-                faild_uplink_test_instance_t* test_instance = _globals.active_tests[c][d];
+                test_instance = _globals.active_tests[c][d];
                 _globals.active_tests[c][d] = NULL;
+                if ( test_instance == NULL ) continue;
+
                 test_instance->is_alive = 0;
+
+                debug( 5, "Stopping test at %d.%d\n", c, d );
             }
         }
+
+        test_instance = NULL;
         
+        /* Start all of the new tests */
+        debug( 5, "Creating %d new tests\n", num_new_tests );
         for ( c = 0 ; c < num_new_tests ; c++ ) {
             test_config = new_tests[c];
             if ( test_config == NULL ) {
                 errlog( ERR_CRITICAL, "Invalid test config\n" );
                 continue;
             }
+            
+            char* test_class_name = test_config->test_class_name;
+            faild_uplink_test_class_t* test_class = NULL;
+            
+            if ( faild_libs_get_test_classes( test_class_name, &test_class ) < 0 ) {
+                return errlog( ERR_CRITICAL, "faild_libs_get_test_classes\n" );
+            }
 
+            if ( test_class == NULL ) {
+                errlog( ERR_WARNING, "The test class name '%s' doesn't exist.\n", test_class_name );
+                continue;
+            }
+            
             if (( d = _find_open_test( test_config->alpaca_interface_id )) < 0 ) {
                 errlog( ERR_CRITICAL, "_find_open_test\n" );
             }
-
             
+            if (( test_instance = faild_uplink_test_instance_create( test_config )) == NULL ) {
+                return errlog( ERR_CRITICAL, "faild_uplink_test_instance_create\n" );
+            }
+            
+            if ( faild_uplink_test_instance_start( test_instance ) < 0 ) {
+                return errlog( ERR_CRITICAL, "faild_uplink_test_start\n" );
+            }
+
+            _globals.active_tests[test_config->alpaca_interface_id-1][d] = test_instance;
+            test_instance = NULL;
+            _globals.total_running_tests++;
         }
         
         memcpy( &_globals.config, config, sizeof( _globals.config ));
@@ -149,6 +187,10 @@ int faild_manager_set_config( faild_config_t* config )
     if ( pthread_mutex_lock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_lock" );
     int ret = _critical_section();
     if ( pthread_mutex_unlock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_unlock" );
+
+    if (( test_instance != NULL ) && ( faild_uplink_test_instance_raze( test_instance ) < 0 )) {
+        errlog( ERR_CRITICAL, "faild_uplink_test_instance_raze\n" );
+    }
     
     if ( ret < 0 ) return errlog( ERR_CRITICAL, "_critical_section\n" );
     
@@ -177,9 +219,51 @@ int faild_manager_get_config( faild_config_t* config )
     return 0;
 }
 
+/* Unregister an individual test */
+int faild_manager_unregister_test_instance( faild_uplink_test_instance_t* test_instance )
+{
+    if ( test_instance == NULL ) return errlogargs();
+    
+    int aii = test_instance->config.alpaca_interface_id;
+    if (( aii < 1 ) || ( aii > FAILD_MAX_INTERFACES )) {
+        return errlogargs();
+    }
+    
+    int _critical_section()
+    {
+        aii = aii-1;
+        int c = 0;
+        int count = 0;
+        for ( c = 0 ; c < FAILD_MAX_INTERFACE_TESTS ; c++ ) {
+            if ( test_instance == _globals.active_tests[aii][c] ) {
+                _globals.active_tests[aii][c] = NULL;
+                count++;
+            }
+        }
+
+        debug( 4, "Unregistered %d tests on exit.\n", count );
+        
+        _globals.total_running_tests--;
+
+        if ( _globals.total_running_tests < 0 ) {
+            errlog( ERR_WARNING, "Running test inconsistency : %d\n", _globals.total_running_tests );
+            _globals.total_running_tests = 0;
+        }
+
+        return 0;
+    }
+
+    if ( pthread_mutex_lock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_lock" );
+    int ret = _critical_section();
+    if ( pthread_mutex_unlock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_unlock" );
+    
+    if ( ret < 0 ) return errlog( ERR_CRITICAL, "_critical_section\n" );
+
+    return 0;
+}
 
 /* Stop all of the active tests */
-int faild_manager_stop_tests( void )
+int faild_manager_stop_all_tests( void )
 {
     int c = 0;
 
@@ -240,6 +324,30 @@ static int _validate_test_config( faild_test_config_t* test_config )
 
     return 0;
 }
+
+
+/* Return the index of this test in the correct interface */
+static int _find_test_config( faild_test_config_t* test_config )
+{
+    int aii = test_config->alpaca_interface_id;
+    if (( aii < 1 ) || ( aii > FAILD_MAX_INTERFACES )) {
+        return errlogargs();
+    }
+
+    aii = aii - 1;
+    int c = 0;
+    for ( c = 0 ; c < FAILD_MAX_INTERFACE_TESTS ; c++ ) {
+        faild_uplink_test_instance_t* test_instance =  _globals.active_tests[aii][c];
+        if ( test_instance == NULL ) continue;
+        
+        if ( faild_test_config_equ( test_config, &test_instance->config ) == 1 ) {
+            return c;
+        }
+    }
+    
+    return -2;
+}
+
 
 /* Return the index of the next open test slot. */
 static int _find_open_test( int aii )

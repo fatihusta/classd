@@ -26,7 +26,9 @@ typedef struct
 
 int faild_manager_init( faild_config_t* config );
 
-int faild_manager_stop_tests( void );
+int faild_manager_unregister_test_instance( faild_uplink_test_instance_t* test_instance );
+
+int faild_manager_stop_all_tests( void );
 
 /**
  * Copies in the config to the global config
@@ -37,15 +39,5 @@ int faild_manager_set_config( faild_config_t* config );
  * Gets the config
  */
 int faild_manager_get_config( faild_config_t* config );
-
-/**
- * Get the sttings for an individual IP.
- */
-int faild_manager_get_ip_settings( struct in_addr* ip, faild_manager_settings_t* settings );
-
-/**
- * Reload the gateway.
- */
-int faild_manager_reload_gateway( void );
 
 #endif // #ifndef __FAILD_MANAGER_H_

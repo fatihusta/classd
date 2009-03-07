@@ -10,7 +10,7 @@ INC           = ${build_dir}/include src
 INC_FLAGS     = $(patsubst %,-I%,$(INC))
 LDDIR         = lib $(build_lib_path)  
 LDDIR_FLAGS   = $(patsubst %,-L%,$(LDDIR))
-LIBS          = json microhttpd dl
+LIBS          = json microhttpd dl rt m
 #LIBS          += efence
 LIBS_FLAGS    = -pthread $(patsubst %,-l%,$(LIBS)) --warn-common
 FLAGS        += -rdynamic -std=c99
@@ -41,6 +41,8 @@ mvutil_source=libmvutil/src/debug.c libmvutil/src/errlog.c libmvutil/src/hash.c 
 faild_source=src/json/server.c src/json/object_utils.c \
 	src/json/serializer.c src/main.c src/functions.c \
 	src/faild/config.c src/faild/manager.c src/faild/libs.c \
+	src/faild/uplink_test_instance.c src/faild/test_config.c \
+	src/faild/uplink_results.c \
 	${mvutil_source}
 
 faild_objects=$(patsubst %.c,${object_dir}/%.o, ${faild_source})

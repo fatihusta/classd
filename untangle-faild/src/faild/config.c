@@ -212,6 +212,26 @@ int faild_config_load_json( faild_config_t* config, struct json_object* json_con
     return 0;
 }
 
+int faild_test_config_equ( faild_test_config_t* test_config_1, faild_test_config_t* test_config_2 )
+{
+    if ( test_config_1 == NULL ) return errlogargs();
+    if ( test_config_2 == NULL ) return errlogargs();
+
+    if ( test_config_1->alpaca_interface_id != test_config_2->alpaca_interface_id ) return 0;
+    if ( test_config_1->timeout_ms != test_config_2->timeout_ms ) return 0;
+    if ( test_config_1->delay_ms != test_config_2->delay_ms ) return 0;
+    if ( test_config_1->bucket_size != test_config_2->bucket_size ) return 0;
+    if ( test_config_1->threshold != test_config_2->threshold ) return 0;
+
+    if ( strncmp( test_config_1->test_class_name, test_config_2->test_class_name, sizeof( test_config_1->test_class_name )) != 0 ) {
+        return 0;
+    }
+
+    if ( json_object_equ( test_config_1->params, test_config_2->params ) != 1 ) return 0;
+        
+    return 1;
+}
+
 struct json_object* faild_config_to_json( faild_config_t* config )
 {
     if ( config == NULL ) return errlogargs_null();

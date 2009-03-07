@@ -12,6 +12,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/types.h>
@@ -81,6 +82,10 @@ static void _destroy( void );
 static int _setup_output( void );
 
 static void _signal_term( int sig );
+
+/* USR1 is used to tell test iterations that there time is up. */
+static void _signal_usr1( int sig );
+
 static int _set_signals( void );
 
 /* This is defined inside of functions.c */
@@ -145,7 +150,7 @@ int main( int argc, char** argv )
         return errlog( ERR_CRITICAL, "_init\n" );
     }
 
-    debug( 1, "MAIN: Faild started.\n" );
+    debug( 1, "MAIN: Faild started %d.\n", sizeof( long long ));
     _set_signals();
 
     /* Wait for the shutdown signal */
@@ -357,7 +362,7 @@ static void _destroy( void )
     json_server_destroy( &_globals.json_server );
     
     /* Stop all of the running tests */
-    faild_manager_stop_tests();
+    faild_manager_stop_all_tests();
 
     libmvutil_cleanup();
 
@@ -430,6 +435,13 @@ static void _signal_term( int sig )
     if ( sem != NULL ) sem_post( sem );    
 }
 
+static void _signal_usr1( int sig )
+{
+    /* Do nothing, but if you set the signal handler to SIG_IGN, the
+     * thread doesn't get woken up. */
+}
+
+
 static int _set_signals( void )
 {
     struct sigaction signal_action;
@@ -442,6 +454,11 @@ static int _set_signals( void )
      signal_action.sa_handler = SIG_IGN;
      sigaction( SIGCHLD, &signal_action, NULL );
      sigaction( SIGPIPE, &signal_action, NULL );
+
+     /* USR1 is used to tell a test iteration to exit */
+     sigemptyset(&signal_action.sa_mask);
+     signal_action.sa_handler = _signal_usr1;
+     sigaction( SIGUSR1, &signal_action, NULL );
     
      return 0;
 }

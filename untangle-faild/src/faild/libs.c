@@ -131,6 +131,21 @@ int faild_libs_load_test_classes( char* lib_dir_name )
     return 0;
 }
 
+int faild_libs_get_test_classes( char* test_class_name, faild_uplink_test_class_t** test_class )
+{
+    if ( test_class_name == NULL ) return errlogargs();
+    if ( test_class == NULL ) return errlogargs();
+
+    debug( 5, "Lookup up the test class '%s'\n", test_class_name );
+    *test_class = (faild_uplink_test_class_t*)ht_lookup( &_globals.name_to_test_classes, test_class_name );
+    if ( *test_class == NULL ) {
+        debug( 5, "The test class '%s' doesn't exist\n", test_class_name );
+    }
+
+    return 0;
+}
+
+
 faild_uplink_test_class_t* faild_uplink_test_class_malloc( void )
 {
     faild_uplink_test_class_t* test_class = NULL;

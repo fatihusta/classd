@@ -42,6 +42,8 @@ static int _init( faild_uplink_test_instance_t *instance )
 static int _run( faild_uplink_test_instance_t *instance,
                  struct in_addr* primary_address, struct in_addr* default_gateway )
 {
+    debug( 8, "ARP is running!.\n" );
+
     return 0;
 }
 

@@ -85,3 +85,71 @@ void*         utime_timer_start_sem(void* utime_timer_struct)
     sem_post(t->sem_to_post);
     return NULL;
 }
+
+/**
+ * Return the number of nanoseconds between time_1 and time_2
+ */
+long long utime_timespec_diff( struct timespec* time_1, struct timespec* time_2 )
+{
+    long long diff = 0;
+
+    if ( time_1 == NULL ) return errlogargs();
+    if ( time_2 == NULL ) return errlogargs();
+    
+    diff = (long long)SEC_TO_NSEC((long long)time_1->tv_sec - (long long)time_2->tv_sec );
+    diff += (long long)time_1->tv_nsec - (long long)time_2->tv_nsec;
+
+    return diff;
+}
+
+/**
+ * Add nanoseconds to a timespec (dest can equal time_1)
+ */
+int utime_timespec_add( struct timespec* dest, struct timespec* time_1, long long nsecs )
+{
+    if ( dest == NULL ) return errlogargs();
+    if ( time_1 == NULL ) return errlogargs();
+    
+    struct timespec time_2;
+    time_2.tv_sec = NSEC_TO_SEC( nsecs );
+    time_2.tv_nsec = nsecs % N_SEC;
+    
+    if ( utime_timespec_add_timespec( dest, time_1, &time_2 ) < 0 ) {
+        return errlog( ERR_CRITICAL, "utime_timespec_diff_add_timespec\n" );
+    }
+
+    return 0;
+}
+
+/**
+ * Add two timespecs together (dest can equal time_1 or time_2)
+ */
+int utime_timespec_add_timespec( struct timespec* dest, struct timespec* time_1, 
+                                      struct timespec* time_2 )
+{
+    if ( dest == NULL ) return errlogargs();
+    if ( time_1 == NULL ) return errlogargs();
+    if ( time_2 == NULL ) return errlogargs();
+
+    struct timespec temp_time_1;
+    struct timespec temp_time_2;
+    
+    temp_time_1.tv_sec = time_1->tv_sec;
+    temp_time_1.tv_nsec = time_1->tv_nsec;
+    temp_time_2.tv_sec = time_2->tv_sec;
+    temp_time_2.tv_nsec = time_2->tv_nsec;
+
+    dest->tv_sec = temp_time_1.tv_sec + temp_time_2.tv_sec;
+    dest->tv_nsec = temp_time_1.tv_nsec + temp_time_2.tv_nsec;
+    
+    if ( dest->tv_nsec >= N_SEC ) {
+        dest->tv_sec  += NSEC_TO_SEC( dest->tv_nsec );
+        dest->tv_nsec  = dest->tv_nsec % N_SEC;
+    } else if ( dest->tv_nsec < 0 ) {
+        /* This should never happen */
+        dest->tv_nsec = 0;
+    }
+
+    return 0;
+}
+
