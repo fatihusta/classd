@@ -82,6 +82,8 @@ int faild_uplink_status_init( faild_uplink_status_t* uplink_status )
     if ( uplink_status == NULL ) return errlogargs();
 
     bzero( uplink_status, sizeof( faild_uplink_status_t ));
+
+    uplink_status->num_results = FAILD_MAX_INTERFACE_TESTS;
     
     return 0;
 }

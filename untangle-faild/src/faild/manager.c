@@ -285,8 +285,9 @@ int faild_manager_get_uplink_status( faild_uplink_status_t* uplink_status, int a
     
     int _critical_section()
     {
-        /* Destroy all of the existing results */
+        /* Reinitialize the uplink status */
         faild_uplink_status_destroy( uplink_status );
+        faild_uplink_status_init( uplink_status );
 
         /* Check all of the active tests to see if there are any results */
         int c =0;

@@ -30,7 +30,7 @@ static int _uplink_status_array_get_size( void *c_array );
 
 static json_serializer_array_t _uplink_status_array_arg =
 {
-    .max_length = FAILD_MAX_INTERFACE_TESTS,
+    .max_length = FAILD_MAX_INTERFACES,
     .data_offset = offsetof( faild_status_t, uplink_status ),
     .length_offset = offsetof( faild_status_t, num_uplinks ),
     .get_size = _uplink_status_array_get_size,
@@ -81,6 +81,8 @@ int faild_status_init( faild_status_t* status )
     if ( status == NULL ) return errlogargs();
 
     bzero( status, sizeof( faild_status_t ));
+
+    status->num_uplinks = FAILD_MAX_INTERFACES;
     
     return 0;
 }

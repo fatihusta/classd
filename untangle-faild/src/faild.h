@@ -116,7 +116,7 @@ typedef struct
     /* 1 if this interface interface is online */
     int online;
 
-    /* Number of results in results */
+    /* Total number of uplinks set in uplink_status (only for JSON serialization) */
     int num_results;
 
     /* Array of interfaces of interfaces */
@@ -132,7 +132,7 @@ typedef struct
     /* Number of active interfaces */
     int num_active_uplinks;
 
-    /* Total number of uplinks set in uplink_status */
+    /* Total number of uplinks set in uplink_status (only for JSON serialization) */
     int num_uplinks;
 
     /* Status for each interface */

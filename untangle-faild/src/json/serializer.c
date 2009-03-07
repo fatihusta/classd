@@ -473,6 +473,8 @@ int json_serializer_to_json_array( struct json_object* json_object, json_seriali
 
     char* data = &((char*)c_array)[arg->data_offset];
     char* item = NULL;
+
+    debug( 9, "Found %d c items to add to the JSON array.\n", *c_length );
     
     int _critical_section() {
         int c = 0;

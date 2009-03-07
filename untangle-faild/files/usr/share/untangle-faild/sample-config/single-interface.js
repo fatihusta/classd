@@ -11,8 +11,8 @@
     "tests" : [{
         "alpaca_interface_id" : 1,
         "test_class_name" : "dns",
-        "timeout" : 2000,
-        "delay" : 4000,
+        "timeout" : 1000,
+        "delay" : 2000,
         "bucket_size" : 10,
         /* So, on complete failure, it would take 28 seconds to
         * recover.  * It would take 14 seconds (12 + 2) before a failure
@@ -24,8 +24,8 @@
     },{
         "alpaca_interface_id" : 1,
         "test_class_name" : "arp",
-        "timeout" : 2000,
-        "delay" : 4000,
+        "timeout" : 1000,
+        "delay" : 2000,
         "bucket_size" : 10,
         /* So, on complete failure, it would take 28 seconds to
         * recover.  * It would take 14 seconds (12 + 2) before a failure

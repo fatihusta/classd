@@ -343,13 +343,70 @@ static struct json_object *_get_status( struct json_object* request )
 
 static struct json_object *_get_uplink_status( struct json_object* request )
 {
+    faild_uplink_status_t uplink_status;
+
+    int alpaca_interface_id = 0;
+
+    struct json_object* temp = NULL;
+
     struct json_object* response = NULL;
 
-    if (( response = json_server_build_response( STATUS_ERR, 0, "Implement uplink status" )) == NULL ) {
-        return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
+    if (( temp = json_object_object_get( request, "alpaca_interface_id" )) != NULL ) {
+        alpaca_interface_id = json_object_get_int( temp );
+    } else {
+        if (( response = json_server_build_response( STATUS_ERR, 0, "Missing alpaca_interface_id" )) == NULL ) {
+            return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
+        }
+        return response;
     }
 
-    return response;    
+    if ( faild_uplink_status_init( &uplink_status ) < 0 ) {
+        errlog( ERR_CRITICAL, "faild_uplink_status_init\n" );
+        return json_object_get( _globals.internal_error );        
+    }
+
+    struct json_object* uplink_status_json = NULL;
+    
+    int _critical_section()
+    {
+        if ( faild_manager_get_uplink_status( &uplink_status, alpaca_interface_id ) < 0 ) {
+            return errlog( ERR_CRITICAL, "faild_manager_get_uplink_status\n" );
+        }
+
+        if ( uplink_status.alpaca_interface_id != alpaca_interface_id ) {
+            if (( response = json_server_build_response( STATUS_OK, 0, "No info" )) == NULL ) {
+                return errlog( ERR_CRITICAL, "json_server_build_response\n" );
+            }
+            return 0;
+        }
+
+        if (( response = json_server_build_response( STATUS_OK, 0, "Retrieved Uplink Status" )) == NULL ) {
+            return errlog( ERR_CRITICAL, "json_server_build_response\n" );
+        }
+        if (( response = json_server_build_response( STATUS_OK, 0, "Retrieved Uplink Status" )) == NULL ) {
+            return errlog( ERR_CRITICAL, "json_server_build_response\n" );
+        }
+        
+        if (( uplink_status_json = faild_uplink_status_to_json( &uplink_status )) == NULL ) {
+            return errlog( ERR_CRITICAL, "faild_uplink_status_to_json\n" );
+        }
+    
+        json_object_object_add( response, "uplink_status", uplink_status_json );
+        uplink_status_json = NULL;
+        return 0;
+    } 
+
+    int ret = _critical_section();
+
+    faild_uplink_status_destroy( &uplink_status );
+
+    if ( ret < 0 ) {
+        if ( response != NULL ) json_object_put( response );
+        if ( uplink_status_json != NULL ) json_object_put( uplink_status_json );
+        return json_object_get( _globals.internal_error );
+    }
+
+    return response;
 }
 
 

@@ -165,6 +165,8 @@ int faild_uplink_results_add( faild_uplink_results_t* results, int result )
 
     if ( results->results[results->position] == 1 ) results->success--;
     if ( result == 1 ) results->success++;
+
+    results->results[results->position]  = result;
     
     results->position++;
     if ( results->position >= results->size ) results->position = 0;
