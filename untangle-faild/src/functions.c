@@ -52,6 +52,8 @@ static struct json_object *_get_uplink_status( struct json_object* request );
 
 static struct json_object *_set_active_link( struct json_object* request );
 
+static struct json_object *_run_script( struct json_object* request );
+
 static struct json_object *_get_available_tests( struct json_object* request );
 
 static struct json_object *_shutdown( struct json_object* request );
@@ -77,6 +79,7 @@ static struct
         { .name = "get_status", .function = _get_status },
         { .name = "get_uplink_status", .function = _get_uplink_status },
         { .name = "set_active_link", .function = _set_active_link },
+        { .name = "run_script", .function = _run_script },
         { .name = "get_available_tests", .function = _get_available_tests },
         { .name = "shutdown", .function = _shutdown },
         { .name = NULL, .function = NULL }
@@ -409,17 +412,52 @@ static struct json_object *_get_uplink_status( struct json_object* request )
     return response;
 }
 
-
 static struct json_object *_set_active_link( struct json_object* request )
 {
+    int alpaca_interface_id = 0;
     struct json_object* response = NULL;
 
-    if (( response = json_server_build_response( STATUS_ERR, 0, "Implement set active link" )) == NULL ) {
-        return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
+    struct json_object* temp = NULL;
+
+    if (( temp = json_object_object_get( request, "alpaca_interface_id" )) != NULL ) {
+        alpaca_interface_id = json_object_get_int( temp );
+    } else {
+        if (( response = json_server_build_response( STATUS_ERR, 0, "Missing alpaca_interface_id" )) == NULL ) {
+            return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
+        }
+        return response;
+    }
+
+    if ( faild_manager_change_active_uplink( alpaca_interface_id ) < 0 ) {
+        errlog( ERR_CRITICAL, "faild_manager_change_active_uplink\n" );
+        return json_object_get( _globals.internal_error );
+    }
+
+    if (( response = json_server_build_response( STATUS_OK, 0, "Set active link" )) == NULL ) {
+        errlog( ERR_CRITICAL, "json_server_build_response\n" );
+        return json_object_get( _globals.internal_error );
     }
 
     return response;
 }
+
+static struct json_object *_run_script( struct json_object* request )
+{
+    struct json_object* response = NULL;
+
+    if ( faild_manager_run_script() < 0 ) {
+        errlog( ERR_CRITICAL, "faild_manager_run_script\n" );
+        return json_object_get( _globals.internal_error );
+    }
+    
+    if (( response = json_server_build_response( STATUS_OK, 0, "Executed script successfully" )) == NULL ) {
+        errlog( ERR_CRITICAL, "json_server_build_response\n" );
+        return json_object_get( _globals.internal_error );
+    }
+
+    return response;    
+}
+
 
 static struct json_object *_get_available_tests( struct json_object* request )
 {

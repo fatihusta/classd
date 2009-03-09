@@ -19,8 +19,9 @@ int faild_uplink_test_instance_stop( faild_uplink_test_instance_t* test_instance
 
 faild_uplink_test_instance_t* faild_uplink_test_instance_malloc( void );
 int faild_uplink_test_instance_init( faild_uplink_test_instance_t* test_instance,
-                                     faild_test_config_t* config );
-faild_uplink_test_instance_t* faild_uplink_test_instance_create( faild_test_config_t* config );
+                                     faild_test_config_t* test_config, faild_config_t* config );
+faild_uplink_test_instance_t* faild_uplink_test_instance_create( faild_test_config_t* test_config,
+                                                                 faild_config_t* config );
 
 int faild_uplink_test_instance_free( faild_uplink_test_instance_t* test_instance );
 int faild_uplink_test_instance_destroy( faild_uplink_test_instance_t* test_instance );

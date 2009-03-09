@@ -36,7 +36,7 @@ typedef struct
     int alpaca_interface_id;
     
     char os_name[IF_NAMESIZE];
-} faild_interface_t;
+} faild_uplink_t;
 
 typedef struct
 {
@@ -71,10 +71,10 @@ typedef struct
     int interfaces_length;
 
     /* Array of all of the interfaces. */
-    faild_interface_t interfaces[FAILD_MAX_INTERFACES];
+    faild_uplink_t interfaces[FAILD_MAX_INTERFACES];
 
     /* Array, maps ( alpaca index - 1) -> an interface. */
-    faild_interface_t interface_map[FAILD_MAX_INTERFACES];
+    faild_uplink_t* interface_map[FAILD_MAX_INTERFACES];
 
     /* Minimum amount of time to stay on an interface before switching */
     int interface_min_ms;
@@ -112,6 +112,9 @@ typedef struct
 {
     /* alpaca inteface_id of the interface */
     int alpaca_interface_id;
+
+    /* OS NAME for this interface */
+    char os_name[IF_NAMESIZE];
     
     /* 1 if this interface interface is online */
     int online;
@@ -147,7 +150,7 @@ typedef struct
     int is_alive;
     
     /* The interface this test is running on. */
-    faild_interface_t interface;
+    faild_uplink_t uplink;
     
     /* The test results for the previous test runs. */
     faild_uplink_results_t results;
@@ -234,7 +237,7 @@ int faild_libs_load_test_classes( char* lib_dir_name );
  * Returns < 0 on error.
  * Puts the test class into test_class.
  */
-int faild_libs_get_test_classes( char* test_class_name, faild_uplink_test_class_t** test_class );
+int faild_libs_get_test_class( char* test_class_name, faild_uplink_test_class_t** test_class );
 
 /* test class utility functions */
 faild_uplink_test_class_t* faild_uplink_test_class_malloc( void );

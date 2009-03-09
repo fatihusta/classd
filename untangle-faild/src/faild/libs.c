@@ -131,7 +131,7 @@ int faild_libs_load_test_classes( char* lib_dir_name )
     return 0;
 }
 
-int faild_libs_get_test_classes( char* test_class_name, faild_uplink_test_class_t** test_class )
+int faild_libs_get_test_class( char* test_class_name, faild_uplink_test_class_t** test_class )
 {
     if ( test_class_name == NULL ) return errlogargs();
     if ( test_class == NULL ) return errlogargs();

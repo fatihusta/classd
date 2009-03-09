@@ -40,6 +40,11 @@ static json_serializer_array_t _results_array_arg =
     .is_pointers = 1
 };
 
+static json_serializer_string_t _os_string = {
+    .offset = offsetof( faild_uplink_status_t, os_name ),
+    .len = sizeof((( faild_uplink_t *)0)->os_name )
+};
+
 json_serializer_t faild_uplink_status_serializer =
 {
     .name = "uplink_status",
@@ -64,6 +69,13 @@ json_serializer_t faild_uplink_status_serializer =
             .to_c = json_serializer_to_c_array,
             .to_json = json_serializer_to_json_array,
             .arg = &_results_array_arg
+        },{
+            .name = "os_name",
+            .fetch_arg = 1,
+            .if_empty = JSON_SERIALIZER_FIELD_EMPTY_ERROR,
+            .to_c = json_serializer_to_c_string,
+            .to_json = json_serializer_to_json_string,
+            .arg = &_os_string
         }, JSON_SERIALIZER_FIELD_TERM }
 };
 

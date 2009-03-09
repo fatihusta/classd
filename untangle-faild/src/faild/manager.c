@@ -12,9 +12,11 @@
 #include <pthread.h>
 
 #include <unistd.h>
+#include <stdlib.h>
+#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
+#include <sys/wait.h>
 
 #include <net/if.h>
 
@@ -24,6 +26,7 @@
 
 #include "faild.h"
 #include "faild/manager.h"
+#include "status.h"
 #include "faild/test_config.h"
 #include "faild/uplink_results.h"
 #include "faild/uplink_status.h"
@@ -51,11 +54,14 @@ static struct
      * as long as the thread exists.  active_tests is set to NULL as
      * soon as is_alive is set to NULL. */
     int total_running_tests;
+
+    char *switch_script;
 } _globals = {
     .init = 0,
     .mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP,
     .active_alpaca_interface_id = 0,
-    .total_running_tests = 0
+    .total_running_tests = 0,
+    .switch_script = NULL
 };
 
 static int _validate_test_config( faild_test_config_t* test_config );
@@ -66,7 +72,11 @@ static int _find_test_config( faild_test_config_t* test_config );
 /* Return the index of the next open test slot. */
 static int _find_open_test( int alpaca_interface_id );
 
-int faild_manager_init( faild_config_t* config )
+static int _run_switch_interface_script( faild_status_t* status );
+
+static int _update_environment( faild_status_t* status );
+
+int faild_manager_init( faild_config_t* config, char* switch_script )
 {
     if ( config == NULL ) return errlogargs();
 
@@ -79,8 +89,23 @@ int faild_manager_init( faild_config_t* config )
         return errlog( ERR_CRITICAL, "faild_manager_set_config\n" );
     }
     
+    int len = strnlen( switch_script, FILENAME_MAX );
+    if (( _globals.switch_script = calloc( 1, len )) == NULL ) {
+        
+        return errlogmalloc();
+        return -1;
+    }
+    strncpy( _globals.switch_script, switch_script, len );
 
     return 0;
+}
+
+void faild_manager_destroy( void )
+{
+    if ( _globals.switch_script != NULL ) {
+        free( _globals.switch_script );
+        _globals.switch_script = NULL;
+    }
 }
 
 /**
@@ -154,7 +179,7 @@ int faild_manager_set_config( faild_config_t* config )
             char* test_class_name = test_config->test_class_name;
             faild_uplink_test_class_t* test_class = NULL;
             
-            if ( faild_libs_get_test_classes( test_class_name, &test_class ) < 0 ) {
+            if ( faild_libs_get_test_class( test_class_name, &test_class ) < 0 ) {
                 return errlog( ERR_CRITICAL, "faild_libs_get_test_classes\n" );
             }
 
@@ -167,7 +192,7 @@ int faild_manager_set_config( faild_config_t* config )
                 errlog( ERR_CRITICAL, "_find_open_test\n" );
             }
             
-            if (( test_instance = faild_uplink_test_instance_create( test_config )) == NULL ) {
+            if (( test_instance = faild_uplink_test_instance_create( test_config, config )) == NULL ) {
                 return errlog( ERR_CRITICAL, "faild_uplink_test_instance_create\n" );
             }
             
@@ -295,8 +320,17 @@ int faild_manager_get_uplink_status( faild_uplink_status_t* uplink_status, int a
         faild_uplink_results_t* source_uplink_results = NULL;
         faild_test_config_t* test_config = NULL;
 
+        faild_uplink_t* test_uplink = NULL;
+
         for ( c = 0 ; c < FAILD_MAX_INTERFACE_TESTS; c++ ) {
             if ( _globals.active_tests[alpaca_interface_id-1][c] == NULL ) continue;
+            
+            if ( test_uplink == NULL ) {
+                test_uplink = &_globals.active_tests[alpaca_interface_id-1][c]->uplink;
+                if ( test_uplink->alpaca_interface_id != alpaca_interface_id ) {
+                    errlog( ERR_CRITICAL, "test_uplink is not configured.\n" );
+                }
+            }
 
             test_config = &_globals.active_tests[alpaca_interface_id-1][c]->config;
             source_uplink_results = &_globals.active_tests[alpaca_interface_id-1][c]->results;
@@ -320,6 +354,7 @@ int faild_manager_get_uplink_status( faild_uplink_status_t* uplink_status, int a
         /* This means the array contains at least one set of test results */
         if ( result_index > 0 ) {
             uplink_status->alpaca_interface_id = alpaca_interface_id;
+            strncpy( uplink_status->os_name, test_uplink->os_name, sizeof( uplink_status->os_name ));
         }
         return 0;
     }
@@ -429,6 +464,78 @@ int faild_manager_stop_all_tests( void )
     return 0;
 }
 
+/**
+ * Switch the active interface.
+ */
+int faild_manager_change_active_uplink( int aii )
+{
+    if (( aii < 1 ) || ( aii > FAILD_MAX_INTERFACES )) return errlogargs();
+
+    faild_status_t status;
+    if ( faild_status_init( &status ) < 0 ) return errlog( ERR_CRITICAL, "faild_status_init\n" );
+
+    int _critical_section()
+    {
+        faild_uplink_t* uplink = NULL;
+
+        if (( uplink = _globals.config.interface_map[aii-1] ) == NULL ) {
+            return errlog( ERR_CRITICAL, "Nothing is known about the interface %d\n", aii );
+        }
+
+        _globals.active_alpaca_interface_id = aii;
+
+        if ( faild_manager_get_status( &status ) < 0 ) {
+            return errlog( ERR_CRITICAL, "faild_manager_get_status\n" );
+        }
+        
+        return 0;
+    }
+    
+    if ( pthread_mutex_lock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_lock" );
+    int ret = _critical_section();
+    if ( pthread_mutex_unlock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_unlock" );
+
+    if ( ret < 0 ) {
+        faild_status_destroy( &status );
+        return errlog( ERR_CRITICAL, "_critical_section\n" );
+    }
+
+    /* Thou shalt not run the scrip with the lock */
+    ret = _run_switch_interface_script( &status );
+    faild_status_destroy( &status );
+    
+    if ( ret < 0 ) return errlog( ERR_CRITICAL, "faild_status_destroy\n" );
+
+    return 0;
+}
+
+/**
+ * Run the script to update the active interfaces.
+ */
+int faild_manager_run_script( void )
+{
+    faild_status_t status;
+    if ( faild_status_init( &status ) < 0 ) return errlog( ERR_CRITICAL, "faild_status_init\n" );
+
+    int _critical_section()
+    {
+        if ( faild_manager_get_status( &status ) < 0 ) {
+            return errlog( ERR_CRITICAL, "faild_manager_get_status\n" );
+        }
+
+        if ( _run_switch_interface_script( &status ) < 0 ) {
+            return errlog( ERR_CRITICAL, "_run_switch_interface_script\n" );
+        }
+        
+        return 0;
+    }
+
+    int ret = _critical_section();
+    faild_status_destroy( &status );
+    if ( ret < 0 ) return errlog( ERR_CRITICAL, "_critical_section\n" );
+    
+    return 0;
+}
 
 static int _validate_test_config( faild_test_config_t* test_config )
 {
@@ -480,9 +587,82 @@ static int _find_open_test( int aii )
     return errlog( ERR_CRITICAL, "No empty test slots.\n" );
 }
 
+static int _run_switch_interface_script( faild_status_t* status )
+{
+    int exec_status;
+    pid_t pid;
 
+    if ( _globals.switch_script == NULL ) {
+        return errlog( ERR_CRITICAL, "manager.c is not initialized.\n" );
+    }
 
+    pid = fork();
+    if ( pid == 0 ) {
+        if ( _update_environment( status ) < 0 ) {
+            errlog( ERR_CRITICAL, "_update_environment\n" );
+            _exit( 1 );
+        }
 
+        if ( execl( _globals.switch_script, _globals.switch_script, (char*)NULL ) < 0 ) {
+            perrlog( "execl\n" );
+        }
 
+        _exit( 1 );
+    } else if ( pid < 0 ) {
+        return perrlog( "fork" );
+    }  else {
+        if ( waitpid( pid, &exec_status, 0 ) < 0 ) return perrlog( "waitpid" );
+        
+        if ( WIFEXITED( exec_status ) != 1 ) {
+            return errlog( ERR_CRITICAL, "Child process did not exit." );
+        }
+        
+        int return_code = WEXITSTATUS( exec_status );
+        if ( return_code != 0 ) {
+            return errlog( ERR_CRITICAL, "Child process exited with non-zero status %d\n", return_code );
+        }
+    }
 
+    return 0;
+}
+
+static int _update_environment( faild_status_t* status )
+{
+    char uplinks[FAILD_MAX_INTERFACES*3];
+    char uplinks_online[FAILD_MAX_INTERFACES*3];
+    char active[4];
+    char name[34];
+    
+    bzero( uplinks, sizeof( uplinks ));
+    bzero( uplinks_online, sizeof( uplinks_online ));
+    bzero( active, sizeof( active ));
+
+    
+    int c = 0;
+    faild_uplink_status_t* uplink_status;
+    
+    for ( c = 0 ; c < FAILD_MAX_INTERFACES ; c++ ) {
+        uplink_status = status->uplink_status[c];
+        if ( uplink_status == NULL ) continue;
+
+        if ( uplink_status->alpaca_interface_id == 0 ) continue;
+
+        snprintf( name, sizeof( name ), "FAILD_UPLINK_%d_OS_NAME", uplink_status->alpaca_interface_id );
+        setenv( name, uplink_status->os_name, 1 );
+        snprintf( name, sizeof( name ), "FAILD_UPLINK_%d_ONLINE", uplink_status->alpaca_interface_id );
+        setenv( name, uplink_status->online == 1 ? "true" : "false", 1 );
+
+        snprintf( name, sizeof( name ), " %d", uplink_status->alpaca_interface_id );
+        strncat( uplinks, name, sizeof( uplinks ));
+
+        if ( uplink_status->online == 1 ) strncat( uplinks_online, name, sizeof( uplinks ));
+    }
+
+    setenv( "FAILD_UPLINKS", uplinks, 1 );
+    setenv( "FAILD_UPLINKS_ONLINE", uplinks_online, 1 );
+    snprintf( active, sizeof( active ), "%d", status->active_alpaca_interface_id );
+    setenv( "FAILD_UPLINK_ACTIVE", active, 1 );
+
+    return 0;
+}
 

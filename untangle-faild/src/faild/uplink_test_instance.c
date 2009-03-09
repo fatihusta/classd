@@ -39,7 +39,7 @@ int faild_uplink_test_instance_start( faild_uplink_test_instance_t* test_instanc
 
     /* Lookup the test class */
     char* test_class_name = test_instance->config.test_class_name;
-    if ( faild_libs_get_test_classes( test_class_name, &test_instance->test_class ) < 0 ) {
+    if ( faild_libs_get_test_class( test_class_name, &test_instance->test_class ) < 0 ) {
         return errlog( ERR_CRITICAL, "faild_libs_get_test_classes\n" );
     }
     
@@ -77,27 +77,43 @@ faild_uplink_test_instance_t* faild_uplink_test_instance_malloc( void )
 }
 
 int faild_uplink_test_instance_init( faild_uplink_test_instance_t* test_instance, 
-                                     faild_test_config_t* config )
+                                     faild_test_config_t* test_config, 
+                                     faild_config_t* config )
 {
     if ( test_instance == NULL ) return errlogargs();
     if ( config == NULL ) return errlogargs();
+    if ( test_config == NULL ) return errlogargs();
 
     bzero( test_instance, sizeof( faild_uplink_test_instance_t ));
-    
+
+    int aii = test_config->alpaca_interface_id;
+    if ( aii < 1 || aii > FAILD_MAX_INTERFACES ) return errlogargs();
+
+    /* Copy in the interface information */
+    faild_uplink_t* uplink = NULL;
+    if (( uplink = config->interface_map[aii - 1] ) == NULL ) {
+        return errlog( ERR_CRITICAL, "Interface information for %d is not configured.\n", aii );
+    }
+    if ( uplink->alpaca_interface_id != aii ) {
+        return errlog( ERR_CRITICAL, "Interface information for %d is not configured.\n", aii );
+    }
+    memcpy( &test_instance->uplink, uplink, sizeof( test_instance->uplink ));
+
     /* Copy in the config */
-    if ( faild_test_config_copy( &test_instance->config, config ) < 0 ){
+    if ( faild_test_config_copy( &test_instance->config, test_config ) < 0 ){
         return errlog( ERR_CRITICAL, "faild_test_config_copy\n" );
     }
 
     /* Setup the results */
-    if ( faild_uplink_results_init( &test_instance->results, config->bucket_size ) < 0 ) {
+    if ( faild_uplink_results_init( &test_instance->results, test_config->bucket_size ) < 0 ) {
         return errlog( ERR_CRITICAL, "faild_uplink_results_init\n" );
     }
 
     return 0;
 }
 
-faild_uplink_test_instance_t* faild_uplink_test_instance_create( faild_test_config_t* config )
+faild_uplink_test_instance_t* faild_uplink_test_instance_create( faild_test_config_t* test_config, 
+                                                                 faild_config_t* config )
 {
     faild_uplink_test_instance_t* test_instance = NULL;
     
@@ -105,7 +121,7 @@ faild_uplink_test_instance_t* faild_uplink_test_instance_create( faild_test_conf
         return errlog_null( ERR_CRITICAL, "faild_uplink_test_instance_malloc\n" );
     }
 
-    if ( faild_uplink_test_instance_init( test_instance, config ) < 0 ) {
+    if ( faild_uplink_test_instance_init( test_instance, test_config, config ) < 0 ) {
         free( test_instance );
         return errlog_null( ERR_CRITICAL, "faild_uplink_test_instance_init\n" );
     }

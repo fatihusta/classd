@@ -33,8 +33,8 @@ static int _interface_array_get_size( void *c_array );
 static int _test_config_array_get_size( void *c_array );
 
 static json_serializer_string_t _os_string = {
-    .offset = offsetof( faild_interface_t, os_name ),
-    .len = sizeof((( faild_interface_t *)0)->os_name )
+    .offset = offsetof( faild_uplink_t, os_name ),
+    .len = sizeof((( faild_uplink_t *)0)->os_name )
 };
 
 static json_serializer_t _interface_serializer = {
@@ -52,7 +52,7 @@ static json_serializer_t _interface_serializer = {
             .if_empty = JSON_SERIALIZER_FIELD_EMPTY_ERROR,
             .to_c = json_serializer_to_c_int,
             .to_json = json_serializer_to_json_int,
-            .arg = (void*)offsetof( faild_interface_t, alpaca_interface_id )
+            .arg = (void*)offsetof( faild_uplink_t, alpaca_interface_id )
         }, JSON_SERIALIZER_FIELD_TERM }
 };
 
@@ -64,7 +64,7 @@ static json_serializer_array_t _interface_array_arg =
     .get_size = _interface_array_get_size,
     .default_value = NULL,
     .serializer = &_interface_serializer,
-    .item_size = sizeof( faild_interface_t ),
+    .item_size = sizeof( faild_uplink_t ),
     .is_pointers = 0
 };
 
@@ -210,8 +210,23 @@ int faild_config_load_json( faild_config_t* config, struct json_object* json_con
     if ( config == NULL ) return errlogargs();
     if ( json_config == NULL ) return errlogargs();
 
+    bzero( config->interfaces, sizeof( config->interfaces ));
+
     if ( json_serializer_to_c( &_config_serializer, json_config, config ) < 0 ) {
         return errlog( ERR_CRITICAL, "json_serializer_to_c\n" );
+    }
+
+    /* Update the interface map to be correct */
+    int c = 0; 
+    faild_uplink_t* uplink = NULL;
+    int aii = 0;
+
+    bzero( config->interface_map, sizeof( config->interface_map ));
+    for ( c = 0 ; c < FAILD_MAX_INTERFACES ; c++ ) {
+        uplink = &config->interfaces[c];
+        aii = uplink->alpaca_interface_id;
+        if (( aii  < 1 ) || ( aii > FAILD_MAX_INTERFACES )) continue;
+        config->interface_map[aii-1] = uplink;
     }
 
     return 0;

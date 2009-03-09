@@ -301,7 +301,7 @@ static int _init( int argc, char** argv )
         return errlog( ERR_CRITICAL, "faild_libs_load_test_classes\n" );
     }
 
-    if ( faild_manager_init( &config ) < 0 ) {
+    if ( faild_manager_init( &config, _globals.switch_script ) < 0 ) {
         return errlog( ERR_CRITICAL, "faild_manager_init\n" );
     }
 
@@ -363,6 +363,8 @@ static void _destroy( void )
     
     /* Stop all of the running tests */
     faild_manager_stop_all_tests();
+
+    faild_manager_destroy();
 
     libmvutil_cleanup();
 
@@ -452,7 +454,6 @@ static int _set_signals( void )
      sigaction( SIGINT,  &signal_action, NULL );
     
      signal_action.sa_handler = SIG_IGN;
-     sigaction( SIGCHLD, &signal_action, NULL );
      sigaction( SIGPIPE, &signal_action, NULL );
 
      /* USR1 is used to tell a test iteration to exit */
