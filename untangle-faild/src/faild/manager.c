@@ -691,7 +691,7 @@ static int _run_switch_interface_script( faild_status_t* status )
         if ( waitpid( pid, &exec_status, 0 ) < 0 ) return perrlog( "waitpid" );
         
         if ( WIFEXITED( exec_status ) != 1 ) {
-            return errlog( ERR_CRITICAL, "Child process did not exit." );
+            return errlog( ERR_CRITICAL, "Child process did not exit.\n" );
         }
         
         int return_code = WEXITSTATUS( exec_status );

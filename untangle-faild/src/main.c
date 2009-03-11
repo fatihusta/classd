@@ -150,7 +150,7 @@ int main( int argc, char** argv )
         return errlog( ERR_CRITICAL, "_init\n" );
     }
 
-    debug( 1, "MAIN: Faild started %d.\n", sizeof( long long ));
+    debug( 1, "MAIN: Faild started.\n" );
     _set_signals();
 
     /* Wait for the shutdown signal */

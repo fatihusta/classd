@@ -25,13 +25,13 @@ static int _run( faild_uplink_test_instance_t *instance );
 static int _cleanup( faild_uplink_test_instance_t *instance );
 static int _destroy( faild_uplink_test_instance_t *instance );
 
-#define _ARP_COMMAND_ENVIRONMENT "ARP_SCRIPT"
-#define _ARP_COMMAND_DEFAULT "/usr/share/untangle-faild/bin/arp_test"
+#define _HTTP_COMMAND_ENVIRONMENT "HTTP_SCRIPT"
+#define _HTTP_COMMAND_DEFAULT "/usr/share/untangle-faild/bin/http_test"
 
-/* Retrieve the class for arp */
-int faild_uplink_lib_base_arp_class( faild_uplink_test_class_t* test_class )
+/* Retrieve the class for http */
+int faild_uplink_lib_base_http_class( faild_uplink_test_class_t* test_class )
 {    
-    if ( faild_uplink_test_class_init( test_class, "arp", _init, _run, _cleanup, _destroy, NULL ) < 0 ) {
+    if ( faild_uplink_test_class_init( test_class, "http", _init, _run, _cleanup, _destroy, NULL ) < 0 ) {
         return errlog( ERR_CRITICAL, "faild_uplink_test_class_init\n" );
     }
 
@@ -49,34 +49,20 @@ static int _run( faild_uplink_test_instance_t *instance )
 {
     if ( instance == NULL ) return errlogargs();
 
-    /* Run the command to test ARP */
+    /* Run the command to test HTTP */
     faild_uplink_t* uplink = &instance->uplink;
-    
-    char* command_name = getenv( _ARP_COMMAND_ENVIRONMENT );
-    if ( command_name == NULL ) command_name = _ARP_COMMAND_DEFAULT;
 
-    char messages[256];
-    int p = 0;
+    char ether_str[24];
 
-    bzero( messages, sizeof( messages ));
-    
-    char* ether_str = messages + p;
-    p += 24;
-
-    char* timeout_ms_str = messages + p;
-    p += snprintf( timeout_ms_str, sizeof( messages ) - p, "%d", instance->config.timeout_ms ) + 1;
-
-    char* aii_str = messages + p;
-    p += snprintf( aii_str, sizeof( messages ) - p, "%d", uplink->alpaca_interface_id ) + 1;
-
-    
+    char* command_name = getenv( _HTTP_COMMAND_ENVIRONMENT );
+    if ( command_name == NULL ) command_name = _HTTP_COMMAND_DEFAULT;
+        
     int ret = 0;
     
-    ret = faild_libs_system( command_name, command_name, aii_str, uplink->os_name,
+    ret = faild_libs_system( command_name, command_name, uplink->os_name,
                              unet_inet_ntoa( uplink->primary_address.s_addr ),
                              unet_inet_ntoa( uplink->gateway.s_addr ),
-                             ether_ntoa_r( &uplink->mac_address, ether_str ), 
-                             timeout_ms_str, NULL );
+                             ether_ntoa_r( &uplink->mac_address, ether_str ), NULL );
 
     if ( ret < 0 ) return errlog( ERR_CRITICAL, "faild_libs_system\n" );
 

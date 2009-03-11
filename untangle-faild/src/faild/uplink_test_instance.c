@@ -209,9 +209,11 @@ void* _run_instance( void* arg )
         /* Check if the timeout occurred */
         delay = utime_timespec_diff( &mt_timeout, &mt_now );
         if ( delay > 0 ) {
-            debug( 5, "Test completed in time with result %d\n", result );
+            debug( 5, "Test[%s,%d] completed in time with result %d\n", test_instance->test_class->name,
+                   test_instance->uplink.alpaca_interface_id, result );
         } else {
-            debug( 5, "Test timed out with result %d\n", result );
+            debug( 5, "Test[%s,%d] timed out with result %d\n", test_instance->test_class->name,
+                   test_instance->uplink.alpaca_interface_id, result );
             result = 0;
         }
 

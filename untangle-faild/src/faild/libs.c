@@ -252,14 +252,14 @@ int faild_libs_system( const char* path, const char* arg0, ... )
     
     pid = fork();
     if ( pid == 0 ) {
-        if ( execv( path, argv ) < 0 ) perrlog( "execv\n" );
+        if ( execv( path, argv ) < 0 ) perrlog( "execv" );
         _exit( 1 );
     } else if ( pid < 0 ) {
         return perrlog( "fork" );
     }  else {
         if ( waitpid( pid, &exec_status, 0 ) < 0 ) return perrlog( "waitpid" );
         
-        if ( WIFEXITED( exec_status ) != 1 ) return errlog( ERR_CRITICAL, "Child process did not exit." );
+        if ( WIFEXITED( exec_status ) != 1 ) return errlog( ERR_CRITICAL, "Child process did not exit.\n" );
         
         return_code = WEXITSTATUS( exec_status );
     }

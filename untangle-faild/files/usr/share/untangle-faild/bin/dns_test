@@ -1,0 +1,33 @@
+#!/bin/dash
+
+ALPACA_INTERFACE_INDEX=$1
+OS_NAME=$2
+PRIMARY_ADDRESS=$3
+GATEWAY_ADDRESS=$4
+MAC_ADDRESS=$5
+TIMEOUT_MS=$6
+
+DNS_SERVER=$7
+HOSTNAME=$8
+
+if [ -z "$DNS_SERVER" ] || [ "${DNS_SERVER}x" = "0.0.0.0x" ] ; then
+    DNS_SERVER=`awk '/^server=.*uplink.'${ALPACA_INTERFACE_INDEX}'/ { sub( "server=", "", $1 ) ; print $1 ; exit }' /etc/dnsmasq.conf`
+    if [ -z "${DNS_SERVER}" ]; then
+        DNS_SERVER=4.2.2.1 # dirty.
+    fi
+fi
+
+if [ -z "${HOSTNAME}" ]; then
+    HOSTNAME="www.google.com"
+fi
+
+NUM_TRIES=3
+TIMEOUT=$(( ${TIMEOUT_MS} / ( ${NUM_TRIES} * 1000 )  ))
+if [ "${TIMEOUT}" = "0" ]; then 
+    TIMEOUT=1
+fi
+
+echo $DNS_SERVER
+
+dig -b ${PRIMARY_ADDRESS} +tries=${NUM_TRIES} +time=${TIMEOUT} @${DNS_SERVER} ${HOSTNAME} # > /dev/null 2>/dev/null
+
