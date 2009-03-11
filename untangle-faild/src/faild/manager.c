@@ -28,6 +28,7 @@
 #include "faild/manager.h"
 #include "status.h"
 #include "faild/test_config.h"
+#include "faild/uplink.h"
 #include "faild/uplink_results.h"
 #include "faild/uplink_status.h"
 #include "faild/uplink_test_instance.h"
@@ -132,6 +133,19 @@ int faild_manager_set_config( faild_config_t* config )
         int test_index = 0;
 
         faild_test_config_t* test_config = NULL;
+        faild_uplink_t* uplink = NULL;
+
+        /* Update all of the interface data */
+        for ( c = 0 ; c < FAILD_MAX_INTERFACES ; c++ ) {
+            uplink = config->interface_map[c];
+
+            /* Ignore all of the unconfigured interfaces. */
+            if (( uplink == NULL ) || ( uplink->alpaca_interface_id != ( c+1 ))) continue;
+            
+            if ( faild_uplink_update_interface( uplink ) < 0 ) {
+                errlog( ERR_WARNING, "faild_uplink_update_interface\n" );
+            }
+        }
 
         /* Find all of the tests that are currently running */
         for ( c = 0 ; c < config->tests_length ; c++ ) {
@@ -221,6 +235,69 @@ int faild_manager_set_config( faild_config_t* config )
     if ( ret < 0 ) return errlog( ERR_CRITICAL, "_critical_section\n" );
     
     return 0;
+}
+
+/**
+ * Update the information about each of the uplinks.
+ */
+int faild_manager_update_address( void )
+{
+    int c = 0;
+    
+    int _critical_section()
+    {
+        faild_uplink_t* uplink = NULL;
+        
+        for ( c = 0 ; c < FAILD_MAX_INTERFACES ; c++ ) {
+            uplink = _globals.config.interface_map[c];
+            
+            /* Ignore all of the unconfigured interfaces. */
+            if (( uplink == NULL ) || ( uplink->alpaca_interface_id != ( c+1 ))) continue;
+            
+            if ( faild_uplink_update_interface( uplink ) < 0 ) {
+                errlog( ERR_WARNING, "faild_uplink_update_interface\n" );
+            }
+        }
+        
+        return 0;
+    }
+
+    if ( pthread_mutex_lock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_lock" );
+    int ret = _critical_section();
+    if ( pthread_mutex_unlock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_unlock" );
+    
+    if ( ret < 0 ) return errlog( ERR_CRITICAL, "_critical_section\n" );
+
+    return 0;
+}
+
+int faild_manager_get_uplink( faild_uplink_t* uplink )
+{
+    if ( uplink == NULL ) return errlogargs();
+    int aii = uplink->alpaca_interface_id;
+    if (( aii < 1 ) || ( aii > FAILD_MAX_INTERFACES )) return errlogargs();
+
+    int _critical_section()
+    {
+        faild_uplink_t* uplink_source = _globals.config.interface_map[aii-1];
+        if (( uplink_source == NULL ) || ( uplink_source->alpaca_interface_id != aii )) {
+            debug( 7, "Nothing is known about %d\n", aii );
+            return 0;
+        }
+
+        /* Copy in the values */
+        memcpy( uplink, uplink_source, sizeof( *uplink ));
+        
+        return 1;
+    }
+
+    if ( pthread_mutex_lock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_lock" );
+    int ret = _critical_section();
+    if ( pthread_mutex_unlock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_unlock" );
+
+    if ( ret < 0 ) return errlog( ERR_CRITICAL, "_critical_section\n" );
+
+    return ret;
 }
 
 /**

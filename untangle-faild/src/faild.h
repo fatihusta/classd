@@ -26,6 +26,9 @@
 #define FAILD_TEST_CLASS_NAME_SIZE  32
 #define FAILD_TEST_LIB_NAME_SIZE  32
 
+// This is the base index for all of the uplink tables.
+// This MUST match what is used in the alpaca.  See /etc/network/if-up.d/alpaca IP_RT_TABLE_BASE.
+#define FAILD_IP_RT_TABLE_BASE 64
 
 typedef struct
 {
@@ -34,6 +37,12 @@ typedef struct
     
     /* This is the index from the alpaca. */
     int alpaca_interface_id;
+
+    /* The primary address for this interface */
+    struct in_addr primary_address;
+
+    /* Address to the gateway */
+    struct in_addr gateway;
     
     char os_name[IF_NAMESIZE];
 } faild_uplink_t;

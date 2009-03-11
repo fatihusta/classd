@@ -42,6 +42,8 @@ static struct json_object *_get_config( struct json_object* request );
 
 static struct json_object *_set_config( struct json_object* request );
 
+static struct json_object *_update_address( struct json_object* request );
+
 static struct json_object *_set_debug_level( struct json_object* request );
 
 static struct json_object *_list_functions( struct json_object* request );
@@ -74,6 +76,7 @@ static struct
         { .name = "hello_world", .function = _hello_world },
         { .name = "get_config", .function = _get_config },
         { .name = "set_config", .function = _set_config },
+        { .name = "update_address", .function = _update_address },
         { .name = "set_debug_level", .function = _set_debug_level },
         { .name = "list_functions", .function = _list_functions },
         { .name = "get_status", .function = _get_status },
@@ -228,6 +231,24 @@ static struct json_object *_set_config( struct json_object* request )
     }
 
     return response;
+}
+
+static struct json_object *_update_address( struct json_object* request )
+{
+    struct json_object* response = NULL;
+
+    if ( faild_manager_update_address() < 0 ) {
+        errlog( ERR_CRITICAL, "faild_manager_update_address\n" );
+        return json_object_get( _globals.internal_error );
+    }
+    
+    if (( response = json_server_build_response( STATUS_OK, 0, "Update the address successfully" )) == NULL ) {
+        errlog( ERR_CRITICAL, "json_server_build_response\n" );
+        return json_object_get( _globals.internal_error );
+    }
+
+    return response;    
+
 }
 
 static struct json_object *_set_debug_level( struct json_object* request )

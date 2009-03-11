@@ -38,6 +38,16 @@ int faild_manager_stop_all_tests( void );
 int faild_manager_set_config( faild_config_t* config );
 
 /**
+ * Update the information about each of the uplinks.
+ */
+int faild_manager_update_address( void );
+
+/**
+ * Get information about an uplink
+ */
+int faild_manager_get_uplink( faild_uplink_t* uplink );
+
+/**
  * Gets the config
  */
 int faild_manager_get_config( faild_config_t* config );

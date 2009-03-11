@@ -282,6 +282,16 @@ static int _run_iteration( faild_uplink_test_instance_t* test_instance )
     faild_uplink_test_class_t* test_class = test_instance->test_class;
 
     if ( test_class->run == NULL ) return errlogargs();
+
+    /* Reload the interface configuration */
+    int status = 0;
+    if (( status = faild_manager_get_uplink( &test_instance->uplink )) < 0 ) {
+        return errlog( ERR_CRITICAL, "faild_manager_get_uplink\n" );
+    } else if ( status == 0 ) {
+        debug( 8, "Must fail %s test for %d, there is no interface information\n", 
+               test_class->name, test_instance->uplink.alpaca_interface_id );
+        return 0;
+    }
     
     /* Run this iteration */
     int ret = 0;

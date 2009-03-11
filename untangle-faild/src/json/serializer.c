@@ -42,7 +42,7 @@ struct json_object* json_serializer_to_json( json_serializer_t* serializer, void
     }
 
     int _critical_section() {
-        debug( 9, "Converting a %s to JSON\n", serializer->name );
+        debug( 10, "Converting a %s to JSON\n", serializer->name );
         
         int c = 0;
         json_serializer_field_t* field = NULL;
@@ -53,7 +53,7 @@ struct json_object* json_serializer_to_json( json_serializer_t* serializer, void
             if ( _validate_field( field ) < 0 ) return errlog( ERR_CRITICAL, "_validate_field\n" );
             if ( field->to_json == NULL ) continue;
 
-            debug( 9, "Converting the field %s.%s to JSON\n", serializer->name, field->name );
+            debug( 10, "Converting the field %s.%s to JSON\n", serializer->name, field->name );
             
             if ( field->to_json( json_object, field, c_data ) < 0 ) {
                 return errlog( ERR_CRITICAL, "field->to_json\n" );
@@ -91,12 +91,12 @@ int json_serializer_to_c( json_serializer_t* serializer, struct json_object* jso
         if ( _validate_field( field ) < 0 ) return errlog( ERR_CRITICAL, "_validate_field\n" );
         if ( field->to_c == NULL ) continue;
         
-        debug( 9, "Converting the field %s.%s to C\n", serializer->name, field->name );
+        debug( 10, "Converting the field %s.%s to C\n", serializer->name, field->name );
         
         if (( json_field = json_object_object_get( json_object, field->name )) == NULL ) {
             if ( field->if_empty == JSON_SERIALIZER_FIELD_EMPTY_CALL ) {
             } else if ( field->if_empty == JSON_SERIALIZER_FIELD_EMPTY_IGNORE ) {
-                debug( 9, "Ignoring missing field %s.%s to C\n", serializer->name, field->name );
+                debug( 10, "Ignoring missing field %s.%s to C\n", serializer->name, field->name );
                 continue;
             } else if ( field->if_empty == JSON_SERIALIZER_FIELD_EMPTY_ERROR ) {
                 return errlog( ERR_WARNING, "Missing field %s.%s\n",  serializer->name, field->name );
@@ -130,7 +130,7 @@ int json_serializer_to_c_string( struct json_object* json_object, json_serialize
     if ( arg->offset < 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", arg->offset );
 
     if ( json_object_is_type( json_object, json_type_string ) == 0 ) {
-        debug( 9, "The field %s is not a string.\n", field->name );
+        debug( 10, "The field %s is not a string.\n", field->name );
         if ( field->if_empty == JSON_SERIALIZER_FIELD_EMPTY_IGNORE ) return 0;
         return -1;
     }
@@ -177,7 +177,7 @@ int json_serializer_to_c_int( struct json_object* json_object, json_serializer_f
     if ( offset < 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", offset );
 
     if ( json_object_is_type( json_object, json_type_int ) == 0 ) {
-        debug( 9, "The field %s is not an int.\n", field->name );
+        debug( 10, "The field %s is not an int.\n", field->name );
         if ( field->if_empty == JSON_SERIALIZER_FIELD_EMPTY_IGNORE ) return 0;
         return -1;
     }
@@ -214,7 +214,7 @@ int json_serializer_to_c_double( struct json_object* json_object, json_serialize
     if ( offset < 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", offset );
 
     if ( json_object_is_type( json_object, json_type_double ) == 0 ) {
-        debug( 9, "The field %s is not an double.\n", field->name );
+        debug( 10, "The field %s is not an double.\n", field->name );
         if ( field->if_empty == JSON_SERIALIZER_FIELD_EMPTY_IGNORE ) return 0;
         return -1;
     }
@@ -251,7 +251,7 @@ int json_serializer_to_c_boolean( struct json_object* json_object, json_serializ
     if ( offset < 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", offset );
 
     if ( json_object_is_type( json_object, json_type_boolean ) == 0 ) {
-        debug( 9, "The field %s is not an double.\n", field->name );
+        debug( 10, "The field %s is not an double.\n", field->name );
         if ( field->if_empty == JSON_SERIALIZER_FIELD_EMPTY_IGNORE ) return 0;
         return -1;
     }
@@ -292,7 +292,7 @@ int json_serializer_to_c_in_addr( struct json_object* json_object, json_serializ
     bzero( address, sizeof( address ));
 
     if ( json_object_is_type( json_object, json_type_string ) == 0 ) {
-        debug( 9, "The field %s is not a string.\n", field->name );
+        debug( 10, "The field %s is not a string.\n", field->name );
         if ( field->if_empty == JSON_SERIALIZER_FIELD_EMPTY_IGNORE ) return 0;
         return -1;
     }
@@ -302,7 +302,7 @@ int json_serializer_to_c_in_addr( struct json_object* json_object, json_serializ
         return errlog( ERR_CRITICAL, "json_object_get_string\n" );
     }
 
-    debug( 9, "Converting the string %s for %s\n", ip_string, field->name );
+    debug( 10, "Converting the string %s for %s\n", ip_string, field->name );
 
     if ( inet_aton( ip_string, address ) == 0 ) {
         return errlog( ERR_WARNING, "Invalid IP Address string %s\n", ip_string );
@@ -395,7 +395,7 @@ int json_serializer_to_c_array( struct json_object* json_object, json_serializer
     }
 
     if ( json_object_is_type( json_object, json_type_array ) == 0 ) {
-        debug( 9, "The field %s is not an array.\n", field->name );
+        debug( 10, "The field %s is not an array.\n", field->name );
         if ( field->if_empty == JSON_SERIALIZER_FIELD_EMPTY_IGNORE ) return 0;
         return -1;
     }
@@ -474,7 +474,7 @@ int json_serializer_to_json_array( struct json_object* json_object, json_seriali
     char* data = &((char*)c_array)[arg->data_offset];
     char* item = NULL;
 
-    debug( 9, "Found %d c items to add to the JSON array.\n", *c_length );
+    debug( 10, "Found %d c items to add to the JSON array.\n", *c_length );
     
     int _critical_section() {
         int c = 0;

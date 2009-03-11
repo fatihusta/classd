@@ -473,14 +473,8 @@ void    unet_reset_inet_ntoa( void )
 
 char*   unet_inet_ntoa (in_addr_t addr)
 {
-    unet_tls_t* tls;
-
-    if (( tls = _tls_get()) == NULL ) return errlog_null( ERR_CRITICAL, "_tls_get\n" );
-
-    tls->current = 0;
     return unet_next_inet_ntoa( addr );
 }
-
 
 char*   unet_next_inet_ntoa( in_addr_t addr )
 {

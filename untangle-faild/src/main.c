@@ -35,7 +35,7 @@
 #include "json/server.h"
 
 #include "faild/manager.h"
-
+#include "faild/uplink.h"
 
 #define DEFAULT_CONFIG_FILE  "/etc/untangle-faild/config.js"
 #define DEFAULT_DEBUG_LEVEL  1
@@ -290,6 +290,8 @@ static int _init( int argc, char** argv )
         return perrlog( "sem_init" );
     }
     _globals.quit_sem = sem;
+
+    if ( faild_uplink_static_init() < 0 ) return errlog( ERR_CRITICAL, "faild_uplink_static_init\n" );
         
     faild_config_t config;
     if ( faild_config_init( &config ) < 0 ) return errlog( ERR_CRITICAL, "faild_config_init\n" );
@@ -365,6 +367,8 @@ static void _destroy( void )
     faild_manager_stop_all_tests();
 
     faild_manager_destroy();
+
+    faild_uplink_static_destroy();
 
     libmvutil_cleanup();
 
@@ -442,7 +446,6 @@ static void _signal_usr1( int sig )
     /* Do nothing, but if you set the signal handler to SIG_IGN, the
      * thread doesn't get woken up. */
 }
-
 
 static int _set_signals( void )
 {

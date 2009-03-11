@@ -25,8 +25,8 @@
             /* DNS Doesn't require any params */
         }
     },{
-        "alpaca_interface_id" : 2,
-        "test_class_name" : "dns",
+        "alpaca_interface_id" : 3,
+        "test_class_name" : "arp",
         "timeout" : 2000,
         "delay" : 4000,
         "bucket_size" : 10,
