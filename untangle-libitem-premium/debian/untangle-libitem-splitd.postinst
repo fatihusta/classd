@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# FIXME
+# /usr/share/untangle/bin/xpd uct-sub.ulg 0x4b136f1b5d942be3 fb1da287174c6622f29fe8dc2bcb2845
+
+/usr/bin/ucli -t 30 reloadLicenses > /dev/null 2>&1
+true
