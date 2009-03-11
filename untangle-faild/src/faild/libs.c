@@ -11,8 +11,13 @@
 
 #include <pthread.h>
 
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+
+#include <sys/stat.h>
+#include <sys/wait.h>
 #include <sys/types.h>
 #include <dirent.h>
 #include <string.h>
@@ -158,9 +163,7 @@ faild_uplink_test_class_t* faild_uplink_test_class_malloc( void )
 
 int faild_uplink_test_class_init( faild_uplink_test_class_t* test_class, char* name,
                                   int (*init)( faild_uplink_test_instance_t *instance ),
-                                  int (*run)( faild_uplink_test_instance_t *instance,
-                                              struct in_addr* primary_address, 
-                                              struct in_addr* default_gateway ),
+                                  int (*run)( faild_uplink_test_instance_t *instance ),
                                   int (*cleanup)( faild_uplink_test_instance_t *instance ),
                                   int (*destroy)( faild_uplink_test_instance_t *instance ),
                                   struct json_array* params )
@@ -181,9 +184,7 @@ int faild_uplink_test_class_init( faild_uplink_test_class_t* test_class, char* n
 faild_uplink_test_class_t* 
 faild_uplink_test_class_create( char* name,
                                 int (*init)( faild_uplink_test_instance_t *instance ),
-                                int (*run)( faild_uplink_test_instance_t *instance,
-                                            struct in_addr* primary_address, 
-                                            struct in_addr* default_gateway ),
+                                int (*run)( faild_uplink_test_instance_t *instance ),
                                 int (*cleanup)( faild_uplink_test_instance_t *instance ),
                                 int (*destroy)( faild_uplink_test_instance_t *instance ),
                                 struct json_array* params )
@@ -201,6 +202,70 @@ faild_uplink_test_class_create( char* name,
     return 0;
 }
 
+/** 
+ * Utility function to call a command and wait for the return code.
+ * system() does some badnesss with regards to the signal handlers.
+ */
+int faild_libs_system( const char* path, const char* arg0, ... )
+{
+    va_list argptr;
+
+    if ( path == NULL ) return errlogargs();
+    if ( arg0 == NULL ) return errlogargs();
+
+    int size = 0;
+    va_start(argptr, arg0);
+    while ( va_arg( argptr, char* ) != NULL ) size++;
+    va_end(argptr);
+
+    char* argv[size+2];
+    char* argn;
+    argv[0] = (char*)arg0;
+    argv[size+1] = NULL;
+    
+    int c = 1;
+    int is_debug_enabled = debug_get_mylevel() >= 10;
+
+    char command_string[1024];
+    command_string[0] = '\0';
+    
+    if ( is_debug_enabled ) {
+        bzero( command_string, sizeof( command_string ));
+        strncat( command_string, path, sizeof( command_string));
+    }
+
+    va_start(argptr, arg0);
+    while (( argn = va_arg( argptr, char* )) != NULL ) {
+        if ( is_debug_enabled ) {
+            strncat( command_string, " ", sizeof( command_string ));
+            strncat( command_string, argn, sizeof( command_string ));
+        }
+        argv[c++] = argn;
+    }
+    va_end(argptr);
+    
+    if ( is_debug_enabled ) debug( 10, "Running the command: '%s'\n", command_string );
+
+    int exec_status;
+    pid_t pid;
+    int return_code;
+    
+    pid = fork();
+    if ( pid == 0 ) {
+        if ( execv( path, argv ) < 0 ) perrlog( "execv\n" );
+        _exit( 1 );
+    } else if ( pid < 0 ) {
+        return perrlog( "fork" );
+    }  else {
+        if ( waitpid( pid, &exec_status, 0 ) < 0 ) return perrlog( "waitpid" );
+        
+        if ( WIFEXITED( exec_status ) != 1 ) return errlog( ERR_CRITICAL, "Child process did not exit." );
+        
+        return_code = WEXITSTATUS( exec_status );
+    }
+
+    return return_code;
+}
 
 /**
  * This must be called with the mutex locked.

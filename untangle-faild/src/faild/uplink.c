@@ -32,6 +32,10 @@
 #define SYSFS_CLASS_NET_DIR  "/sys/class/net"
 #define SYSFS_ATTRIBUTE_INDEX  "ifindex"
 
+#define SYSFS_ATTRIBUTE_ADDRESS "address"
+#define SYSFS_ATTRIBUTE_ADDRESS_LEN "addr_len"
+
+
 static struct
 {
     pthread_mutex_t mutex;
@@ -44,7 +48,7 @@ static struct
     .rtnetlink_socket = -1
 };
 
-static int _get_interface_index( faild_uplink_t* uplink );
+static int _get_sysfs_attributes( faild_uplink_t* uplink );
 static int _update_primary_address( faild_uplink_t* uplink );
 static int _update_gateway( faild_uplink_t* uplink );
 
@@ -88,7 +92,7 @@ int faild_uplink_update_interface( faild_uplink_t* uplink )
         
     int _critical_section()
     {
-        if (( uplink->ifindex = _get_interface_index( uplink )) < 0 ) {
+        if (( uplink->ifindex = _get_sysfs_attributes( uplink )) < 0 ) {
             return errlog( ERR_CRITICAL, "_get_interface_index\n" );
         }
         
@@ -113,14 +117,18 @@ int faild_uplink_update_interface( faild_uplink_t* uplink )
     return 0;
 }
 
-
-static int _get_interface_index( faild_uplink_t* uplink )
+static int _get_sysfs_attributes( faild_uplink_t* uplink )
 {
     struct sysfs_attribute* attribute = NULL;
 
     char path[SYSFS_PATH_MAX];
 
     int ifindex;
+
+    /* Length of the mac address, should always be 6 */
+    int address_len;
+
+    char ether_str[24];
 
     int _critical_section()
     {
@@ -131,8 +139,36 @@ static int _get_interface_index( faild_uplink_t* uplink )
         
         ifindex = atoi( attribute->value );
         if ( ifindex < 0 ) {
-            return errlog( ERR_CRITICAL, "Invalid interface index for '%s'", uplink->os_name );
+            return errlog( ERR_CRITICAL, "Invalid interface index for '%s'\n", uplink->os_name );
         }
+
+        sysfs_close_attribute( attribute );
+        
+        snprintf( path, sizeof( path ), SYSFS_CLASS_NET_DIR "/%s/%s", uplink->os_name, 
+                  SYSFS_ATTRIBUTE_ADDRESS_LEN );
+
+        if (( attribute = sysfs_open_attribute( path )) == NULL ) return perrlog( "sysfs_open_attribute" );
+        
+        if ( sysfs_read_attribute( attribute ) < 0 ) return perrlog( "sysfs_read_attribute" );
+
+        address_len = atoi( attribute->value );
+        if ( address_len != ETH_ALEN ) {
+            return errlog( ERR_CRITICAL, "Invalid MAC Address for '%s'\n", uplink->os_name );
+        }
+
+        sysfs_close_attribute( attribute );
+        
+        snprintf( path, sizeof( path ), SYSFS_CLASS_NET_DIR "/%s/%s", uplink->os_name, 
+                  SYSFS_ATTRIBUTE_ADDRESS );
+        
+        if (( attribute = sysfs_open_attribute( path )) == NULL ) return perrlog( "sysfs_open_attribute" );
+        
+        if ( sysfs_read_attribute( attribute ) < 0 ) return perrlog( "sysfs_read_attribute" );
+        
+        ether_aton_r( attribute->value, &uplink->mac_address );
+        
+        debug( 9, "Found the mac address '%s' for '%s'\n", ether_ntoa_r( &uplink->mac_address, ether_str ),
+               uplink->os_name );
         
         return 0;
     }

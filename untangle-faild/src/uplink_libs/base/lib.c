@@ -18,7 +18,10 @@
 
 #include "faild.h"
 
-#include "uplink_libs/base/arp.h"
+int faild_uplink_lib_base_arp_class( faild_uplink_test_class_t* test_class );
+int faild_uplink_lib_base_dns_class( faild_uplink_test_class_t* test_class );
+int faild_uplink_lib_base_http_class( faild_uplink_test_class_t* test_class );
+int faild_uplink_lib_base_ping_class( faild_uplink_test_class_t* test_class );
 
 static int _init( void );
 
@@ -39,6 +42,9 @@ static struct
     },
     .test_class_getters = {
         faild_uplink_lib_base_arp_class,
+        faild_uplink_lib_base_dns_class,
+        faild_uplink_lib_base_http_class,
+        faild_uplink_lib_base_ping_class,
         NULL
     }
 };
@@ -52,7 +58,6 @@ int faild_base_prototype( faild_uplink_test_lib_t* lib )
     
     return 0;
 }
-
 
 static int _init( void )
 {
@@ -96,4 +101,5 @@ static int _get_test_classes( faild_uplink_test_class_t **test_classes_ptr )
 
     return num_test_classes;
 }
+
 

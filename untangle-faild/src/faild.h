@@ -19,6 +19,7 @@
 #include <netinet/in.h>
 #include <net/if.h>
 #include <json/json.h>
+#include <netinet/ether.h>
 
 #define FAILD_MAX_INTERFACES 8
 #define FAILD_MAX_INTERFACE_TESTS 8
@@ -43,6 +44,9 @@ typedef struct
 
     /* Address to the gateway */
     struct in_addr gateway;
+
+    /* MAC Address of this link */
+    struct ether_addr mac_address;
     
     char os_name[IF_NAMESIZE];
 } faild_uplink_t;
@@ -185,8 +189,7 @@ typedef struct faild_uplink_test_class
      * If the test returns 0, the test failed.
      * If the test returns 1, the test passed if it returns within the defined timeout.
      */
-    int (*run)( faild_uplink_test_instance_t *instance, struct in_addr* primary_address, 
-                struct in_addr* default_gateway );
+    int (*run)( faild_uplink_test_instance_t *instance );
 
     /* Cleanup a single iteration of a test.  Run executes in a thread
      * and can be killed prematurely.  This gives the class a chance
@@ -252,9 +255,7 @@ int faild_libs_get_test_class( char* test_class_name, faild_uplink_test_class_t*
 faild_uplink_test_class_t* faild_uplink_test_class_malloc( void );
 int faild_uplink_test_class_init( faild_uplink_test_class_t* test_class, char* name,
                                   int (*init)( faild_uplink_test_instance_t *instance ),
-                                  int (*run)( faild_uplink_test_instance_t *instance,
-                                              struct in_addr* primary_address, 
-                                              struct in_addr* default_gateway ),
+                                  int (*run)( faild_uplink_test_instance_t *instance ),
                                   int (*cleanup)( faild_uplink_test_instance_t *instance ),
                                   int (*destroy)( faild_uplink_test_instance_t *instance ),
                                   struct json_array* params );
@@ -263,11 +264,11 @@ int faild_uplink_test_class_init( faild_uplink_test_class_t* test_class, char* n
 faild_uplink_test_class_t* 
 faild_uplink_test_class_create( char* name,
                                 int (*init)( faild_uplink_test_instance_t *instance ),
-                                int (*run)( faild_uplink_test_instance_t *instance,
-                                            struct in_addr* primary_address, 
-                                            struct in_addr* default_gateway ),
+                                int (*run)( faild_uplink_test_instance_t *instance ),
                                 int (*cleanup)( faild_uplink_test_instance_t *instance ),
                                 int (*destroy)( faild_uplink_test_instance_t *instance ),
                                 struct json_array* params );
+
+int faild_libs_system( const char* path, const char* arg0, ... );
 
 #endif // __FAILD_H_

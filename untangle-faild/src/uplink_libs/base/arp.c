@@ -12,18 +12,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <netinet/ether.h>
 
 #include <mvutil/debug.h>
 #include <mvutil/errlog.h>
+#include <mvutil/unet.h>
 
 #include "faild.h"
-#include "uplink_libs/base/arp.h"
 
 static int _init( faild_uplink_test_instance_t *instance );
-static int _run( faild_uplink_test_instance_t *instance,
-                 struct in_addr* primary_address, struct in_addr* default_gateway );
+static int _run( faild_uplink_test_instance_t *instance );
 static int _cleanup( faild_uplink_test_instance_t *instance );
 static int _destroy( faild_uplink_test_instance_t *instance );
+
+#define _ARP_COMMAND_ENVIRONMENT "ARP_SCRIPT"
+#define _ARP_COMMAND_DEFAULT "/usr/share/untangle-faild/bin/arp_test"
 
 /* Retrieve the class for arp */
 int faild_uplink_lib_base_arp_class( faild_uplink_test_class_t* test_class )
@@ -39,18 +42,31 @@ static int _init( faild_uplink_test_instance_t *instance )
 {
     if ( instance == NULL ) return errlogargs();
 
-    instance->ptr = (void*)time( NULL );
     return 0;
 }
 
-static int _run( faild_uplink_test_instance_t *instance,
-                 struct in_addr* primary_address, struct in_addr* default_gateway )
+static int _run( faild_uplink_test_instance_t *instance )
 {
     if ( instance == NULL ) return errlogargs();
 
-    if ( rand_r( (unsigned int*)&instance->ptr ) > (( RAND_MAX / 10L ) * 7)) return 0;
+    /* Run the command to test ARP */
+    faild_uplink_t* uplink = &instance->uplink;
+
+    char ether_str[24];
+
+    char* command_name = getenv( _ARP_COMMAND_ENVIRONMENT );
+    if ( command_name == NULL ) command_name = _ARP_COMMAND_DEFAULT;
+        
+    int ret = 0;
     
-    return 1;
+    ret = faild_libs_system( command_name, command_name, uplink->os_name,
+                             unet_inet_ntoa( uplink->primary_address.s_addr ),
+                             unet_inet_ntoa( uplink->gateway.s_addr ),
+                             ether_ntoa_r( &uplink->mac_address, ether_str ), NULL );
+
+    if ( ret < 0 ) return errlog( ERR_CRITICAL, "faild_libs_system\n" );
+
+    return ret == 0;
 }
 
 static int _cleanup( faild_uplink_test_instance_t *instance )

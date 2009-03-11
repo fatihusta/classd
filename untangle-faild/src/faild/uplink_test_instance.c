@@ -295,7 +295,7 @@ static int _run_iteration( faild_uplink_test_instance_t* test_instance )
     
     /* Run this iteration */
     int ret = 0;
-    if (( ret = test_class->run( test_instance, NULL, NULL )) < 0 ) {
+    if (( ret = test_class->run( test_instance )) < 0 ) {
         return errlog( ERR_CRITICAL, "test_instance->run for test class '%s'\n", test_class->name );
     }
 
