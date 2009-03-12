@@ -32,6 +32,12 @@ static int _serializer_to_c_results( struct json_object* json_object, json_seria
 static int _serializer_to_json_results( struct json_object* json_object, json_serializer_field_t* field, 
                                         void* c_data );
 
+static json_serializer_string_t _test_class_string = {
+    .offset = offsetof( faild_uplink_results_t, test_class_name ),
+    .len = sizeof((( faild_uplink_results_t *)0)->test_class_name )
+};
+
+
 /* This is the serializer used to serialize results */
 json_serializer_t faild_uplink_results_serializer = 
 {
@@ -50,6 +56,13 @@ json_serializer_t faild_uplink_results_serializer =
             .to_c = json_serializer_to_c_timeval,
             .to_json = json_serializer_to_json_timeval,
             .arg = (void*)offsetof( faild_uplink_results_t, last_update )
+        },{
+            .name = "test_class_name",
+            .fetch_arg = 1,
+            .if_empty = JSON_SERIALIZER_FIELD_EMPTY_ERROR,
+            .to_c = json_serializer_to_c_string,
+            .to_json = json_serializer_to_json_string,
+            .arg = &_test_class_string
         },{
             .name = "size",
             .fetch_arg = 1,
@@ -190,6 +203,10 @@ int faild_uplink_results_copy( faild_uplink_results_t* destination, faild_uplink
 
      memcpy( &destination->last_update, &source->last_update, sizeof( destination->last_update ));
      memcpy( destination->results, source->results, sizeof( u_char ) *destination->size );
+     strncpy( destination->test_class_name, source->test_class_name, 
+              sizeof( destination->test_class_name ));
+              
+
 
      return 0;
 }

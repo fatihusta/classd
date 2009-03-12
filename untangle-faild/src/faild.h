@@ -116,6 +116,9 @@ typedef struct
     /* Array of size .size.  Must be freed and allocated at creation. */
     u_char* results;
 
+    /* Name of the test class that is running */
+    char test_class_name[FAILD_TEST_CLASS_NAME_SIZE];
+
     /* Position inside of results of the current test, results is a circular
      * buffer. */
     int position;

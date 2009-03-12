@@ -48,6 +48,10 @@ int faild_uplink_test_instance_start( faild_uplink_test_instance_t* test_instanc
         return errlog( ERR_WARNING, "The test class '%s' doesn't exist\n", test_class_name );
     }
 
+    /* Set the name of the tests */
+    strncpy( test_instance->results.test_class_name, test_class_name, 
+             sizeof( test_instance->results.test_class_name ));
+
     test_instance->is_alive = 1;
 
     if ( pthread_create( &thread, &uthread_attr.other.medium, _run_instance, (void*)test_instance ) != 0 ) {
@@ -214,7 +218,7 @@ void* _run_instance( void* arg )
             return errlog_null( ERR_CRITICAL, "utime_timespec_add\n" );
         }
 
-        debug( 5, "Test[%s,%d] timeout %d.%d now %d.%d\n", test_instance->test_class->name,
+        debug( 9, "Test[%s,%d] timeout %d.%d now %d.%d\n", test_instance->test_class->name,
                test_instance->uplink.alpaca_interface_id, mt_timeout.tv_sec, mt_timeout.tv_nsec, 
                mt_now.tv_sec, mt_now.tv_nsec );
         
@@ -222,7 +226,7 @@ void* _run_instance( void* arg )
 
         clock_gettime( CLOCK_MONOTONIC, &mt_now );
 
-        debug( 5, "Test[%s,%d] timeout %d.%d now %d.%d\n", test_instance->test_class->name,
+        debug( 9, "Test[%s,%d] timeout %d.%d now %d.%d\n", test_instance->test_class->name,
                test_instance->uplink.alpaca_interface_id, mt_timeout.tv_sec, mt_timeout.tv_nsec, 
                mt_now.tv_sec, mt_now.tv_nsec );
 

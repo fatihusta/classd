@@ -454,9 +454,7 @@ int faild_manager_unregister_test_instance( faild_uplink_test_instance_t* test_i
     if ( test_instance == NULL ) return errlogargs();
     
     int aii = test_instance->config.alpaca_interface_id;
-    if (( aii < 1 ) || ( aii > FAILD_MAX_INTERFACES )) {
-        return errlogargs();
-    }
+    if (( aii < 1 ) || ( aii > FAILD_MAX_INTERFACES )) return errlogargs();
     
     int _critical_section()
     {

@@ -23,7 +23,7 @@
         }
     },{
         "alpaca_interface_id" : 1,
-        "test_class_name" : "dns1",
+        "test_class_name" : "dns",
         "timeout" : 6000,
         "delay" : 14000,
         "bucket_size" : 10,
@@ -59,7 +59,7 @@
         * is detected. */
         "threshold" : 7,
         "params" : {
-            "url" : "http://www.untangle.com",
+            "url" : "http://skeeter/index.html",
         }
     }]
 }
