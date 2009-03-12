@@ -269,6 +269,6 @@ faild_uplink_test_class_create( char* name,
                                 int (*destroy)( faild_uplink_test_instance_t *instance ),
                                 struct json_array* params );
 
-int faild_libs_system( const char* path, const char* arg0, ... );
+int faild_libs_system( faild_uplink_test_instance_t* instance, const char* path, const char* arg0, ... );
 
 #endif // __FAILD_H_

@@ -27,6 +27,7 @@
 #include <mvutil/debug.h>
 #include <mvutil/errlog.h>
 #include <mvutil/hash.h>
+#include <mvutil/unet.h>
 
 #include "faild.h"
 
@@ -206,12 +207,13 @@ faild_uplink_test_class_create( char* name,
  * Utility function to call a command and wait for the return code.
  * system() does some badnesss with regards to the signal handlers.
  */
-int faild_libs_system( const char* path, const char* arg0, ... )
+int faild_libs_system( faild_uplink_test_instance_t* instance, const char* path, const char* arg0, ... )
 {
     va_list argptr;
 
     if ( path == NULL ) return errlogargs();
     if ( arg0 == NULL ) return errlogargs();
+    if ( instance == NULL ) return errlogargs();
 
     int size = 0;
     va_start(argptr, arg0);
@@ -252,6 +254,56 @@ int faild_libs_system( const char* path, const char* arg0, ... )
     
     pid = fork();
     if ( pid == 0 ) {
+        /* Setup the environment */
+
+        char messages[256];
+        int p = 0;
+        
+        bzero( messages, sizeof( messages ));
+
+
+        /* Run the command to test DNS */
+        faild_uplink_t* uplink = &instance->uplink;
+        
+        char* ether_str = messages;
+        p += 24;
+                
+        char* timeout_ms_str = messages + p;
+        p += snprintf( timeout_ms_str, sizeof( messages ) - p, "%d", instance->config.timeout_ms ) + 1;
+        
+        char* aii_str = messages + p;
+        p += snprintf( aii_str, sizeof( messages ) - p, "%d", uplink->alpaca_interface_id ) + 1;
+        
+        if ( setenv( "FAILD_ALPACA_INTERFACE_ID", aii_str, 1 ) < 0 ) {
+            perrlog( "setenv" );
+            _exit( 254 );
+        }
+
+        if ( setenv( "FAILD_OS_NAME", uplink->os_name, 1 ) < 0 ) {
+            perrlog( "setenv" );
+            _exit( 254 );
+        }
+
+        if ( setenv( "FAILD_PRIMARY_ADDRESS", unet_inet_ntoa( uplink->primary_address.s_addr ), 1 ) < 0 ) {
+            perrlog( "setenv" );
+            _exit( 254 );
+        }
+
+        if ( setenv( "FAILD_GATEWAY", unet_inet_ntoa( uplink->gateway.s_addr ), 1 ) < 0 ) {
+            perrlog( "setenv" );
+            _exit( 254 );
+        }
+
+        if ( setenv( "FAILD_TIMEOUT_MS", timeout_ms_str, 1 ) < 0 ) {
+            perrlog( "setenv" );
+            _exit( 254 );
+        }
+
+        if ( setenv( "FAILD_MAC_ADDRESS", ether_ntoa_r( &uplink->mac_address, ether_str ), 1 ) < 0 ) {
+            perrlog( "setenv" );
+            _exit( 254 );
+        }
+        
         if ( execv( path, argv ) < 0 ) perrlog( "execv" );
         _exit( 1 );
     } else if ( pid < 0 ) {

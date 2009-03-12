@@ -96,33 +96,11 @@ static int _run( faild_uplink_test_instance_t *instance )
     struct _dns_test* dns_test = instance->ptr;
     if ( dns_test == NULL ) return errlogargs();
 
-    /* Run the command to test DNS */
-    faild_uplink_t* uplink = &instance->uplink;
-
-    char messages[256];
-    int p = 0;
-
-    bzero( messages, sizeof( messages ));
-
-    char* ether_str = messages;
-    p += 24;
-
     char* command_name = getenv( _DNS_COMMAND_ENVIRONMENT );
     if ( command_name == NULL ) command_name = _DNS_COMMAND_DEFAULT;
     
-    char* timeout_ms_str = messages + p;
-    p += snprintf( timeout_ms_str, sizeof( messages ) - p, "%d", instance->config.timeout_ms ) + 1;
-
-    char* aii_str = messages + p;
-    p += snprintf( aii_str, sizeof( messages ) - p, "%d", uplink->alpaca_interface_id ) + 1;
-    
-    int ret = 0;
-    
-    ret = faild_libs_system( command_name, command_name, aii_str, uplink->os_name,
-                             unet_inet_ntoa( uplink->primary_address.s_addr ),
-                             unet_inet_ntoa( uplink->gateway.s_addr ),
-                             ether_ntoa_r( &uplink->mac_address, ether_str ),
-                             timeout_ms_str,
+    int ret = 0;    
+    ret = faild_libs_system( instance, command_name, command_name,
                              unet_inet_ntoa( dns_test->dns_server.s_addr ),
                              dns_test->hostname, NULL );
 

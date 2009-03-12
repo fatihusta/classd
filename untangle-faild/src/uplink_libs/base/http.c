@@ -49,20 +49,12 @@ static int _run( faild_uplink_test_instance_t *instance )
 {
     if ( instance == NULL ) return errlogargs();
 
-    /* Run the command to test HTTP */
-    faild_uplink_t* uplink = &instance->uplink;
-
-    char ether_str[24];
-
     char* command_name = getenv( _HTTP_COMMAND_ENVIRONMENT );
     if ( command_name == NULL ) command_name = _HTTP_COMMAND_DEFAULT;
         
     int ret = 0;
     
-    ret = faild_libs_system( command_name, command_name, uplink->os_name,
-                             unet_inet_ntoa( uplink->primary_address.s_addr ),
-                             unet_inet_ntoa( uplink->gateway.s_addr ),
-                             ether_ntoa_r( &uplink->mac_address, ether_str ), NULL );
+    ret = faild_libs_system( instance, command_name, command_name, NULL );
 
     if ( ret < 0 ) return errlog( ERR_CRITICAL, "faild_libs_system\n" );
 
