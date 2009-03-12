@@ -7,6 +7,6 @@ Standards-Version: 3.7.2
 
 Package: untangle-faild
 Architecture: any
-Depends: ${shlibs:Depends}, dash, libjson-ruby, arping, dnsutils
+Depends: ${shlibs:Depends}, dash, libjson-ruby, arping, dnsutils, iputils-ping
 Description: The Untangle ARP Eater
  The Untangle ARP Eater.  A utility for network monitoring.

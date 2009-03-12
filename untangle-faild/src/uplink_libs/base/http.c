@@ -19,6 +19,12 @@
 #include <mvutil/unet.h>
 
 #include "faild.h"
+#include "json/object_utils.h"
+
+struct _http_test
+{
+    char url[1024];
+};
 
 static int _init( faild_uplink_test_instance_t *instance );
 static int _run( faild_uplink_test_instance_t *instance );
@@ -42,6 +48,33 @@ static int _init( faild_uplink_test_instance_t *instance )
 {
     if ( instance == NULL ) return errlogargs();
 
+    instance->ptr = NULL;
+
+    if (( instance->ptr = calloc( 1, sizeof( struct _http_test ))) == NULL ) return errlogmalloc();
+    
+    struct _http_test* http_test = (struct _http_test*)instance->ptr;
+
+    int _critical_section() {
+        struct json_object* params = instance->config.params;
+        
+        if ( params == NULL ) return errlogargs();
+        
+        char *url = NULL;
+        if (( url = json_object_utils_get_string( params, "url" )) == NULL )  {
+            return errlog( ERR_CRITICAL, "Params are missing the url.\n" );
+        }
+        strncpy( http_test->url, url, sizeof( http_test->url ));
+                
+        return 0;
+    }
+
+    int ret = _critical_section();
+    if ( ret < 0 ) {
+        if ( instance->ptr != NULL ) free( instance->ptr );
+        instance->ptr = NULL;
+        return errlog( ERR_CRITICAL, "_critical_section\n" );
+    }
+
     return 0;
 }
 
@@ -49,13 +82,15 @@ static int _run( faild_uplink_test_instance_t *instance )
 {
     if ( instance == NULL ) return errlogargs();
 
+    struct _http_test* http_test = instance->ptr;
+    if ( http_test == NULL ) return errlogargs();
+
     char* command_name = getenv( _HTTP_COMMAND_ENVIRONMENT );
     if ( command_name == NULL ) command_name = _HTTP_COMMAND_DEFAULT;
         
     int ret = 0;
     
-    ret = faild_libs_system( instance, command_name, command_name, NULL );
-
+    ret = faild_libs_system( instance, command_name, command_name, http_test->url, NULL );
     if ( ret < 0 ) return errlog( ERR_CRITICAL, "faild_libs_system\n" );
 
     return ret == 0;

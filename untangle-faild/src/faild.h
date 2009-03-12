@@ -174,6 +174,9 @@ typedef struct
     /* The class used to run this test. */
     struct faild_uplink_test_class* test_class;
 
+    /* The thread this test is running in */
+    pthread_t thread;
+
     /* Data the test class can use for whatever it wants */
     void *ptr;
 } faild_uplink_test_instance_t;

@@ -173,9 +173,10 @@ int faild_manager_set_config( faild_config_t* config )
                 _globals.active_tests[c][d] = NULL;
                 if ( test_instance == NULL ) continue;
 
-                test_instance->is_alive = 0;
-
                 debug( 5, "Stopping test at %d.%d\n", c, d );
+                if ( faild_uplink_test_instance_stop( test_instance ) < 0 ) {
+                    errlog( ERR_WARNING, "faild_uplink_test_instance_stop\n" );
+                }
             }
         }
 
@@ -204,6 +205,7 @@ int faild_manager_set_config( faild_config_t* config )
             
             if (( d = _find_open_test( test_config->alpaca_interface_id )) < 0 ) {
                 errlog( ERR_CRITICAL, "_find_open_test\n" );
+                continue;
             }
             
             if (( test_instance = faild_uplink_test_instance_create( test_config, config )) == NULL ) {
@@ -492,23 +494,24 @@ int faild_manager_unregister_test_instance( faild_uplink_test_instance_t* test_i
 /* Stop all of the active tests */
 int faild_manager_stop_all_tests( void )
 {
-    int c = 0;
-
     int _critical_section()
     {
+        int c = 0;
         int d = 0;
         int count = 0;
         faild_uplink_test_instance_t* test_instance = NULL;
 
         /* Stop all of the active tests */
         for ( c = 0 ; c < FAILD_MAX_INTERFACES ; c++ ) {
-            for ( d = 0 ; c < FAILD_MAX_INTERFACE_TESTS ; c++ ) {
+            for ( d = 0 ; d < FAILD_MAX_INTERFACE_TESTS ; d++ ) {
                 test_instance = _globals.active_tests[c][d];
-                _globals.active_tests[c][d] = NULL;
+                
                 if ( test_instance == NULL ) continue;
                 
                 count++;
-                test_instance->is_alive = 0;
+                if ( faild_uplink_test_instance_stop( test_instance ) < 0 ) {
+                    errlog( ERR_WARNING, "faild_uplink_test_instance_stop\n" );
+                }
             }
         }
 
@@ -519,19 +522,18 @@ int faild_manager_stop_all_tests( void )
 
     if ( _globals.init == 0 ) return errlog( ERR_WARNING, "manager is not initialized.\n" );
     
-    if ( pthread_mutex_lock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_lock" );
-    int ret = _critical_section();
-    if ( pthread_mutex_unlock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_unlock" );
-
-    if ( ret < 0 ) return errlog( ERR_CRITICAL, "_critical_section\n" );
-
     /* Now wait for num_tests to go to zero */
+    int c = 0;
     for ( c = 0 ; c < _MAX_SHUTDOWN_TIMEOUT ; c++ ) {
-        if ( _globals.total_running_tests == 0 ) {
-            break;
-        }
+        if ( pthread_mutex_lock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_lock" );
+        int ret = _critical_section();
+        if ( pthread_mutex_unlock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_unlock" );
+        
+        if ( ret < 0 ) return errlog( ERR_CRITICAL, "_critical_section\n" );
+        
+        if ( _globals.total_running_tests == 0 ) break;
 
-        if ( sleep( 1 ) != 0 ) {
+        if ( sleep( 2 ) != 0 ) {
             errlog( ERR_WARNING, "Sleep interrupted.\n" );
         }
     }

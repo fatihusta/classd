@@ -11,6 +11,7 @@
 
 #include <math.h>
 #include <pthread.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -53,6 +54,8 @@ int faild_uplink_test_instance_start( faild_uplink_test_instance_t* test_instanc
         return perrlog("pthread_create");
     }
 
+    test_instance->thread = thread;
+
     return 0;
 }
 
@@ -61,6 +64,10 @@ int faild_uplink_test_instance_stop( faild_uplink_test_instance_t* test_instance
     if ( test_instance == NULL ) return errlogargs();
 
     test_instance->is_alive = 0;
+
+    if (( test_instance->thread > 0 ) && ( pthread_kill( test_instance->thread, SIGUSR1 ) < 0 )) { 
+        perrlog( "pthread_kill" );
+    }
 
     return 0;
 }
@@ -86,8 +93,11 @@ int faild_uplink_test_instance_init( faild_uplink_test_instance_t* test_instance
 
     bzero( test_instance, sizeof( faild_uplink_test_instance_t ));
 
+    test_instance->thread = 0;
+
     int aii = test_config->alpaca_interface_id;
     if ( aii < 1 || aii > FAILD_MAX_INTERFACES ) return errlogargs();
+
 
     /* Copy in the interface information */
     faild_uplink_t* uplink = NULL;
@@ -142,6 +152,8 @@ int faild_uplink_test_instance_destroy( faild_uplink_test_instance_t* test_insta
 
     faild_test_config_destroy( &test_instance->config );
 
+    test_instance->thread = 0;
+
     faild_uplink_results_destroy( &test_instance->results );
 
     bzero( test_instance, sizeof( faild_uplink_test_instance_t ));
@@ -170,7 +182,7 @@ void* _run_instance( void* arg )
     test_class = test_instance->test_class;
 
     int ticks = 0;
-    long long delay;
+    int64_t delay;
     struct timespec mt_start;
     struct timespec mt_timeout;
     struct timespec mt_next;
@@ -198,13 +210,21 @@ void* _run_instance( void* arg )
 
         clock_gettime( CLOCK_MONOTONIC, &mt_now );
         if ( utime_timespec_add( &mt_timeout, &mt_now, 
-                                 (long long )MSEC_TO_NSEC( test_config->timeout_ms )) < 0 ) {
+                                 MSEC_TO_NSEC(test_config->timeout_ms )) < 0 ) {
             return errlog_null( ERR_CRITICAL, "utime_timespec_add\n" );
         }
 
-        int result = _run_iteration( test_instance );
+        debug( 5, "Test[%s,%d] timeout %d.%d now %d.%d\n", test_instance->test_class->name,
+               test_instance->uplink.alpaca_interface_id, mt_timeout.tv_sec, mt_timeout.tv_nsec, 
+               mt_now.tv_sec, mt_now.tv_nsec );
         
+        int result = _run_iteration( test_instance );
+
         clock_gettime( CLOCK_MONOTONIC, &mt_now );
+
+        debug( 5, "Test[%s,%d] timeout %d.%d now %d.%d\n", test_instance->test_class->name,
+               test_instance->uplink.alpaca_interface_id, mt_timeout.tv_sec, mt_timeout.tv_nsec, 
+               mt_now.tv_sec, mt_now.tv_nsec );
 
         /* Check if the timeout occurred */
         delay = utime_timespec_diff( &mt_timeout, &mt_now );
@@ -212,8 +232,8 @@ void* _run_instance( void* arg )
             debug( 5, "Test[%s,%d] completed in time with result %d\n", test_instance->test_class->name,
                    test_instance->uplink.alpaca_interface_id, result );
         } else {
-            debug( 5, "Test[%s,%d] timed out with result %d\n", test_instance->test_class->name,
-                   test_instance->uplink.alpaca_interface_id, result );
+            debug( 5, "Test[%s,%d] timed out with result (%lld) %d\n", test_instance->test_class->name,
+                   test_instance->uplink.alpaca_interface_id, delay, result );
             result = 0;
         }
 
@@ -232,7 +252,7 @@ void* _run_instance( void* arg )
         delay = test_instance->config.delay_ms - ( delay % test_instance->config.delay_ms );
         debug( 9, "Waiting for %d milliseconds\n", delay );
 
-        if ( test_instance->config.delay_ms < 100 ) {
+        if ( delay < 100 ) {
             debug( 5, "Test is running close to delay.\n" );
             delay = test_instance->config.delay_ms;
         }
@@ -241,7 +261,7 @@ void* _run_instance( void* arg )
             return errlog_null( ERR_CRITICAL, "utime_timespec_add\n" );
         }
 
-        while ( test_instance->is_alive ) {
+        while ( test_instance->is_alive == 1 ) {
             clock_gettime( CLOCK_MONOTONIC, &mt_now );
 
             /* Sleep until next iteration */

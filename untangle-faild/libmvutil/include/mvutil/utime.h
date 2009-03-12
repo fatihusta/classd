@@ -20,23 +20,24 @@
 #define U_SEC (1000000L)
 #define N_SEC (1000000000L)
 
+/* Using a long long for saftey */
 #define MSEC_TO_SEC(msec)  ((msec) / M_SEC)
-#define SEC_TO_MSEC(sec)   ((sec)  * M_SEC)
+#define SEC_TO_MSEC(sec)   (((int64_t)sec)  * M_SEC)
 
 #define NSEC_TO_MSEC(nsec) ((nsec) / (N_SEC/M_SEC))
-#define MSEC_TO_NSEC(msec) ((msec) * (N_SEC/M_SEC))
+#define MSEC_TO_NSEC(msec) (((int64_t)msec) * (N_SEC/M_SEC))
 
 #define USEC_TO_MSEC(msec) ((usec) / (U_SEC/M_SEC))
-#define MSEC_TO_USEC(msec) ((msec) * (U_SEC/M_SEC))
+#define MSEC_TO_USEC(msec) (((int64_t)msec) * (U_SEC/M_SEC))
 
 #define USEC_TO_SEC(usec)  ((usec) / U_SEC)
-#define SEC_TO_USEC(sec)   ((sec)  * U_SEC)
+#define SEC_TO_USEC(sec)   (((int64_t)sec)  * U_SEC)
 
 #define NSEC_TO_USEC(msec) ((msec) / (N_SEC/U_SEC))
-#define USEC_TO_NSEC(usec) ((usec) * (N_SEC/U_SEC))
+#define USEC_TO_NSEC(usec) (((int64_t)usec) * (N_SEC/U_SEC))
 
 #define NSEC_TO_SEC(msec)  ((msec) / (N_SEC))
-#define SEC_TO_NSEC(sec)   ((sec)  * N_SEC)
+#define SEC_TO_NSEC(sec)   (((int64_t)sec)  * N_SEC)
 
 /**
  * used as an argument to utime_timer_start_sem
@@ -84,12 +85,12 @@ void*         utime_timer_start_sem(void* utime_timer_struct);
 /**
  * Return the number of nanoseconds between time_1 and time_2
  */
-long long utime_timespec_diff( struct timespec* time_1, struct timespec* time_2 );
+int64_t utime_timespec_diff( struct timespec* time_1, struct timespec* time_2 );
 
 /**
  * Add nanoseconds to a timespec (dest can equal time_1)
  */
-int utime_timespec_add( struct timespec* dest, struct timespec* time_1, long long nsecs );
+int utime_timespec_add( struct timespec* dest, struct timespec* time_1, int64_t nsecs );
 
 /**
  * Add two timespecs together (dest can equal time_1 or time_2)
