@@ -2,5 +2,5 @@
 
 /usr/share/untangle/bin/xpd upm-sub.ulg 0x3c2f44da5d006457 947327ce7d2c9d66f4b8c338a2bbc0a3
 
-/usr/bin/mcli -t 30 reloadLicenses > /dev/null 2>&1
+/usr/bin/ucli -t 30 reloadLicenses > /dev/null 2>&1
 true
