@@ -69,5 +69,9 @@ int faild_manager_change_active_uplink( int alpaca_interface_id );
  */
 int faild_manager_run_script( void );
 
+/**
+ * Update the link status after running a test.
+ */
+int faild_manager_update_uplink_status( faild_uplink_test_instance_t* test_instance );
 
 #endif // #ifndef __FAILD_MANAGER_H_

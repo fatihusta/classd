@@ -36,9 +36,12 @@ start()
       rm -f ${PID_FILE}
     fi
 
-    log_progress_msg "untangle-faild"    
+    RUN_AS_USER=""
+    [ -n "${FAILD_USER}" ] && RUN_AS_USER="--chuid ${FAILD_USER}"
+    
+    log_progress_msg "untangle-faild"
     start-stop-daemon -m --pidfile ${PID_FILE} --name ${MONITOR} --start --background \
-        --startas ${MONITOR_SCRIPT}
+        ${RUN_AS_USER}  --startas ${MONITOR_SCRIPT}
 
     log_end_msg 0	
 }

@@ -215,7 +215,8 @@ void* _run_instance( void* arg )
         clock_gettime( CLOCK_MONOTONIC, &mt_now );
         if ( utime_timespec_add( &mt_timeout, &mt_now, 
                                  MSEC_TO_NSEC(test_config->timeout_ms )) < 0 ) {
-            return errlog_null( ERR_CRITICAL, "utime_timespec_add\n" );
+            errlog( ERR_CRITICAL, "utime_timespec_add\n" );
+            break;
         }
 
         debug( 9, "Test[%s,%d] timeout %d.%d now %d.%d\n", test_instance->test_class->name,
@@ -243,7 +244,13 @@ void* _run_instance( void* arg )
 
         /* If the iteration passed, the thread should have updated iteration_result */
         if ( faild_uplink_results_add( &test_instance->results, result ) < 0 ) {
-            errlog_null( ERR_CRITICAL, "faild_uplink_results_add\n" );
+            errlog( ERR_CRITICAL, "faild_uplink_results_add\n" );
+            break;
+        }
+
+        /* Update the overall uplink status */
+        if ( faild_manager_update_uplink_status( test_instance ) < 0 ) {
+            errlog( ERR_CRITICAL, "faild_manager_update_uplink_status\n" );
             break;
         }
 
@@ -262,7 +269,8 @@ void* _run_instance( void* arg )
         }
             
         if ( utime_timespec_add( &mt_next, &mt_now, MSEC_TO_NSEC( delay )) < 0 ) {
-            return errlog_null( ERR_CRITICAL, "utime_timespec_add\n" );
+            errlog( ERR_CRITICAL, "utime_timespec_add\n" );
+            break;
         }
 
         while ( test_instance->is_alive == 1 ) {

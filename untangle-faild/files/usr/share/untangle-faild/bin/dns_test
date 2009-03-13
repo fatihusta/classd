@@ -4,7 +4,7 @@ DNS_SERVER=$1
 HOSTNAME=$2
 
 if [ -z "$DNS_SERVER" ] || [ "${DNS_SERVER}x" = "0.0.0.0x" ] ; then
-    DNS_SERVER=`awk '/^server=.*uplink.'${ALPACA_INTERFACE_INDEX}'/ { sub( "server=", "", $1 ) ; print $1 ; exit }' /etc/dnsmasq.conf`
+    DNS_SERVER=`awk '/^server=.*uplink.'${FAILD_ALPACA_INTERFACE_ID}'/ { sub( "server=", "", $1 ) ; print $1 ; exit }' /etc/dnsmasq.conf`
     if [ -z "${DNS_SERVER}" ]; then
         DNS_SERVER=4.2.2.1 # dirty.
     fi

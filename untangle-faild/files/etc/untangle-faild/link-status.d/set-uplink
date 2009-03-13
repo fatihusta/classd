@@ -1,0 +1,32 @@
+#!/bin/dash
+
+UNTANGLE_PRIORITY_BASE="36"
+UNTANGLE_PRIORITY_DEFAULT="${UNTANGLE_PRIORITY_BASE}900"
+
+update_default_link_rule()
+{
+## If necessary add the default uplink rule (ip lets you have two rules with the same priority)
+    for t in `ip rule show | awk "/^${UNTANGLE_PRIORITY_DEFAULT}/ { print \"a\" }"`; do
+        sudo ip rule del priority ${UNTANGLE_PRIORITY_DEFAULT}
+    done
+    
+    if [ -n "${FAILD_UPLINK_ACTIVE}" ] ; then
+        printf "Bringing up uplink.%d\n" ${FAILD_UPLINK_ACTIVE}
+        ## Use printf to get rid of the spacing
+        sudo ip rule add priority ${UNTANGLE_PRIORITY_DEFAULT} lookup `printf "uplink.%d" ${FAILD_UPLINK_ACTIVE}`
+    else
+        echo "No uplinks are available."
+    fi
+}
+
+update_
+
+update_default_link_rule
+
+update_dns_servers
+
+
+
+
+
+

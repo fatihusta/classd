@@ -1,20 +1,23 @@
 #!/bin/dash
 
-mkdir -p /var/log/untangle-faild
-exec >> /var/log/untangle-faild/monitor.log 2>&1
-
-NAME="faild"
-
 load_defaults()
 {
     FAILD_BIND_PORT="3003"
     FAILD_CONF_FILE="/etc/untangle-faild.conf"
     FAILD_LOG_OUT="/var/log/untangle-faild/debug.log"
     FAILD_LOG_ERR="/var/log/untangle-faild/error.log"
+    FAILD_LOG_MONITOR="/var/log/untangle-faild/monitor.log"
+    FAILD_BIN=/usr/bin/faild
+
+    FAILD_DEFAULTS_SCRIPT=${FAILD_DEFAULTS_SCRIPT:-/etc/default/untangle-faild}
     
-    if [ -f /etc/default/untangle-faild ] ; then
-        . /etc/default/untangle-faild
+    if [ -f ${FAILD_DEFAULTS_SCRIPT} ] ; then
+        . ${FAILD_DEFAULTS_SCRIPT}
     fi
+
+    ## These have to be exported so the children can see them.
+    export HTTP_SCRIPT PING_SCRIPT DNS_SCRIPT ARP_SCRIPT
+    export FAILD_LINK_STATUS_SCRIPT FAILD_LINK_STATUS_DIR
 }
 
 reap_child_hardest()
@@ -60,11 +63,18 @@ start_faild()
     test -n "${FAILD_LOG_OUT}" && t_args="${t_args} -o ${FAILD_LOG_OUT}"
     test -n "${FAILD_LOG_ERR}" && t_args="${t_args} -e ${FAILD_LOG_ERR}"
     test -n "${FAILD_DEBUG_LEVEL}" && t_args="${t_args} -l ${FAILD_DEBUG_LEVEL}"
+    test -n "${FAILD_LINK_STATUS_SCRIPT}" && t_args="${t_args} -s ${FAILD_LINK_STATUS_SCRIPT}"
     
-    /usr/bin/${NAME} ${t_args} &
+    ${FAILD_BIN} ${t_args} &
     FAILD_PID=$!
     echo "[`date`] Started Faild    (monitor: $$) (faild: $FAILD_PID)"
 }
+
+## Start of script
+
+load_defaults
+mkdir -p `dirname ${FAILD_LOG_MONITOR}`
+exec >> ${FAILD_LOG_MONITOR}  2>&1
 
 trap reap_child_easy INT TERM USR1 USR2 QUIT
 
@@ -74,7 +84,13 @@ while ( true ) ;  do
     start_faild
     sleep 2
     echo "[`date`] Monitoring Faild (monitor: $$) (faild: $FAILD_PID)"
-    wait $FAILD_PID
-
+    while ( true ) ; do
+        wait $FAILD_PID
+        
+        ## Check if the proc directory is still around
+        [ -d /proc/${FAILD_PID} ] || break
+        sleep 0.5
+    done
+    
     echo "[`date`] Faild Died!      (monitor: $$) (faild: $FAILD_PID)"
 done

@@ -23,6 +23,7 @@
 #include <mvutil/debug.h>
 #include <mvutil/errlog.h>
 #include <mvutil/unet.h>
+#include <mvutil/utime.h>
 
 #include "faild.h"
 #include "faild/manager.h"
@@ -48,8 +49,9 @@ static struct
     int init;
 
     int active_alpaca_interface_id;
-    faild_uplink_status_t status[FAILD_MAX_INTERFACES];
     faild_uplink_test_instance_t* active_tests[FAILD_MAX_INTERFACES][FAILD_MAX_INTERFACE_TESTS];
+    
+    int32_t interface_min_ms;
 
     /* This is the total number of running tests.  A test is running
      * as long as the thread exists.  active_tests is set to NULL as
@@ -57,7 +59,14 @@ static struct
     int total_running_tests;
 
     char *switch_script;
+
+    /* The next time the switch script should run. */
+    struct timespec next_update;
+
+    /* interface status last time the switch script ran. */
+    u_char uplink_status[FAILD_MAX_INTERFACES];
 } _globals = {
+    .interface_min_ms = 10000,
     .init = 0,
     .mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP,
     .active_alpaca_interface_id = 0,
@@ -77,12 +86,14 @@ static int _run_switch_interface_script( faild_status_t* status );
 
 static int _update_environment( faild_status_t* status );
 
+static int _get_active_alpaca_interface_id( faild_status_t* status, int aii );
+
 int faild_manager_init( faild_config_t* config, char* switch_script )
 {
     if ( config == NULL ) return errlogargs();
 
-    bzero( &_globals.status, sizeof( _globals.status ));
     bzero( &_globals.active_tests, sizeof( _globals.active_tests ));
+    bzero( &_globals.uplink_status, sizeof( _globals.uplink_status ));
 
     _globals.init = 1;
 
@@ -97,6 +108,8 @@ int faild_manager_init( faild_config_t* config, char* switch_script )
         return -1;
     }
     strncpy( _globals.switch_script, switch_script, len );
+
+    clock_gettime( CLOCK_MONOTONIC, &_globals.next_update );
 
     return 0;
 }
@@ -336,9 +349,10 @@ int faild_manager_get_status( faild_status_t* status )
     int _critical_section()
     {
         int num_active = 0;
-        status->active_alpaca_interface_id = _globals.active_alpaca_interface_id;
 
         int c = 0;
+        bzero( _globals.uplink_status, sizeof( _globals.uplink_status ));
+
         for ( c = 0 ; c < FAILD_MAX_INTERFACES ; c++ ) {
             if (( uplink_status == NULL ) && (( uplink_status = faild_uplink_status_create()) == NULL )) {
                 return errlog( ERR_CRITICAL, "faild_uplink_status_create\n" );
@@ -352,13 +366,23 @@ int faild_manager_get_status( faild_status_t* status )
             if ( uplink_status->alpaca_interface_id == 0 ) continue;
             
             if ( uplink_status->online == 1 ) num_active++;
+            
+            _globals.uplink_status[c] = uplink_status->online;
 
             status->uplink_status[c] = uplink_status;
             
             uplink_status = NULL;
         }
 
+        /* Determine if the current active interface is active */
+        int aii = _globals.active_alpaca_interface_id;
+        if (( aii = _get_active_alpaca_interface_id( status, aii )) < 0 ) {
+            return errlog( ERR_CRITICAL, "_get_active_alpaca_interface_id\n" );
+        }
+        
         status->num_active_uplinks = num_active;
+
+        status->active_alpaca_interface_id = _globals.active_alpaca_interface_id = aii;
 
         return 0;
     }
@@ -393,11 +417,14 @@ int faild_manager_get_uplink_status( faild_uplink_status_t* uplink_status, int a
         faild_uplink_status_destroy( uplink_status );
         faild_uplink_status_init( uplink_status );
 
+        uplink_status->online = 1;
+
         /* Check all of the active tests to see if there are any results */
         int c =0;
         int result_index = 0;
         faild_uplink_results_t* source_uplink_results = NULL;
         faild_test_config_t* test_config = NULL;
+        
 
         faild_uplink_t* test_uplink = NULL;
 
@@ -423,8 +450,8 @@ int faild_manager_get_uplink_status( faild_uplink_status_t* uplink_status, int a
                 return errlog( ERR_CRITICAL, "faild_uplink_results_copy\n" );   
             }
 
-            /* Online as long as one test passes */
-            uplink_status->online |= ( uplink_results->success > test_config->threshold ) ? 1 : 0;
+            /* Online if all of the tests pass */
+            uplink_status->online &= ( uplink_results->success > test_config->threshold ) ? 1 : 0;
             
             uplink_status->results[result_index++] = uplink_results;
             uplink_results = NULL;
@@ -614,6 +641,85 @@ int faild_manager_run_script( void )
     return 0;
 }
 
+/**
+ * Add a test result.
+ */
+int faild_manager_update_uplink_status( faild_uplink_test_instance_t* test_instance )
+{
+    if ( test_instance == NULL ) return errlogargs();
+    int aii = test_instance->uplink.alpaca_interface_id;
+    if (( aii < 1 ) || ( aii > FAILD_MAX_INTERFACES )) return errlogargs();
+
+    struct timespec mt_now;
+    
+    clock_gettime( CLOCK_MONOTONIC, &mt_now );
+    if ( utime_timespec_diff( &_globals.next_update, &mt_now ) > 0 ) {
+        debug( 10, "Ignoring update status.\n" );
+        return 0;
+    }
+
+    faild_uplink_status_t uplink_status;
+    bzero( &uplink_status, sizeof( faild_uplink_status_t ));
+
+    int run_script = 0;
+
+    int _critical_section()
+    {
+        clock_gettime( CLOCK_MONOTONIC, &mt_now );
+        if ( utime_timespec_diff( &_globals.next_update, &mt_now ) > 0 ) {
+            debug( 10, "Ignoring update status.\n" );
+            return 0;
+        }
+
+        if ( faild_manager_get_uplink_status( &uplink_status, aii ) < 0 ) {
+            return errlog( ERR_CRITICAL, "faild_manager_get_uplink_status\n" );
+        }
+        
+        if ( uplink_status.online == _globals.uplink_status[aii-1] ) {
+            debug( 6, "Link %d status has not changed.\n", aii );
+            return 0;
+        }
+
+        debug( 6, "Link %d status changed from %d to %d\n", aii, uplink_status.online,
+               _globals.uplink_status[aii-1] );
+            
+        run_script = 1;
+
+        /* Hint of debouncing for a long running switch script */
+        clock_gettime( CLOCK_MONOTONIC, &mt_now );
+        if ( utime_timespec_add( &_globals.next_update, &mt_now, 
+                                 MSEC_TO_NSEC( _globals.interface_min_ms )) < 0 ) {
+            return errlog( ERR_CRITICAL, "utime_timespec_add\n" );
+        }
+        
+        return 0;
+    }
+
+    if ( pthread_mutex_lock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_lock" );
+    int ret = _critical_section();
+    if ( pthread_mutex_unlock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_unlock" );
+
+    faild_uplink_status_destroy( &uplink_status );
+    
+    if ( ret < 0 ) return errlog( ERR_CRITICAL, "_critical_section\n" );
+
+    if ( run_script == 0 ) return 0;
+
+    if (( run_script == 1 ) && ( faild_manager_run_script() < 0 )) {
+        return errlog( ERR_CRITICAL, "faild_manager_run_script\n" );
+    }
+
+    if ( pthread_mutex_lock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_lock" );
+    clock_gettime( CLOCK_MONOTONIC, &mt_now );
+    if ( utime_timespec_add( &_globals.next_update, &mt_now, 
+                             MSEC_TO_NSEC( _globals.interface_min_ms )) < 0 ) {
+        errlog( ERR_CRITICAL, "utime_timespec_add\n" );
+    }
+    if ( pthread_mutex_unlock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_unlock" );
+
+    return 0;
+}
+
 static int _validate_test_config( faild_test_config_t* test_config )
 {
     int aii = test_config->alpaca_interface_id;
@@ -740,6 +846,28 @@ static int _update_environment( faild_status_t* status )
     snprintf( active, sizeof( active ), "%d", status->active_alpaca_interface_id );
     setenv( "FAILD_UPLINK_ACTIVE", active, 1 );
 
+    return 0;
+}
+
+static int _get_active_alpaca_interface_id( faild_status_t* status, int aii )
+{
+    /* Check if the interface ID is currently valid */
+    if (( aii < 1 ) || ( aii > FAILD_MAX_INTERFACES )) aii = 0;
+
+    /* Check if an uplink status exists for this interface */
+    // This is the logic to stay on current connection. if ( status->uplink_status[aii-1] == NULL ) aii = 0;
+    
+    /* Check if that interface is online */
+    // This is the logic to stay on current connection. if (( aii != 0 ) && ( status->uplink_status[aii-1]->online == 1 )) return aii;
+
+    int c = 0;
+
+    /* Find the first interface that is online */
+    for ( c = 0 ; c < FAILD_MAX_INTERFACES ; c++ ) {
+        if ( status->uplink_status[c] == NULL ) continue;
+        if ( status->uplink_status[c]->online == 1 ) return status->uplink_status[c]->alpaca_interface_id;
+    }
+        
     return 0;
 }
 

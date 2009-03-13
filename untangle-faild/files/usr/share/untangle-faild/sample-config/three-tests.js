@@ -12,7 +12,7 @@
     }],
 
     "tests" : [{
-        "alpaca_interface_id" : 1,
+        "alpaca_interface_id" : 3,
         "test_class_name" : "dns",
         "timeout" : 2000,
         "delay" : 4000,
@@ -22,7 +22,7 @@
         is detected. */
         "threshold" : 7,
         "params" : {
-            /* DNS Doesn't require any params */
+            "hostname" : "www.untangle.com",
         }
     },{
         "alpaca_interface_id" : 3,
@@ -39,7 +39,7 @@
         }
     },{
         "alpaca_interface_id" : 1,
-        "test_class_name" : "arp",
+        "test_class_name" : "ping",
         "timeout" : 2000,
         "delay" : 4000,
         "bucket_size" : 10,
@@ -49,6 +49,7 @@
         "threshold" : 7,
         "params" : {
             /* ARP doesn't require any params */
+            "hostname" : "skeeter"
         }
     }]
 }

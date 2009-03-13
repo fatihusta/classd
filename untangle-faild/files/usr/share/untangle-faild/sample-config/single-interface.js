@@ -33,7 +33,7 @@
         "threshold" : 7,
         "params" : {
             "hostname" : "www.untangle.com",
-            "server" : "4.2.2.2"
+            "server" : "4.2.2.1"
         }
     },{
         "alpaca_interface_id" : 1,
