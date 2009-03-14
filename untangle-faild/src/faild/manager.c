@@ -813,13 +813,14 @@ static int _update_environment( faild_status_t* status )
 {
     char uplinks[FAILD_MAX_INTERFACES*3];
     char uplinks_online[FAILD_MAX_INTERFACES*3];
+    char uplinks_offline[FAILD_MAX_INTERFACES*3];
     char active[4];
     char name[34];
     
     bzero( uplinks, sizeof( uplinks ));
     bzero( uplinks_online, sizeof( uplinks_online ));
+    bzero( uplinks_online, sizeof( uplinks_offline ));
     bzero( active, sizeof( active ));
-
     
     int c = 0;
     faild_uplink_status_t* uplink_status;
@@ -839,10 +840,13 @@ static int _update_environment( faild_status_t* status )
         strncat( uplinks, name, sizeof( uplinks ));
 
         if ( uplink_status->online == 1 ) strncat( uplinks_online, name, sizeof( uplinks ));
+        else strncat( uplinks_offline, name, sizeof( uplinks ));
     }
 
     setenv( "FAILD_UPLINKS", uplinks, 1 );
     setenv( "FAILD_UPLINKS_ONLINE", uplinks_online, 1 );
+    setenv( "FAILD_UPLINKS_OFFLINE", uplinks_offline, 1 );
+
     snprintf( active, sizeof( active ), "%d", status->active_alpaca_interface_id );
     setenv( "FAILD_UPLINK_ACTIVE", active, 1 );
 
