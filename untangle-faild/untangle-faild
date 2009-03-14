@@ -1,5 +1,3 @@
-#!/bin/dash
-
 ## Path to the faild binary.
 FAILD_BIN=./faild
 
