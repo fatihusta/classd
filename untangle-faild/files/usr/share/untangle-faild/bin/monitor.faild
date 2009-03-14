@@ -64,6 +64,7 @@ start_faild()
     test -n "${FAILD_LOG_ERR}" && t_args="${t_args} -e ${FAILD_LOG_ERR}"
     test -n "${FAILD_DEBUG_LEVEL}" && t_args="${t_args} -l ${FAILD_DEBUG_LEVEL}"
     test -n "${FAILD_LINK_STATUS_SCRIPT}" && t_args="${t_args} -s ${FAILD_LINK_STATUS_SCRIPT}"
+    test -n "${FAILD_LIB_DIR}" && t_args="${t_args} -t ${FAILD_LIB_DIR}"
     
     ${FAILD_BIN} ${t_args} &
     FAILD_PID=$!

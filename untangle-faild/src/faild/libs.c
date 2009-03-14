@@ -89,6 +89,7 @@ int faild_libs_load_test_classes( char* lib_dir_name )
         }
 
         int c = 0;
+        debug( 4, "Trying to load libs from '%s'\n", lib_dir_name );
         if (( num_libs = scandir( lib_dir_name, &dir_list, _lib_name_filter, alphasort )) < 0 ) {
             return perrlog( "scandir" );
         }

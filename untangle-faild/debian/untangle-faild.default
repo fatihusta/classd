@@ -22,6 +22,9 @@
 ## Run parts directory that is used by the default link-status script.
 # FAILD_LINK_STATUS_DIR=/etc/untangle-faild/link-status.d
 
+## Libraries for the test classes.
+# FAILD_LIB_DIR="/usr/lib/untangle-faild/"
+
 ## Uncomment this to change the port faild is bound to.
 ## FAILD_BIND_PORT="3003"
 

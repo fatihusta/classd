@@ -41,7 +41,7 @@
 #define DEFAULT_DEBUG_LEVEL  1
 #define DEFAULT_BIND_PORT 3003
 #define DEFAULT_SWITCH_SCRIPT  "/usr/share/untangle-faild/bin/switch"
-#define DEFAULT_LIB_DIR        "build/libs"
+#define DEFAULT_LIB_DIR        "/usr/lib/untangle-faild"
 
 #define FLAG_ALIVE      0x543F00D
 
