@@ -21,6 +21,9 @@ MONITOR_SCRIPT=/usr/share/untangle-faild/bin/${MONITOR}
 
 PID_FILE="/var/run/untangle-faild.pid"
 
+## For safety
+chown -R faild:nogroup /var/log/untangle-faild
+
 start()
 {
     log_daemon_msg "Starting $DESC"

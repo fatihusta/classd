@@ -40,7 +40,7 @@
 #define DEFAULT_CONFIG_FILE  "/etc/untangle-faild/config.js"
 #define DEFAULT_DEBUG_LEVEL  1
 #define DEFAULT_BIND_PORT 3003
-#define DEFAULT_SWITCH_SCRIPT  "/usr/share/untangle-faild/bin/switch"
+#define DEFAULT_LINK_STATUS_SCRIPT  "/etc/untangle-faild/link-status"
 #define DEFAULT_LIB_DIR        "/usr/lib/untangle-faild"
 
 #define FLAG_ALIVE      0x543F00D
@@ -233,11 +233,11 @@ static int _parse_args( int argc, char** argv )
     }
 
     if ( _globals.switch_script == NULL ) {
-        if (( _globals.switch_script = calloc( 1, sizeof( DEFAULT_SWITCH_SCRIPT ))) == NULL ) {
+        if (( _globals.switch_script = calloc( 1, sizeof( DEFAULT_LINK_STATUS_SCRIPT ))) == NULL ) {
             fprintf( stderr, "Unable to allocate memory\n" );
             return -1;
         }
-        strncpy( _globals.switch_script, DEFAULT_SWITCH_SCRIPT, sizeof( DEFAULT_SWITCH_SCRIPT ));
+        strncpy( _globals.switch_script, DEFAULT_LINK_STATUS_SCRIPT, sizeof( DEFAULT_LINK_STATUS_SCRIPT ));
     }
 
     if ( _globals.lib_dir == NULL ) {

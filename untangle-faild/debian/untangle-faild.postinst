@@ -35,6 +35,6 @@ fi
 
 adduser --no-create-home --home /var/log/untangle-faild --system --gecos "" --shell /bin/false --disabled-password faild
 
-chown -R faild:nobody /var/log/untangle-faild
+chown -R faild:nogroup /var/log/untangle-faild
 
 exit 0
