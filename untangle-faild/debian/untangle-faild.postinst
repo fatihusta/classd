@@ -20,12 +20,11 @@ END {
   print "# Start of Untangle FailD elevated privileges # untangle-faild.postinst";
   print "Defaults:faild     env_keep+=\"FAILD_*\"                      # untangle-faild.postinst";
   print "faild              ALL = NOPASSWD: /usr/sbin/arping         # untangle-faild.postinst";
-  print "faild              /usr/share/untangle-faild/bin/set-uplink # untangle-faild.postinst";
+  print "faild              ALL = NOPASSWD: /usr/share/untangle-faild/bin/set-uplink # untangle-faild.postinst";
   print "# End of Untangle FailD elevated privileges # untangle-faild.postinst";
   }
 EOF
 }
-
 
 update_sudoers_file()
 {
@@ -46,7 +45,9 @@ update_sudoers_file()
         return 3
     }
 
-    mv ${t_temp} ${SUDOERS_CONF_FILE}    
+    mv ${t_temp} ${SUDOERS_CONF_FILE}
+
+    chmod 0440 
 }
 
 FAILD_CONFIG_FILE="/etc/untangle-faild.conf"
@@ -63,6 +64,12 @@ if [ ! -f ${FAILD_CONFIG_FILE} ]; then
     cp ${FAILD_DEFAULT_CONFIG} ${FAILD_CONFIG_FILE}
 fi
 
+adduser --no-create-home --home /var/log/untangle-faild --system --gecos "" --shell /bin/false --disabled-password faild
+
+chown -R faild:nogroup /var/log/untangle-faild
+
+update_sudoers_file
+
 if [ -x "/etc/init.d/untangle-faild" ]; then
     ## Moving the startup from its defaults to start later and stop earlier.
     update-rc.d -f untangle-faild remove >/dev/null
@@ -74,9 +81,4 @@ if [ -x "/etc/init.d/untangle-faild" ]; then
     ourInit untangle-faild start || exit 0
 fi
 
-adduser --no-create-home --home /var/log/untangle-faild --system --gecos "" --shell /bin/false --disabled-password faild
-
-chown -R faild:nogroup /var/log/untangle-faild
-
-update_sudoers_file
 
