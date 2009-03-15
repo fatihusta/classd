@@ -47,7 +47,7 @@ update_sudoers_file()
 
     mv ${t_temp} ${SUDOERS_CONF_FILE}
 
-    chmod 0440 
+    chmod 0440  ${SUDOERS_CONF_FILE}
 }
 
 FAILD_CONFIG_FILE="/etc/untangle-faild.conf"
@@ -64,7 +64,8 @@ if [ ! -f ${FAILD_CONFIG_FILE} ]; then
     cp ${FAILD_DEFAULT_CONFIG} ${FAILD_CONFIG_FILE}
 fi
 
-adduser --no-create-home --home /var/log/untangle-faild --system --gecos "" --shell /bin/false --disabled-password faild
+adduser --no-create-home --home /var/log/untangle-faild --system --gecos "" --shell /bin/false --disabled-password faild > /dev/null 2>&1
+
 
 chown -R faild:nogroup /var/log/untangle-faild
 
