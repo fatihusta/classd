@@ -44,4 +44,4 @@ FAILD_LOG_DIR="/var/log/untangle-faild"
 ## FAILD_LOG_ERR="${FAILD_LOG_DIR}/error.log"
 
 ## Change to run as a different user (defaults to faild).
-## FAILD_USER=faild
+FAILD_USER=faild

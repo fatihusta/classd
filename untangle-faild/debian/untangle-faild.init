@@ -21,6 +21,8 @@ MONITOR_SCRIPT=/usr/share/untangle-faild/bin/${MONITOR}
 
 PID_FILE="/var/run/untangle-faild.pid"
 
+test -f /etc/default/untangle-faild && . /etc/default/untangle-faild
+
 ## For safety
 chown -R faild:nogroup /var/log/untangle-faild
 
