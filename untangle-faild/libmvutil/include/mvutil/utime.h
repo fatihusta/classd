@@ -20,7 +20,7 @@
 #define U_SEC (1000000L)
 #define N_SEC (1000000000L)
 
-/* Using a long long for saftey */
+/* Using a int64_t for saftey */
 #define MSEC_TO_SEC(msec)  ((msec) / M_SEC)
 #define SEC_TO_MSEC(sec)   (((int64_t)sec)  * M_SEC)
 

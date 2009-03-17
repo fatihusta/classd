@@ -173,7 +173,7 @@ int json_serializer_to_c_int( struct json_object* json_object, json_serializer_f
     if ( field == NULL ) return errlogargs();
     if ( c_data == NULL ) return errlogargs();
     if ( field->fetch_arg == 0 ) return errlog( ERR_CRITICAL, "field->fetch_arg must be set\n" );
-    int offset = (int)field->arg / sizeof( int );
+    int offset = *((int*)(&field->arg)) / sizeof( int );
     if ( offset < 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", offset );
 
     if ( json_object_is_type( json_object, json_type_int ) == 0 ) {
@@ -193,7 +193,7 @@ int json_serializer_to_json_int( struct json_object* json_object, json_serialize
     if ( json_object == NULL ) return errlogargs();
     if ( field == NULL ) return errlogargs();
     if ( c_data == NULL ) return errlogargs();
-    int offset = (int)field->arg / sizeof( int );
+    int offset = *((int*)(&field->arg)) / sizeof( int );
     if ( offset < 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", offset );
 
     if ( json_object_utils_add_int( json_object, field->name, ((int*)c_data)[offset] ) < 0 ) {
@@ -210,7 +210,7 @@ int json_serializer_to_c_double( struct json_object* json_object, json_serialize
     if ( field == NULL ) return errlogargs();
     if ( c_data == NULL ) return errlogargs();
     if ( field->fetch_arg == 0 ) return errlog( ERR_CRITICAL, "field->fetch_arg must be set\n" );
-    int offset = (int)field->arg / sizeof( double );
+    int offset = *((int*)(&field->arg)) / sizeof( double );
     if ( offset < 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", offset );
 
     if ( json_object_is_type( json_object, json_type_double ) == 0 ) {
@@ -230,7 +230,7 @@ int json_serializer_to_json_double( struct json_object* json_object, json_serial
     if ( json_object == NULL ) return errlogargs();
     if ( field == NULL ) return errlogargs();
     if ( c_data == NULL ) return errlogargs();
-    int offset = (int)field->arg / sizeof( double );
+    int offset = *((int*)(&field->arg)) / sizeof( double );
     if ( offset < 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", offset );
 
     if ( json_object_utils_add_double( json_object, field->name, ((double*)c_data)[offset] ) < 0 ) {
@@ -247,7 +247,7 @@ int json_serializer_to_c_boolean( struct json_object* json_object, json_serializ
     if ( field == NULL ) return errlogargs();
     if ( c_data == NULL ) return errlogargs();
     if ( field->fetch_arg == 0 ) return errlog( ERR_CRITICAL, "field->fetch_arg must be set\n" );
-    int offset = (int)field->arg / sizeof( int );
+    int offset = *((int*)(&field->arg)) / sizeof( int );
     if ( offset < 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", offset );
 
     if ( json_object_is_type( json_object, json_type_boolean ) == 0 ) {
@@ -267,7 +267,7 @@ int json_serializer_to_json_boolean( struct json_object* json_object, json_seria
     if ( json_object == NULL ) return errlogargs();
     if ( field == NULL ) return errlogargs();
     if ( c_data == NULL ) return errlogargs();
-    int offset = (int)field->arg / sizeof( int );
+    int offset = *((int*)(&field->arg)) / sizeof( int );
     if ( offset < 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", offset );
 
     if ( json_object_utils_add_boolean( json_object, field->name, ((int*)c_data)[offset] ) < 0 ) {
@@ -285,7 +285,7 @@ int json_serializer_to_c_in_addr( struct json_object* json_object, json_serializ
     if ( field == NULL ) return errlogargs();
     if ( c_data == NULL ) return errlogargs();
     if ( field->fetch_arg == 0 ) return errlog( ERR_CRITICAL, "field->fetch_arg must be set\n" );
-    int offset = (int)field->arg;
+    int offset = *((int*)(&field->arg));
     if ( offset < 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", offset );
 
     struct in_addr* address = (struct in_addr*)&((char*)c_data)[offset];
@@ -317,7 +317,7 @@ int json_serializer_to_json_in_addr( struct json_object* json_object, json_seria
     if ( json_object == NULL ) return errlogargs();
     if ( field == NULL ) return errlogargs();
     if ( c_data == NULL ) return errlogargs();
-    int offset = (int)field->arg;
+    int offset = *((int*)(&field->arg));
     if ( offset < 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", offset );
 
     struct in_addr* address = (struct in_addr*)&((char*)c_data)[offset];
@@ -337,7 +337,7 @@ int json_serializer_to_c_timeval( struct json_object* json_object, json_serializ
     if ( field == NULL ) return errlogargs();
     if ( c_data == NULL ) return errlogargs();
     if ( field->fetch_arg == 0 ) return errlog( ERR_CRITICAL, "field->fetch_arg must be set\n" );
-    int offset = (int)field->arg;
+    int offset = *((int*)(&field->arg));
     if ( offset < 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", offset );
 
     struct timeval* tv = (struct timeval*)&((char*)c_data)[offset];
@@ -356,7 +356,7 @@ int json_serializer_to_json_timeval( struct json_object* json_object, json_seria
     if ( json_object == NULL ) return errlogargs();
     if ( field == NULL ) return errlogargs();
     if ( c_data == NULL ) return errlogargs();
-    int offset = (int)field->arg;
+    int offset = *((int*)(&field->arg));
     if ( offset < 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", offset );
     
     struct timeval* tv = (struct timeval*)&((char*)c_data)[offset];
@@ -548,7 +548,7 @@ int json_serializer_to_c_json( struct json_object* json_object, json_serializer_
     if ( field->fetch_arg == 0 ) return errlog( ERR_CRITICAL, "field->fetch_arg must be set\n" );
     if ( c_data == NULL ) return errlogargs();
 
-    int offset = (int)field->arg / sizeof( struct json_object* );
+    int offset = *((int*)(&field->arg)) / sizeof( struct json_object* );
     if ( offset < 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", offset );
 
     if ((((struct json_object**)c_data)[offset] = json_object_get( json_object )) == NULL ) {
@@ -568,7 +568,7 @@ int json_serializer_to_json_json( struct json_object* json_object, json_serializ
     if ( field->fetch_arg == 0 ) return errlog( ERR_CRITICAL, "field->fetch_arg must be set\n" );
     if ( c_data == NULL ) return errlogargs();
 
-    int offset = (int)field->arg / sizeof( struct json_object* );
+    int offset = *((int*)(&field->arg)) / sizeof( struct json_object* );
     if ( offset < 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", offset );
     
     struct json_object* json = ((struct json_object**)c_data)[offset];

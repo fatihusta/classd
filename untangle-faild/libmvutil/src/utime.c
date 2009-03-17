@@ -89,15 +89,15 @@ void*         utime_timer_start_sem(void* utime_timer_struct)
 /**
  * Return the number of nanoseconds between time_1 and time_2
  */
-long long utime_timespec_diff( struct timespec* time_1, struct timespec* time_2 )
+int64_t utime_timespec_diff( struct timespec* time_1, struct timespec* time_2 )
 {
-    long long diff = 0;
+    int64_t diff = 0;
 
     if ( time_1 == NULL ) return errlogargs();
     if ( time_2 == NULL ) return errlogargs();
     
-    diff = (long long)SEC_TO_NSEC((long long)time_1->tv_sec - (long long)time_2->tv_sec );
-    diff += (long long)time_1->tv_nsec - (long long)time_2->tv_nsec;
+    diff = (int64_t)SEC_TO_NSEC((int64_t)time_1->tv_sec - (int64_t)time_2->tv_sec );
+    diff += (int64_t)time_1->tv_nsec - (int64_t)time_2->tv_nsec;
 
     return diff;
 }
@@ -105,7 +105,7 @@ long long utime_timespec_diff( struct timespec* time_1, struct timespec* time_2 
 /**
  * Add nanoseconds to a timespec (dest can equal time_1)
  */
-int utime_timespec_add( struct timespec* dest, struct timespec* time_1, long long nsecs )
+int utime_timespec_add( struct timespec* dest, struct timespec* time_1, int64_t nsecs )
 {
     if ( dest == NULL ) return errlogargs();
     if ( time_1 == NULL ) return errlogargs();
