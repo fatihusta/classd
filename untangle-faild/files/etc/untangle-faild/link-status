@@ -1,4 +1,4 @@
-#!/bin/dash -x
+#!/bin/dash
 
 FAILD_DEFAULTS_SCRIPT=${FAILD_DEFAULTS_SCRIPT:-/etc/default/untangle-faild}
 
@@ -7,10 +7,9 @@ if [ -f ${FAILD_DEFAULTS_SCRIPT} ]; then
     . ${FAILD_DEFAULTS_SCRIPT}
 fi
 
-if [ -z "${FAILD_LINK_STATUS_DIR}" ]; then
-    echo "Unable to determine faild uplink directory, defaulting to /etc/untangle-faild/update-uplink"
-    FAILD_LINK_STATUS_DIR=/etc/untangle-faild/link-status.d
-fi
+FAILD_LINK_STATUS_DIR=${FAILD_LINK_STATUS_DIR:-/etc/untangle-faild/link-status.d}
 
 run-parts --lsbsysinit ${FAILD_LINK_STATUS_DIR}
+
+exit 0
 

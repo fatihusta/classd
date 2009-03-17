@@ -196,7 +196,8 @@ int faild_uplink_results_copy( faild_uplink_results_t* destination, faild_uplink
      if ( source == NULL ) return errlogargs();
      if ( destination->size != source->size ) return errlogargs();
 
-     if ( destination->size < 1 || destination->size > _SIZE_MAX ) return errlogargs();
+     if ( destination->size < 1 ) return errlogargs();
+     if ( destination->size > _SIZE_MAX ) return errlogargs();
 
      destination->success = source->success;
      destination->position = source->position;
