@@ -66,7 +66,7 @@ class ArpEater
   end
 
   def display_get_status( body )
-    puts "Retrieved the status\n#{body["status"].to_json}"
+    puts "Retrieved the status\n#{body["faild_status"].to_json}"
   end
 
   def display_get_uplink_status( body )

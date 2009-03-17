@@ -60,7 +60,7 @@ static int _init( faild_uplink_test_instance_t *instance )
         if ( params == NULL ) return errlogargs();
         
         char *hostname = NULL;
-        if (( hostname = json_object_utils_get_string( params, "hostname" )) == NULL )  {
+        if (( hostname = json_object_utils_get_string( params, "ping_hostname" )) == NULL )  {
             return errlog( ERR_CRITICAL, "Params are missing the hostname.\n" );
         }
         strncpy( ping_test->hostname, hostname, sizeof( ping_test->hostname ));

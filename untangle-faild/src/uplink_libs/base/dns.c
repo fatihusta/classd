@@ -59,7 +59,7 @@ static int _init( faild_uplink_test_instance_t *instance )
         if ( params == NULL ) return errlogargs();
         
         char *hostname = NULL;
-        if (( hostname = json_object_utils_get_string( params, "hostname" )) == NULL )  {
+        if (( hostname = json_object_utils_get_string( params, "dns_hostname" )) == NULL )  {
             return errlog( ERR_CRITICAL, "Params are missing the hostname.\n" );
         }
         strncpy( dns_test->hostname, hostname, sizeof( dns_test->hostname ));
@@ -67,7 +67,7 @@ static int _init( faild_uplink_test_instance_t *instance )
         char* dns_server = NULL;
 
         /* Don't need the DNS server */
-        if (( dns_server = json_object_utils_get_string( params, "server" )) == NULL ) {
+        if (( dns_server = json_object_utils_get_string( params, "dns_server" )) == NULL ) {
             bzero( &dns_test->dns_server, sizeof( dns_test->dns_server ));
             return 0;
         }

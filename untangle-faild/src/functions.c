@@ -347,7 +347,7 @@ static struct json_object *_get_status( struct json_object* request )
             return errlog( ERR_CRITICAL, "faild_status_to_json\n" );
         }
     
-        json_object_object_add( response, "status", status_json );
+        json_object_object_add( response, "faild_status", status_json );
         status_json = NULL;
         return 0;
     } 

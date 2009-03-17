@@ -22,7 +22,7 @@
         is detected. */
         "threshold" : 7,
         "params" : {
-            "hostname" : "www.untangle.com",
+            "dns_hostname" : "www.untangle.com",
         }
     },{
         "alpaca_interface_id" : 3,
@@ -49,7 +49,7 @@
         "threshold" : 7,
         "params" : {
             /* ARP doesn't require any params */
-            "hostname" : "skeeter"
+            "ping_hostname" : "skeeter"
         }
     }]
 }

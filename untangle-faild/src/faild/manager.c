@@ -162,6 +162,12 @@ int faild_manager_set_config( faild_config_t* config )
 
         /* Find all of the tests that are currently running */
         for ( c = 0 ; c < config->tests_length ; c++ ) {
+            /* Disable all of the tests if faild isn't enabled.. (this will also not start any new tests.) */
+            if ( config->is_enabled == 0 ) {
+                debug( 9, "Skipping all tests because faild is disabled.\n" );
+                continue;
+            }
+
             test_config = &config->tests[c];
 
             if ( _validate_test_config( test_config ) < 0 ) {

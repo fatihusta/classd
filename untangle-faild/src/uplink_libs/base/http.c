@@ -60,7 +60,7 @@ static int _init( faild_uplink_test_instance_t *instance )
         if ( params == NULL ) return errlogargs();
         
         char *url = NULL;
-        if (( url = json_object_utils_get_string( params, "url" )) == NULL )  {
+        if (( url = json_object_utils_get_string( params, "http_url" )) == NULL )  {
             return errlog( ERR_CRITICAL, "Params are missing the url.\n" );
         }
         strncpy( http_test->url, url, sizeof( http_test->url ));

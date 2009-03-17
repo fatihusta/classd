@@ -19,7 +19,7 @@
         * is detected. */
         "threshold" : 7,
         "params" : {
-            "hostname" : "www.yahoo.com"
+            "ping_hostname" : "www.yahoo.com"
         }
     },{
         "alpaca_interface_id" : 1,
@@ -32,8 +32,8 @@
         * is detected. */
         "threshold" : 7,
         "params" : {
-            "hostname" : "www.untangle.com",
-            "server" : "4.2.2.1"
+            "dns_hostname" : "www.untangle.com",
+            "dns_server" : "4.2.2.1"
         }
     },{
         "alpaca_interface_id" : 1,
@@ -59,7 +59,7 @@
         * is detected. */
         "threshold" : 7,
         "params" : {
-            "url" : "http://skeeter/index.html",
+            "http_url" : "http://skeeter/index.html",
         }
     }]
 }
