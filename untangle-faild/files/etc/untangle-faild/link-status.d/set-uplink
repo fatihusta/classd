@@ -1,4 +1,4 @@
-#!/bin/dash -x
+#!/bin/dash
 
 ## This script requires elevated sudo privileges.
 if [ -x /usr/share/untangle-faild/bin/set-uplink ] ; then

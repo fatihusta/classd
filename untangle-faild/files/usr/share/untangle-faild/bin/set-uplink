@@ -59,7 +59,7 @@ update_dns_servers()
         exit 0
     }
     
-    echo "DNS File is up to date."
+    echo "[DEBUG:`date`] DNS File is up to date."
     rm -f ${t_temp}
 }
 
