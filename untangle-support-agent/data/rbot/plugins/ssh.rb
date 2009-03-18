@@ -105,7 +105,7 @@ class SSHPlugin < Plugin
         raise Exception.new("Couldn't untar #{tmpFile}") if not system "tar -C /home/#{@@USER} -xf #{tmpFile}"
         m.reply "Key successfully downloaded"
       else
-        raise Exception.new(response.body)
+        raise Exception.new("Key could not be downloaded from #{url} to #{tmpFile}; this most likely means that #{@@HOST}:443 is blocked for me.")
       end
     rescue Exception => e
       m.reply "Key couldn't be downloaded:"
