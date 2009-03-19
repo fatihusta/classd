@@ -76,8 +76,9 @@ class SSHPlugin < Plugin
 
   def getTmpFilePath(basename)
     tmpFile = Tempfile.new(basename)
+    foo = tmpFile.path
     tmpFile.close(true)
-    return tmpFile.path
+    return foo
   end
 
   def downloadKey(m, params)
