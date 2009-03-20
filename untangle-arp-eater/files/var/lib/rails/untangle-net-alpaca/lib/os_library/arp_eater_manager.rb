@@ -4,7 +4,7 @@ class OSLibrary::ArpEaterManager < Alpaca::OS::ManagerBase
       @enabled, @address, @passive, @gateway = enabled, address, passive, gateway
     end
 
-    attr_reader :address, :enabled, :passive, :gateway
+    attr_accessor( :address, :enabled, :passive, :gateway )
   end
 
   ## This should commit and update all of the packet filter settings.

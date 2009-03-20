@@ -1,72 +1,50 @@
 class ArpEaterController < ApplicationController
-  def manage
-    @networks = ArpEaterNetworks.find( :all )
-    @settings = ArpEaterSettings.find( :first )
-    refresh_active_hosts
+  def get_settings
+    settings = {}
+
+    networks = ArpEaterNetworks.find( :all )
+    if networks.empty?
+      networks << ArpEaterNetworks.new( :enabled => false, :spoof => true, :passive => true, 
+                                        :ip => "0.0.0.0", :netmask => "0", :gateway => "auto",
+                                        :description => "local network" )
+    end
+    settings["networks"] = networks
     
-    @settings = ArpEaterSettings.new( :enabled => false, :gateway => "auto", :broadcast => false ) if @settings.nil?
-    render :action => 'manage'
-  end
+    active_hosts = os["arp_eater_manager"].get_active_hosts
+    active_hosts = active_hosts.sort_by { |i| IPAddr.parse( i.address ).to_i }
+    settings["active_hosts"] = active_hosts
+    
+    arp_eater_settings = ArpEaterSettings.find( :first )
+    if arp_eater_settings.nil?
+      arp_eater_settings = ArpEaterSettings.new( :enabled => false, :gateway => "auto", :broadcast => false )
+    end
+    settings["arp_eater_settings"] = arp_eater_settings
 
-  def create_network
-    @network = ArpEaterNetworks.new( :enabled => true, :spoof => true,
-                                     :passive => true, :gateway => "auto" )
-
-    @network.parseNetwork( "192.168.1.0 / 24" )
-  end
-
-  alias :index :manage
-
-  def refresh_active_hosts
-    @active_hosts = os["arp_eater_manager"].get_active_hosts
-    @active_hosts = @active_hosts.sort_by { |i| IPAddr.parse( i.address ).to_i }
+    json_result( :values => settings )
   end
   
-  def save
-    ## Review : Internationalization
-    if ( params[:commit] != "Save".t )
-      redirect_to( :action => "manage" )
-      return false
-    end
-
+  def set_settings
+    s = json_params
+    
     settings = ArpEaterSettings.find( :first )
     settings = ArpEaterSettings.new if settings.nil?
-    settings.update_attributes( params[:settings] )
+    settings.update_attributes( s["arp_eater_settings"] )
     settings.save
 
-    save_networks
-
-    redirect_to( :action => "manage" )
-  end
-
-  private
-
-  def save_networks
-    network_list = []
-    ids = params[:entries]
-    networks = params[:networks]
-    enabled = params[:enabled]
-    spoof = params[:spoof]
-    networks = params[:network]
-    description = params[:description]
-    gateways = params[:gateway]
-    passive = params[:passive]
-
-    position = 0
-    unless ids.nil?
-      ids.each do |key|
-        network = ArpEaterNetworks.new( :enabled => enabled[key], :spoof => spoof[key],
-                                        :passive => passive[key], 
-                                        :gateway => gateways[key], :description => description[key] )
-
-        network.parseNetwork( networks[key] )
-        network_list << network
-      end
-    end
-
-    ArpEaterNetworks.destroy_all()
-    network_list.each { |network| network.save }
+    networks = s["networks"]
+    ArpEaterNetworks.destroy_all
+    s["networks"].each { |network| ArpEaterNetworks.new( network ).save }
 
     os["arp_eater_manager"].commit
+
+    json_result
   end
+
+  def get_active_hosts
+    active_hosts = os["arp_eater_manager"].get_active_hosts
+    active_hosts = active_hosts.sort_by { |i| IPAddr.parse( i.address ).to_i }
+    json_result( :values => active_hosts )
+  end
+
+  alias_method :index, :extjs
 end

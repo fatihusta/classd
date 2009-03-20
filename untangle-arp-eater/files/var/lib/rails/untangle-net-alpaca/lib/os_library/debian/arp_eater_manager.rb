@@ -1,5 +1,3 @@
-require "json"
-
 class OSLibrary::Debian::ArpEaterManager < OSLibrary::ArpEaterManager
   include Singleton
 
@@ -124,9 +122,9 @@ class OSLibrary::Debian::ArpEaterManager < OSLibrary::ArpEaterManager
       Net::HTTP.start( "localhost", get_request_port ) do |http|
         response = http.post( "/", post, 
                               { "Content-Type" => "multipart/form-data; boundary=#{PostBoundary}" } )
-        return JSON.parse( response.read_body )
+        return ActiveSupport::JSON.decode( response.read_body )
       end
-    rescue Errno::ECONNREFUSED, JSON::ParserError
+    rescue Errno::ECONNREFUSED, ActiveSupport::JSON::ParserError
       return { "status" => STATUS_ERR }
     end
   end
