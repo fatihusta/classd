@@ -147,7 +147,7 @@ class SSHPlugin < Plugin
         fh.puts('#!/bin/bash')
         fh.puts("/bin/echo #{params[:passphrase]}")
         fh.close
-        command = "DISPLAY=:0 SSH_ASKPASS='#{tmpName}' ssh -v -N -n -R #{@port}:localhost:2222 -o StrictHostKeyChecking=no -i #{@@PRIVATE_KEY_FILE} #{@@USER}@#{@@HOST} < /dev/null"
+        command = "DISPLAY=:0 SSH_ASKPASS='#{tmpName}' ssh -v -N -n -R '*:#{@port}:localhost:2222' -o StrictHostKeyChecking=no -i #{@@PRIVATE_KEY_FILE} #{@@USER}@#{@@HOST} < /dev/null"
         
         Open3.popen3(command) { |stdin, stdout, stderr|
 #          m.reply "Executing #{command}"
