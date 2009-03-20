@@ -41,6 +41,8 @@ Ung.Alpaca.Pages.ArpEater.Index = Ext.extend( Ung.Alpaca.PagePanel, {
             settings : this.settings,
             recordFields : [ "enabled", "spoof", "passive", "network", "gateway", "description" ],
             selectable : true,
+            sortable : false,
+            hasReorder : true,
 
             /* Name must set in order to get and set the settings */
             name : "networks",
@@ -50,7 +52,7 @@ Ung.Alpaca.Pages.ArpEater.Index = Ext.extend( Ung.Alpaca.PagePanel, {
                 spoof : false,
                 passive : true,
                 network : "1.2.3.4/32",
-                gateway : "0.0.0.0",
+                gateway : "auto",
                 description : this._( "[no description]" )
             },
 
@@ -69,8 +71,7 @@ Ung.Alpaca.Pages.ArpEater.Index = Ext.extend( Ung.Alpaca.PagePanel, {
                 sortable :  false,
                 dataIndex : "gateway",
                 editor  : new Ext.form.TextField({
-                    allowBlank : false,
-                    vtype : "ipAddress"
+                    allowBlank : false
                 })
             },{
                 header : this._( "Description" ),
@@ -84,7 +85,6 @@ Ung.Alpaca.Pages.ArpEater.Index = Ext.extend( Ung.Alpaca.PagePanel, {
         });
 
         this.networksGrid.store.load();
-
 
         enabledColumn = new Ung.Alpaca.grid.CheckColumn({
             header : this._( "On" ),
@@ -152,13 +152,14 @@ Ung.Alpaca.Pages.ArpEater.Index = Ext.extend( Ung.Alpaca.PagePanel, {
                     name : "arp_eater_settings.broadcast"
                 },{
                     xtype : "textfield",
-                    fieldLabel :  this._( "Gateway(blank for automatic)" ),
+                    fieldLabel :  this._( "Gateway" ),
+                    boxLabel : "(blank for automatic)",
                     name : "arp_eater_settings.gateway"
                 }]
             },{
                 xtype : "label",
                 html : this._( "Networks" ),
-                cls: 'label-section-heading-2'                                
+                cls : 'label-section-heading-2'
             }, this.networksGrid, {
                 xtype : "label",
                 html : this._( "Active Hosts" ),
