@@ -9,8 +9,8 @@
  * $Id$
  */
 
-#ifndef __FAILD_UPLINK_CONFIG_H_
-#define __FAILD_UPLINK_CONFIG_H_
+#ifndef __FAILD_TEST_CONFIG_H_
+#define __FAILD_TEST_CONFIG_H_
 
 #include "faild.h"
 
@@ -25,4 +25,4 @@ int faild_test_config_free( faild_test_config_t* test_config );
 int faild_test_config_destroy( faild_test_config_t* test_config );
 int faild_test_config_raze( faild_test_config_t* test_config );
 
-#endif // __FAILD_UPLINK_CONFIG_H_
+#endif // __FAILD_TEST_CONFIG_H_

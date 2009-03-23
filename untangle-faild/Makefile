@@ -69,6 +69,11 @@ ${faild_binary}: ${faild_objects} ${mvutil_source} ${library_binary}
 	@echo "==> gcc ${faild_objects} -> $@"
 	@${CC} ${CFLAGS} ${LIBS_FLAGS} ${faild_objects} -o $@
 
+${object_dir}/src/uplink_libs/%.o: src/uplink_libs/%.c
+	@if [ ! -d `dirname $@` ] ; then echo "==> mkdir `dirname $@`" ; mkdir -p `dirname $@` ; fi
+	@echo "==> gcc fpic $@"
+	@${CC} -c $< ${CFLAGS} -fPIC -o $@
+
 ${object_dir}/%.o: %.c
 	@if [ ! -d `dirname $@` ] ; then echo "==> mkdir `dirname $@`" ; mkdir -p `dirname $@` ; fi
 	@echo "==> gcc $@"
