@@ -57,11 +57,11 @@ static struct
 
 static int _validate_splitter_config( splitd_splitter_config_t* splitter_config );
 
-/* Return the index of this test in the correct interface */
+/* Return the index of the first splitter that is running this config */
 static int _find_splitter_config( splitd_splitter_config_t* splitter_config );
 
-/* Return the index of the next open test slot. */
-static int _find_open_test( void );
+/* Return the index of the next open splitter slot. */
+static int _find_open_splitter( void );
 
 int splitd_manager_init( splitd_config_t* config )
 {
@@ -181,8 +181,8 @@ int splitd_manager_set_config( splitd_config_t* config )
                 continue;
             }
             
-            if (( d = _find_open_test()) < 0 ) {
-                errlog( ERR_CRITICAL, "_find_open_test\n" );
+            if (( d = _find_open_splitter()) < 0 ) {
+                errlog( ERR_CRITICAL, "_find_open_splitter\n" );
                 continue;
             }
             
@@ -322,7 +322,7 @@ int splitd_manager_destroy_all_splitters( void )
             _globals.num_splitters--;
         }
 
-        debug( 4, "Sent a shutdown signal to %d tests\n", count );
+        debug( 4, "Destroyed %d splitters\n", count );
         
         return 0;
     }
@@ -348,7 +348,6 @@ static int _validate_splitter_config( splitd_splitter_config_t* splitter_config 
     return 0;
 }
 
-
 /* Return the index of this test in the correct interface */
 static int _find_splitter_config( splitd_splitter_config_t* splitter_config )
 {
@@ -365,8 +364,8 @@ static int _find_splitter_config( splitd_splitter_config_t* splitter_config )
     return -2;
 }
 
-/* Return the index of the next open test slot. */
-static int _find_open_test()
+/* Return the index of the next open splitter slot. */
+static int _find_open_splitter()
 {
     int c;
     for ( c = 0 ; c < SPLITD_MAX_SPLITTERS ; c++ ) {
