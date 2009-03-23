@@ -152,7 +152,6 @@ int splitd_libs_get_splitter_class( char* splitter_name, splitd_splitter_class_t
     return 0;
 }
 
-
 splitd_splitter_class_t* splitd_splitter_class_malloc( void )
 {
     splitd_splitter_class_t* splitter = NULL;
@@ -165,19 +164,16 @@ splitd_splitter_class_t* splitd_splitter_class_malloc( void )
 
 int
 splitd_splitter_class_init( splitd_splitter_class_t* splitter, char* name,
-                             int (*init)( splitd_splitter_instance_t* splitter ),
-                             int (*config)( splitd_splitter_instance_t* splitter, struct json_object* params ),
-                             int (*update_counts)( splitd_splitter_instance_t* splitter, splitd_uplink_t* uplinks,
-                                                   int* score, int num_uplinks ),
-                             int (*destroy)( splitd_splitter_instance_t* splitter ),
-                             struct json_array* params )
+                            splitd_splitter_class_init_f init,
+                            splitd_splitter_class_update_counts_f update_counts,
+                            splitd_splitter_class_destroy_f destroy,
+                            struct json_array* params )
 {
     if ( splitter == NULL ) return errlogargs();
     
     strncpy( splitter->name, name, sizeof( splitter->name ));
 
     splitter->init = init;
-    splitter->config  = config;
     splitter->update_counts = update_counts;
     splitter->destroy = destroy;
     splitter->params = params;
@@ -188,11 +184,9 @@ splitd_splitter_class_init( splitd_splitter_class_t* splitter, char* name,
 
 splitd_splitter_class_t* 
 splitd_splitter_class_create( char* name,
-                              int (*init)( splitd_splitter_instance_t* splitter ),
-                              int (*config)( splitd_splitter_instance_t* splitter, struct json_object* params ),
-                              int (*update_counts)( splitd_splitter_instance_t* splitter, 
-                                                    splitd_uplink_t* uplinks, int* score, int num_uplinks ),
-                              int (*destroy)( splitd_splitter_instance_t* splitter ),
+                              splitd_splitter_class_init_f init,
+                              splitd_splitter_class_update_counts_f update_counts,
+                              splitd_splitter_class_destroy_f destroy,
                               struct json_array* params )
 {
     splitd_splitter_class_t* splitter = NULL;
@@ -201,7 +195,7 @@ splitd_splitter_class_create( char* name,
         return errlog_null( ERR_CRITICAL, "splitd_splitter_class_malloc\n" );
     }
 
-    if ( splitd_splitter_class_init( splitter, name, init, config, update_counts, destroy, params ) < 0 ) {
+    if ( splitd_splitter_class_init( splitter, name, init, update_counts, destroy, params ) < 0 ) {
         return errlog_null( ERR_CRITICAL, "splitd_splitter_class_init\n" );
     }
 

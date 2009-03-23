@@ -48,7 +48,7 @@ splitd_objects=$(patsubst %.c,${object_dir}/%.o, ${splitd_source})
 splitd_binary=splitd
 
 ## Base Uplink Library
-library_source=src/split_libs/base/lib.c
+library_source=src/split_libs/base/lib.c src/split_libs/base/online.c 
 library_objects=$(patsubst %.c,${object_dir}/%.o, ${library_source})
 library_binary=${library_dir}/base.so
 
@@ -65,6 +65,11 @@ default: ${object_dir} mvutil_includes ${splitd_binary}
 ${splitd_binary}: ${splitd_objects} ${mvutil_source} ${library_binary}
 	@echo "==> gcc ${splitd_objects} -> $@"
 	@${CC} ${CFLAGS} ${LIBS_FLAGS} ${splitd_objects} -o $@
+
+${object_dir}/src/split_libs/%.o: src/split_libs/%.c
+	@if [ ! -d `dirname $@` ] ; then echo "==> mkdir `dirname $@`" ; mkdir -p `dirname $@` ; fi
+	@echo "==> gcc fpic $@"
+	@${CC} -c $< ${CFLAGS} -fPIC -o $@
 
 ${object_dir}/%.o: %.c
 	@if [ ! -d `dirname $@` ] ; then echo "==> mkdir `dirname $@`" ; mkdir -p `dirname $@` ; fi

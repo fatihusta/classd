@@ -15,17 +15,55 @@
 #include <mvutil/debug.h>
 #include <mvutil/errlog.h>
 
-#include "faild.h"
+#include "splitd.h"
 #include "json/object_utils.h"
+
+/* All of these functions take themselves as the first argument */
+static int _init( splitd_splitter_instance_t* instance );
+
+/* Update the counts for the uplinks, called for each session */
+static int _update_counts( splitd_splitter_instance_t* instance, splitd_uplink_t* uplinks, int* score, 
+                           int num_uplinks );
+
+/* Cleanup this instance of a splitter */
+static int _destroy( splitd_splitter_instance_t* instance );
 
 /* This is a splitter that just set the count to 0 for all interfaces
  * that are not online */
-int splitd_splitter_lib_base_online_splitter( splitd_splitter_t* splitter )
+int splitd_splitter_lib_base_online_splitter( splitd_splitter_class_t* splitter )
 {
-    if ( splitd_splitter_init( splitter, "online", _init, _run, _cleanup, _destroy, NULL ) < 0 ) {
-        return errlog( ERR_CRITICAL, "splitd_splitter_init\n" );
+    if ( splitd_splitter_class_init( splitter, "online", _init, _update_counts, _destroy, NULL ) 
+         < 0 ) {
+        return errlog( ERR_CRITICAL, "splitd_splitter_class_init\n" );
     }
 
     return 0;
+}
 
+
+/* All of these functions take themselves as the first argument */
+static int _init( splitd_splitter_instance_t* instance )
+{
+    if ( instance == NULL ) return errlogargs();
+    return 0;
+}
+
+/* Update the counts for the uplinks, called for each session */
+static int _update_counts( splitd_splitter_instance_t* instance, splitd_uplink_t* uplinks, int* score,
+                           int num_uplinks )
+{
+    if ( instance == NULL ) return errlogargs();
+    if ( uplinks == NULL ) return errlogargs();
+    if ( score == NULL ) return errlogargs();
+    if ( num_uplinks < 0 || num_uplinks > SPLITD_MAX_UPLINKS ) return errlogargs();
+
+    return 0;
+}
+
+/* Cleanup this instance of a splitter */
+static int _destroy( splitd_splitter_instance_t* instance )
+{
+    if ( instance == NULL ) return errlogargs();
+
+    return 0;
 }

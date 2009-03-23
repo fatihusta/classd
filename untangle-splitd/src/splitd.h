@@ -102,24 +102,24 @@ typedef struct
     void* ptr;
 } splitd_splitter_instance_t;
 
+typedef int (*splitd_splitter_class_init_f)( splitd_splitter_instance_t* instance );
+typedef int (*splitd_splitter_class_update_counts_f)( splitd_splitter_instance_t* instance, 
+                                                      splitd_uplink_t* uplinks,
+                                                      int* score, int num_uplinks );
+typedef int (*splitd_splitter_class_destroy_f)( splitd_splitter_instance_t* instance );
+
 typedef struct splitd_splitter_class
 {
     char name[SPLITD_SPLITTER_CLASS_NAME_SIZE];
 
     /* All of these functions take themselves as the first argument */
-    int (*init)( splitd_splitter_instance_t* instance );
-
-    /* Any initialization should occur in config */
-
-    /* Configure this splitter, called only when the params for this splitter have changed. */
-    int (*config)( splitd_splitter_instance_t* instance, struct json_object* params );
+    splitd_splitter_class_init_f init;
 
     /* Update the counts for the uplinks, called for each session */
-    int (*update_counts)( splitd_splitter_instance_t* instance, splitd_uplink_t* uplinks, int* score, 
-                          int num_uplinks );
+    splitd_splitter_class_update_counts_f update_counts;
 
     /* Cleanup this instance of a splitter */
-    int (*destroy)( splitd_splitter_instance_t* instance );
+    splitd_splitter_class_destroy_f destroy;
 
     /* An array defining the expected parameters for this splitter */
     struct json_array* params;
@@ -164,5 +164,22 @@ int splitd_libs_init( void );
 int splitd_libs_load_splitters( char* lib_dir_name );
 
 int splitd_libs_get_splitter_class( char* splitter_name, splitd_splitter_class_t** splitter );
+
+
+splitd_splitter_class_t* splitd_splitter_class_malloc( void );
+
+int
+splitd_splitter_class_init( splitd_splitter_class_t* splitter, char* name,
+                            splitd_splitter_class_init_f init,
+                            splitd_splitter_class_update_counts_f update_counts,
+                            splitd_splitter_class_destroy_f destroy,
+                            struct json_array* params );
+
+splitd_splitter_class_t* 
+splitd_splitter_class_create( char* name,
+                              splitd_splitter_class_init_f init,
+                              splitd_splitter_class_update_counts_f update_counts,
+                              splitd_splitter_class_destroy_f destroy,
+                              struct json_array* params );
 
 #endif // __SPLITD_H_
