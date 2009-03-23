@@ -19,18 +19,18 @@
 
 /* This is a splitter that just set the count to 0 for all interfaces
  * that are not online */
-int splitd_splitter_lib_base_online_splitter( splitd_splitter_t* splitter );
+int splitd_splitter_lib_base_online_splitter( splitd_splitter_class_t* splitter );
 
 static int _init( void );
 
 static int _destroy( void );
 
-static int _get_splitters( splitd_splitter_t **splitters );
+static int _get_splitters( splitd_splitter_class_t **splitters );
 
 static struct
 {
     splitd_splitter_lib_t prototype;
-    int (*splitter_getters[])( splitd_splitter_t* );
+    int (*splitter_getters[])( splitd_splitter_class_t* );
 } _globals = {
     .prototype = {
         .name = "base",
@@ -68,7 +68,7 @@ static int _destroy( void )
     return 0;
 }
 
-static int _get_splitters( splitd_splitter_t **splitters_ptr )
+static int _get_splitters( splitd_splitter_class_t **splitters_ptr )
 {
     int c = 0;
 
@@ -79,9 +79,11 @@ static int _get_splitters( splitd_splitter_t **splitters_ptr )
     int num_splitters = -1;
     while ( _globals.splitter_getters[++num_splitters] != NULL ) {}
 
-    splitd_splitter_t* splitters = NULL;
+    splitd_splitter_class_t* splitters = NULL;
 
-    if (( splitters = calloc( num_splitters, sizeof( splitd_splitter_t ))) == NULL ) return errlogmalloc();
+    if (( splitters = calloc( num_splitters, sizeof( splitd_splitter_class_t ))) == NULL ) {
+        return errlogmalloc();
+    }
     
     for ( c = 0 ; c < num_splitters ; c++ ) {
         if ( _globals.splitter_getters[c]( &splitters[c] ) < 0 ) {

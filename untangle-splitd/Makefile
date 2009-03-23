@@ -41,8 +41,8 @@ mvutil_source=libmvutil/src/debug.c libmvutil/src/errlog.c libmvutil/src/hash.c 
 splitd_source=src/json/server.c src/json/object_utils.c \
 	src/json/serializer.c src/main.c src/functions.c \
 	src/splitd/config.c src/splitd/manager.c src/splitd/libs.c \
-	src/splitd/uplink.c \
-	${mvutil_source}
+	src/splitd/uplink.c src/splitd/splitter_instance.c \
+	src/splitd/splitter_config.c ${mvutil_source}
 
 splitd_objects=$(patsubst %.c,${object_dir}/%.o, ${splitd_source})
 splitd_binary=splitd

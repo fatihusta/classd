@@ -25,7 +25,7 @@
 
 #define SPLITD_MAX_SPLITTERS 16
 
-#define SPLITD_SPLITTER_NAME_SIZE  32
+#define SPLITD_SPLITTER_CLASS_NAME_SIZE  32
 #define SPLITD_SPLITTER_LIB_NAME_SIZE  32
 
 // This is the base index for all of the uplink tables.
@@ -63,7 +63,7 @@ typedef struct
 
 typedef struct
 {
-    char splitter_name[SPLITD_SPLITTER_NAME_SIZE];
+    char splitter_name[SPLITD_SPLITTER_CLASS_NAME_SIZE];
 
     /* The configuration parameters for this test.  Stored as a JSON
      * object for maximum flexibility.  This is a copy and must be freed
@@ -83,47 +83,47 @@ typedef struct
     splitd_uplink_t uplinks[SPLITD_MAX_UPLINKS];
 
     /* Array, maps ( alpaca index - 1) -> an uplink. */
-    splitd_uplink_t uplink_map[SPLITD_MAX_UPLINKS];
+    splitd_uplink_t* uplink_map[SPLITD_MAX_UPLINKS];
 
     /* Array of all of all of the uplink configurations. */
     int splitters_length;
     splitd_splitter_config_t splitters[SPLITD_MAX_SPLITTERS];
 } splitd_config_t;
 
+struct splitd_splitter_class;
+
 typedef struct
 {
-    int alpaca_uplink_id;
-    
-    int counter;
+    struct splitd_splitter_class* splitter_class;
 
-    /* The time of the last logging (counter is reset to zero then). */
-    struct timeval last_log;
-} splitd_uplink_status_t;
+    splitd_splitter_config_t config;
 
-typedef struct splitd_splitter
+    /* Data the splitter can use for whatever it wants */    
+    void* ptr;
+} splitd_splitter_instance_t;
+
+typedef struct splitd_splitter_class
 {
-    char name[SPLITD_SPLITTER_NAME_SIZE];
+    char name[SPLITD_SPLITTER_CLASS_NAME_SIZE];
 
     /* All of these functions take themselves as the first argument */
-    int (*init)( struct splitd_splitter* splitter );
+    int (*init)( splitd_splitter_instance_t* instance );
 
     /* Any initialization should occur in config */
 
     /* Configure this splitter, called only when the params for this splitter have changed. */
-    int (*config)( struct splitd_splitter* splitter, struct json_object* params );
+    int (*config)( splitd_splitter_instance_t* instance, struct json_object* params );
 
     /* Update the counts for the uplinks, called for each session */
-    int (*update_counts)( struct splitd_splitter* splitter, splitd_uplink_t* uplinks, int* score, int num_uplinks );
+    int (*update_counts)( splitd_splitter_instance_t* instance, splitd_uplink_t* uplinks, int* score, 
+                          int num_uplinks );
 
     /* Cleanup this instance of a splitter */
-    int (*destroy)( struct splitd_splitter* splitter );
+    int (*destroy)( splitd_splitter_instance_t* instance );
 
     /* An array defining the expected parameters for this splitter */
     struct json_array* params;
-
-    /* Arbitrary data for the splitter to use. */
-    void* arg;
-} splitd_splitter_t;
+} splitd_splitter_class_t;
 
 typedef struct
 {
@@ -141,7 +141,7 @@ typedef struct
     /* A function to retrieve the available test classes.  It is the
      * callers responsibility to free the memory returned be this
      * function */
-    int (*get_splitters)( splitd_splitter_t **splitters );
+    int (*get_splitters)( splitd_splitter_class_t **splitters );
 } splitd_splitter_lib_t;
 
 /* This is the typedef of the function that gets the definition from the shared lib */
@@ -162,5 +162,7 @@ struct json_object* splitd_config_to_json( splitd_config_t* config );
 int splitd_libs_init( void );
 
 int splitd_libs_load_splitters( char* lib_dir_name );
+
+int splitd_libs_get_splitter_class( char* splitter_name, splitd_splitter_class_t** splitter );
 
 #endif // __SPLITD_H_
