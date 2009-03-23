@@ -9,9 +9,8 @@
  * $Id: splitd.h 22253 2009-03-04 21:56:27Z rbscott $
  */
 
-#ifndef __FAILD_H_
-#define __FAILD_H_
-
+#ifndef __SPLITD_H_
+#define __SPLITD_H_
 
 #include <arpa/inet.h>
 #include <sys/socket.h>
@@ -19,13 +18,19 @@
 #include <netinet/in.h>
 #include <net/if.h>
 #include <json/json.h>
+#include <netinet/ether.h>
 
-#define FAILD_MAX_INTERFACES 8
-#define FAILD_MAX_INTERFACE_TESTS 8
 
-#define FAILD_TEST_CLASS_NAME_SIZE  32
-#define FAILD_TEST_LIB_NAME_SIZE  32
+#define SPLITD_MAX_UPLINKS 8
 
+#define SPLITD_MAX_SPLITTERS 16
+
+#define SPLITD_SPLITTER_NAME_SIZE  32
+#define SPLITD_SPLITTER_LIB_NAME_SIZE  32
+
+// This is the base index for all of the uplink tables.
+// This MUST match what is used in the alpaca.  See /etc/network/if-up.d/alpaca IP_RT_TABLE_BASE.
+#define SPLITD_IP_RT_TABLE_BASE 64
 
 typedef struct
 {
@@ -33,137 +38,99 @@ typedef struct
     int ifindex;
     
     /* This is the index from the alpaca. */
-    int alpaca_interface_index;
+    int alpaca_interface_id;
+
+    /* The primary address for this interface */
+    struct in_addr primary_address;
+
+    /* Address to the gateway */
+    struct in_addr gateway;
+
+    /* MAC Address of this link */
+    struct ether_addr mac_address;
     
     char os_name[IF_NAMESIZE];
-} splitd_interface_t;
+} splitd_uplink_t;
+
+/*
+ * A splitter adds points to an uplinks score.  At the end, you
+ * take all of the scores, add them together and cover them to
+ * probabilities.  a random number is generated and an uplink is
+ * selected.  The user configures a list of splitters, each splitter
+ * can add or subtract to the current score.  Any uplinks with
+ * scores below zero get a zero in the tally.
+ */
 
 typedef struct
 {
-    int alpaca_interface_index;
-    
-    char test_class_name[FAILD_TEST_CLASS_NAME_SIZE];
-
-    /* Timeout to run a test in milliseconds. */
-    int timeout_ms;
-
-    /* Delay between consecutive executions of the test, this should
-     * be at least twice as long as the timeout. */
-    int delay_ms;
-    
-    /* Number of previous test results to average */
-    int bucket_size;
-
-    /* Number of previous test results that must pass in order for the
-     * interface to be considered online. */
-    int threshold;
+    char splitter_name[SPLITD_SPLITTER_NAME_SIZE];
 
     /* The configuration parameters for this test.  Stored as a JSON
      * object for maximum flexibility.  This is a copy and must be freed
      * when destroying this object. */
     struct json_object* params;
-} splitd_test_config_t;
+} splitd_splitter_config_t;
 
 typedef struct
 {
     int is_enabled;
 
-    int interfaces_length;
+    /* Number of seconds between logging, or zeroo to never log */
+    int log_interval_s;
 
-    /* Array of all of the interfaces. */
-    splitd_interface_t interfaces[FAILD_MAX_INTERFACES];
+    /* Array of all of the uplinks. */
+    int uplinks_length;
+    splitd_uplink_t uplinks[SPLITD_MAX_UPLINKS];
 
-    /* Array, maps ( alpaca index - 1) -> an interface. */
-    splitd_interface_t interface_map[FAILD_MAX_INTERFACES];
+    /* Array, maps ( alpaca index - 1) -> an uplink. */
+    splitd_uplink_t uplink_map[SPLITD_MAX_UPLINKS];
 
-    /* Minimum amount of time to stay on an interface before switching */
-    int interface_min_ms;
-
-    /* Path to the script that should be used to change the interface. */
-    char* switch_interface_script;
-
-    /* The number of available tests */
-    int tests_length;
-
-    /* Array of all of the current test configurations. */
-    splitd_test_config_t tests[FAILD_MAX_INTERFACES * FAILD_MAX_INTERFACE_TESTS];
+    /* Array of all of all of the uplink configurations. */
+    int splitters_length;
+    splitd_splitter_config_t splitters[SPLITD_MAX_SPLITTERS];
 } splitd_config_t;
 
 typedef struct
 {
-    /* The number of succesful tests in last size results */
-    int success;
+    int alpaca_uplink_id;
     
-    /* The time of the last update. */
-    struct timeval last_update;
+    int counter;
 
-    /* The number of results in results.  */
-    int size;
-    
-    /* Array of size .size.  Must be freed and allocated at creation. */
-    u_char* results;
-
-    /* Position inside of results of the current test, results is a circular
-     * buffer. */
-    int position;
-} splitd_uplink_results_t;
-
-typedef struct
-{
-    int alpaca_interface_id;
-    
-    int online;
-
-    splitd_uplink_results_t results[FAILD_MAX_INTERFACE_TESTS];
+    /* The time of the last logging (counter is reset to zero then). */
+    struct timeval last_log;
 } splitd_uplink_status_t;
 
-typedef struct
+typedef struct splitd_splitter
 {
-    /* Flag that indicates whether this test is alive */
-    int is_alive;
-    
-    /* The interface this test is running on. */
-    splitd_interface_t interface;
-    
-    /* The test results for the previous test runs. */
-    splitd_uplink_results_t results;
-    
-    /* The configuration for this test. */
-    splitd_test_config_t config;
-} splitd_uplink_test_instance_t;
+    char name[SPLITD_SPLITTER_NAME_SIZE];
 
-typedef struct
-{
-    char name[FAILD_TEST_CLASS_NAME_SIZE];
+    /* All of these functions take themselves as the first argument */
+    int (*init)( struct splitd_splitter* splitter );
 
-    /* Initialize this instance of the test.  Allocate any variables, etc. */
-    int (*init)( splitd_uplink_test_instance_t *instance );
+    /* Any initialization should occur in config */
 
-    /* Run one iteration of the test.  Timeouts are automatically
-     * handled outside of the test. */
-    int (*run)( splitd_uplink_test_instance_t *instance, struct in_addr* primary_address, 
-                struct in_addr* default_gateway );
+    /* Configure this splitter, called only when the params for this splitter have changed. */
+    int (*config)( struct splitd_splitter* splitter, struct json_object* params );
 
-    /* Cleanup a single iteration of a test.  Run executes in a thread
-     * and can be killed prematurely.  This gives the class a chance
-     * to free any resources. */
-    int (*cleanup)( splitd_uplink_test_instance_t *instance );
+    /* Update the counts for the uplinks, called for each session */
+    int (*update_counts)( struct splitd_splitter* splitter, splitd_uplink_t* uplinks, int* score, int num_uplinks );
 
-    /* Cleanup resources related to an instance of a test.  This is
-     * executed when a test instance stops */
-    int (*destroy)( splitd_uplink_test_instance_t *instance );
+    /* Cleanup this instance of a splitter */
+    int (*destroy)( struct splitd_splitter* splitter );
 
-    /* An array defining the parameters associated with this test
-     * class. */
+    /* An array defining the expected parameters for this splitter */
     struct json_array* params;
-} splitd_uplink_test_class_t;
+
+    /* Arbitrary data for the splitter to use. */
+    void* arg;
+} splitd_splitter_t;
 
 typedef struct
 {
     /* The name of the test library. */
-    char name[FAILD_TEST_LIB_NAME_SIZE];
+    char name[SPLITD_SPLITTER_LIB_NAME_SIZE];
 
-    /* A function to initialize the test library.  This is always
+    /* A function to initialize the splitter library.  This is always
      * called once when the library is loaded. */ 
     int (*init)( void );
 
@@ -174,11 +141,11 @@ typedef struct
     /* A function to retrieve the available test classes.  It is the
      * callers responsibility to free the memory returned be this
      * function */
-    int (*get_test_classes)( splitd_uplink_test_class_t **test_classes );
-} splitd_uplink_test_lib_t;
+    int (*get_splitters)( splitd_splitter_t **splitters );
+} splitd_splitter_lib_t;
 
 /* This is the typedef of the function that gets the definition from the shared lib */
-typedef splitd_uplink_test_lib_t* (*splitd_uplink_test_prototype_t)( void );
+typedef int (*splitd_splitter_lib_prototype_t)( splitd_splitter_lib_t* lib );
 
 /* Initialize a configuration object */
 splitd_config_t* splitd_config_malloc( void );
@@ -194,7 +161,6 @@ struct json_object* splitd_config_to_json( splitd_config_t* config );
 /* test class handling functions */
 int splitd_libs_init( void );
 
-int splitd_libs_load_test_classes( char* lib_dir_name );
+int splitd_libs_load_splitters( char* lib_dir_name );
 
-
-#endif // __FAILD_H_
+#endif // __SPLITD_H_

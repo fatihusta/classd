@@ -10,10 +10,10 @@ INC           = ${build_dir}/include src
 INC_FLAGS     = $(patsubst %,-I%,$(INC))
 LDDIR         = lib $(build_lib_path)  
 LDDIR_FLAGS   = $(patsubst %,-L%,$(LDDIR))
-LIBS          = json microhttpd dl
+LIBS          = json microhttpd dl sysfs rt
 #LIBS          += efence
 LIBS_FLAGS    = -pthread $(patsubst %,-l%,$(LIBS)) --warn-common
-FLAGS        += -rdynamic
+FLAGS        += -rdynamic -std=c99
 CFLAGS        =  $(FLAGS) $(DEFINES) $(WARNINGS) $(OPTIMIZATIONS) $(INC_FLAGS) $(LDDIR_FLAGS)
 
 ifeq ($(strip $(USE_DEBUG)),true)
@@ -41,13 +41,14 @@ mvutil_source=libmvutil/src/debug.c libmvutil/src/errlog.c libmvutil/src/hash.c 
 splitd_source=src/json/server.c src/json/object_utils.c \
 	src/json/serializer.c src/main.c src/functions.c \
 	src/splitd/config.c src/splitd/manager.c src/splitd/libs.c \
+	src/splitd/uplink.c \
 	${mvutil_source}
 
 splitd_objects=$(patsubst %.c,${object_dir}/%.o, ${splitd_source})
 splitd_binary=splitd
 
 ## Base Uplink Library
-library_source=src/uplink_libs/base/lib.c
+library_source=src/split_libs/base/lib.c
 library_objects=$(patsubst %.c,${object_dir}/%.o, ${library_source})
 library_binary=${library_dir}/base.so
 

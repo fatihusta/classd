@@ -23,19 +23,17 @@
 #include "json/object_utils.h"
 #include "json/serializer.h"
 
-static int _verify_config( splitd_config_t* config );
+static int _uplink_array_get_size( void *c_array );
 
-static int _interface_array_get_size( void *c_array );
-
-static int _test_config_array_get_size( void *c_array );
+static int _splitter_config_array_get_size( void *c_array );
 
 static json_serializer_string_t _os_string = {
-    .offset = offsetof( splitd_interface_t, os_name ),
-    .len = sizeof((( splitd_interface_t *)0)->os_name )
+    .offset = offsetof( splitd_uplink_t, os_name ),
+    .len = sizeof((( splitd_uplink_t *)0)->os_name )
 };
 
-static json_serializer_t _interface_serializer = {
-    .name = "interface",
+static json_serializer_t _uplink_serializer = {
+    .name = "uplink",
     .fields = {{
             .name = "os_name",
             .fetch_arg = 1,
@@ -44,87 +42,59 @@ static json_serializer_t _interface_serializer = {
             .to_json = json_serializer_to_json_string,
             .arg = &_os_string
         },{
-            .name = "alpaca_interface_index",
+            .name = "alpaca_interface_id",
             .fetch_arg = 1,
             .if_empty = JSON_SERIALIZER_FIELD_EMPTY_ERROR,
             .to_c = json_serializer_to_c_int,
             .to_json = json_serializer_to_json_int,
-            .arg = (void*)offsetof( splitd_interface_t, alpaca_interface_index )
+            .arg = (void*)offsetof( splitd_uplink_t, alpaca_interface_id )
         }, JSON_SERIALIZER_FIELD_TERM }
 };
 
-static json_serializer_array_t _interface_array_arg =
+static json_serializer_array_t _uplink_array_arg =
 {
-    .max_length = FAILD_MAX_INTERFACES,
-    .data_offset = offsetof( splitd_config_t, interfaces ),
-    .length_offset = offsetof( splitd_config_t, interfaces_length ),
-    .get_size = _interface_array_get_size,
+    .max_length = SPLITD_MAX_UPLINKS,
+    .data_offset = offsetof( splitd_config_t, uplinks ),
+    .length_offset = offsetof( splitd_config_t, uplinks_length ),
+    .get_size = _uplink_array_get_size,
     .default_value = NULL,
-    .serializer = &_interface_serializer,
-    .item_size = sizeof( splitd_interface_t )
+    .serializer = &_uplink_serializer,
+    .item_size = sizeof( splitd_uplink_t )
 };
 
-static json_serializer_string_t _test_class_name = {
-    .offset = offsetof( splitd_test_config_t, test_class_name ),
-    .len = sizeof((( splitd_test_config_t *)0)->test_class_name )
+static json_serializer_string_t _splitter_config_name = {
+    .offset = offsetof( splitd_splitter_config_t, splitter_name ),
+    .len = sizeof((( splitd_splitter_config_t*)0)->splitter_name )
 };
 
-static json_serializer_t _test_config_serializer = {
-    .name = "test",
+static json_serializer_t _splitter_config_serializer = {
+    .name = "splitd_config",
     .fields = {{
-            .name = "alpaca_interface_index",
-            .fetch_arg = 1,
-            .if_empty = JSON_SERIALIZER_FIELD_EMPTY_ERROR,
-            .to_c = json_serializer_to_c_int,
-            .to_json = json_serializer_to_json_int,
-            .arg = (void*)offsetof( splitd_test_config_t, alpaca_interface_index )
-        },{
-            .name = "test_class_name",
+            .name = "splitter_name",
             .fetch_arg = 1,
             .if_empty = JSON_SERIALIZER_FIELD_EMPTY_ERROR,
             .to_c = json_serializer_to_c_string,
             .to_json = json_serializer_to_json_string,
-            .arg = &_test_class_name
+            .arg = &_splitter_config_name
         },{
-            .name = "timeout",
+            .name = "params",
             .fetch_arg = 1,
             .if_empty = JSON_SERIALIZER_FIELD_EMPTY_ERROR,
-            .to_c = json_serializer_to_c_int,
-            .to_json = json_serializer_to_json_int,
-            .arg = (void*)offsetof( splitd_test_config_t, timeout_ms )
-        },{
-            .name = "delay",
-            .fetch_arg = 1,
-            .if_empty = JSON_SERIALIZER_FIELD_EMPTY_ERROR,
-            .to_c = json_serializer_to_c_int,
-            .to_json = json_serializer_to_json_int,
-            .arg = (void*)offsetof( splitd_test_config_t, delay_ms )
-        },{
-            .name = "bucket_size",
-            .fetch_arg = 1,
-            .if_empty = JSON_SERIALIZER_FIELD_EMPTY_ERROR,
-            .to_c = json_serializer_to_c_int,
-            .to_json = json_serializer_to_json_int,
-            .arg = (void*)offsetof( splitd_test_config_t, bucket_size )
-        },{
-            .name = "threshold",
-            .fetch_arg = 1,
-            .if_empty = JSON_SERIALIZER_FIELD_EMPTY_ERROR,
-            .to_c = json_serializer_to_c_int,
-            .to_json = json_serializer_to_json_int,
-            .arg = (void*)offsetof( splitd_test_config_t, threshold )
-        }, JSON_SERIALIZER_FIELD_TERM}
+            .to_c = json_serializer_to_c_json,
+            .to_json = json_serializer_to_json_json,
+            .arg = (void*)offsetof( splitd_splitter_config_t, params )
+        }, JSON_SERIALIZER_FIELD_TERM }
 };
 
-static json_serializer_array_t _test_config_array_arg =
+static json_serializer_array_t _splitter_config_array_arg =
 {
-    .max_length = FAILD_MAX_INTERFACES * FAILD_MAX_INTERFACE_TESTS,
-    .data_offset = offsetof( splitd_config_t, tests ),
-    .length_offset = offsetof( splitd_config_t, tests_length ),
-    .get_size = _test_config_array_get_size,
+    .max_length = SPLITD_MAX_SPLITTERS,
+    .data_offset = offsetof( splitd_config_t, splitters ),
+    .length_offset = offsetof( splitd_config_t, splitters_length ),
+    .get_size = _splitter_config_array_get_size,
     .default_value = NULL,
-    .serializer = &_test_config_serializer,
-    .item_size = sizeof( splitd_test_config_t )
+    .serializer = &_splitter_config_serializer,
+    .item_size = sizeof( splitd_splitter_config_t )
 };
 
 static json_serializer_t _config_serializer = {
@@ -137,26 +107,26 @@ static json_serializer_t _config_serializer = {
             .to_json = json_serializer_to_json_boolean,
             .arg = (void*)offsetof( splitd_config_t, is_enabled )
         },{
-            .name = "interface_min",
+            .name = "log_interval",
             .fetch_arg = 1,
             .if_empty = JSON_SERIALIZER_FIELD_EMPTY_ERROR,
             .to_c = json_serializer_to_c_int,
             .to_json = json_serializer_to_json_int,
-            .arg = (void*)offsetof( splitd_config_t, interface_min_ms )
+            .arg = (void*)offsetof( splitd_config_t, log_interval_s )
         },{
-            .name = "interfaces",
+            .name = "uplinks",
             .fetch_arg = 1,
             .if_empty = JSON_SERIALIZER_FIELD_EMPTY_ERROR,
             .to_c = json_serializer_to_c_array,
             .to_json = json_serializer_to_json_array,
-            .arg = &_interface_array_arg
+            .arg = &_uplink_array_arg
         },{
-            .name = "tests",
+            .name = "splitters",
             .fetch_arg = 1,
             .if_empty = JSON_SERIALIZER_FIELD_EMPTY_ERROR,
             .to_c = json_serializer_to_c_array,
             .to_json = json_serializer_to_json_array,
-            .arg = &_test_config_array_arg
+            .arg = &_splitter_config_array_arg
         }, JSON_SERIALIZER_FIELD_TERM}
 };
 
@@ -217,13 +187,13 @@ struct json_object* splitd_config_to_json( splitd_config_t* config )
     return json_object;
 }
 
-static int _interface_array_get_size( void *c_array )
+static int _uplink_array_get_size( void *c_array )
 {
-    return sizeof((( splitd_config_t *)0)->interfaces );
+    return sizeof((( splitd_config_t *)0)->uplinks );
 }
 
-static int _test_config_array_get_size( void *c_array )
+static int _splitter_config_array_get_size( void *c_array )
 {
-    return sizeof((( splitd_config_t *)0)->tests );    
+    return sizeof((( splitd_config_t *)0)->splitters );    
 }
 

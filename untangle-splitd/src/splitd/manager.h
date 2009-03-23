@@ -26,6 +26,8 @@ typedef struct
 
 int splitd_manager_init( splitd_config_t* config );
 
+void splitd_manager_destroy( void );
+
 /**
  * Copies in the config to the global config
  */

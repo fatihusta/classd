@@ -53,6 +53,10 @@ int splitd_manager_init( splitd_config_t* config )
     return 0;
 }
 
+void splitd_manager_destroy( void )
+{
+}
+
 /**
  * Copies in the config to the global config
  */

@@ -34,6 +34,7 @@
 #include "json/server.h"
 
 #include "splitd/manager.h"
+#include "splitd/uplink.h"
 
 
 #define DEFAULT_CONFIG_FILE  "/etc/untangle-splitd/config.js"
@@ -145,7 +146,7 @@ int main( int argc, char** argv )
         return errlog( ERR_CRITICAL, "_init\n" );
     }
 
-    debug( 1, "MAIN: Faild started.\n" );
+    debug( 1, "MAIN: SplitD started.\n" );
     _set_signals();
 
     /* Wait for the shutdown signal */
@@ -285,6 +286,8 @@ static int _init( int argc, char** argv )
         return perrlog( "sem_init" );
     }
     _globals.quit_sem = sem;
+    
+    if ( splitd_uplink_static_init() < 0 ) return errlog( ERR_CRITICAL, "faild_uplink_static_init\n" );
         
     splitd_config_t config;
     if ( splitd_config_init( &config ) < 0 ) return errlog( ERR_CRITICAL, "splitd_config_init\n" );
@@ -292,7 +295,7 @@ static int _init( int argc, char** argv )
     /* Initialize the test libraries */
     if ( splitd_libs_init() < 0 ) return errlog( ERR_CRITICAL, "splitd_libs_init\n" );
 
-    if ( splitd_libs_load_test_classes( _globals.lib_dir )) {
+    if ( splitd_libs_load_splitters( _globals.lib_dir )) {
         return errlog( ERR_CRITICAL, "splitd_libs_load_test_classes\n" );
     }
 
@@ -355,6 +358,10 @@ static void _destroy( void )
     MHD_stop_daemon( _globals.daemon );
     
     json_server_destroy( &_globals.json_server );
+
+    splitd_manager_destroy();
+
+    splitd_uplink_static_destroy();
 
     libmvutil_cleanup();
 
