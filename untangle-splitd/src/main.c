@@ -35,15 +35,17 @@
 
 #include "splitd/manager.h"
 #include "splitd/uplink.h"
-
+#include "splitd/nfqueue.h"
 
 #define DEFAULT_CONFIG_FILE  "/etc/untangle-splitd/config.js"
 #define DEFAULT_DEBUG_LEVEL  1
-#define DEFAULT_BIND_PORT 3002
-#define DEFAULT_SWITCH_SCRIPT  "/usr/share/untangle-splitd/bin/switch"
+#define DEFAULT_BIND_PORT 3004
 #define DEFAULT_LIB_DIR        "build/libs"
 
 #define FLAG_ALIVE      0x543F00D
+
+/* Shield is 46 */
+#define DEFAULT_QUEUE_NUM 47
 
 static struct
 {
@@ -54,16 +56,19 @@ static struct
     int std_err;
     int port;
     int debug_level;
+    int queue_num;
+    splitd_nfqueue_t nfqueue;
+    splitd_reader_t reader;
     int daemonize;
     json_server_t json_server;
     struct MHD_Daemon *daemon;
     sem_t* quit_sem;
-    char *switch_script;
     char *lib_dir;
 } _globals = {
     .daemon = NULL,
     .config_file = NULL,
     .port = DEFAULT_BIND_PORT,
+    .queue_num = DEFAULT_QUEUE_NUM,
     .daemonize = 0,
     .std_err_filename = NULL,
     .std_err = -1,
@@ -71,7 +76,6 @@ static struct
     .std_out = -1,
     .debug_level = DEFAULT_DEBUG_LEVEL,
     .quit_sem = NULL,
-    .switch_script = NULL,
     .lib_dir = NULL
 };
 
@@ -205,13 +209,8 @@ static int _parse_args( int argc, char** argv )
             _globals.debug_level = atoi( optarg );
             break;
             
-        case 's':
-            len = strnlen( optarg, FILENAME_MAX );
-            if (( _globals.switch_script = calloc( 1, len )) == NULL ) {
-                fprintf( stderr, "Unable to allocate memory\n" );
-                return -1;
-            }
-            strncpy( _globals.switch_script, optarg, len );
+        case 'q':
+            _globals.queue_num = atoi( optarg );
             break;
 
         case 't':
@@ -226,14 +225,6 @@ static int _parse_args( int argc, char** argv )
         case '?':
             return -1;
         }
-    }
-
-    if ( _globals.switch_script == NULL ) {
-        if (( _globals.switch_script = calloc( 1, sizeof( DEFAULT_SWITCH_SCRIPT ))) == NULL ) {
-            fprintf( stderr, "Unable to allocate memory\n" );
-            return -1;
-        }
-        strncpy( _globals.switch_script, DEFAULT_SWITCH_SCRIPT, sizeof( DEFAULT_SWITCH_SCRIPT ));
     }
 
     if ( _globals.lib_dir == NULL ) {
@@ -257,7 +248,6 @@ static int _usage( char *name )
     fprintf( stderr, "\t-o <log-file>: File to place standard output(more useful with -d).\n" );
     fprintf( stderr, "\t-e <log-file>: File to place standard error(more useful with -d).\n" );
     fprintf( stderr, "\t-l <debug-level>: Debugging level.\n" );
-    fprintf( stderr, "\t-s <switch-script>: An executable that is called when the link status changes.\n" );
     fprintf( stderr, "\t-t <lib-dir>: Directory containing all of the test libraries.\n" );
     fprintf( stderr, "\t-h: Halp (show this message)\n" );
     return -1;
@@ -299,7 +289,20 @@ static int _init( int argc, char** argv )
         return errlog( ERR_CRITICAL, "splitd_libs_load_test_classes\n" );
     }
 
-    if ( splitd_manager_init( &config ) < 0 ) {
+    if ( splitd_nfqueue_global_init() < 0 ) {
+        return errlog( ERR_CRITICAL, "splitd_nfqueue_global_init\n" );
+    }
+
+    if ( splitd_nfqueue_init( &_globals.nfqueue, _globals.queue_num,
+                              NFQNL_COPY_PACKET | NFQNL_COPY_UNTANGLE_MODE, 0xFFFF ) < 0 ) {
+        return errlog( ERR_CRITICAL, "splitd_nfqueue_init\n" );
+    }
+
+    if ( splitd_reader_init( &_globals.reader, &_globals.nfqueue ) < 0 ) {
+        return errlog( ERR_CRITICAL, "barfight_bouncer_reader_init\n" );
+    }
+
+    if ( splitd_manager_init( &config, &_globals.reader ) < 0 ) {
         return errlog( ERR_CRITICAL, "splitd_manager_init\n" );
     }
 
@@ -343,6 +346,11 @@ static int _init( int argc, char** argv )
 
     if ( _globals.daemon == NULL ) return errlog( ERR_CRITICAL, "MHD_start_daemon: %s\n", strerror(errno));
 
+    pthread_t thread;
+    if ( pthread_create( &thread, &uthread_attr.other.medium, splitd_reader_donate, &_globals.reader )) {
+        return perrlog( "pthread_create" );
+    }
+
     return 0;
 }
 
@@ -353,6 +361,18 @@ static void _destroy( void )
         sem = _globals.quit_sem;
         _globals.quit_sem = NULL;
     }
+
+    /* Stop the reader */
+    if ( splitd_reader_stop(  &_globals.reader ) < 0 ) {
+        errlog( ERR_CRITICAL, "splitd_reader_stop\n" );
+    }
+
+    splitd_reader_destroy( &_globals.reader );
+    
+    /* Cleanup the queue */
+    splitd_nfqueue_destroy( &_globals.nfqueue );
+
+    splitd_nfqueue_global_destroy();
 
     /* XXX can hang indefinitely */
     MHD_stop_daemon( _globals.daemon );
@@ -377,10 +397,6 @@ static void _destroy( void )
     if ( sem != NULL ) {
         if ( sem_destroy( sem ) < 0 ) perrlog( "sem_destroy" );
         free( sem );
-    }
-
-    if ( _globals.switch_script != NULL ) {
-        free( _globals.switch_script );
     }
 
     if ( _globals.lib_dir != NULL ) {

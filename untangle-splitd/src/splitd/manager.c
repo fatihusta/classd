@@ -26,10 +26,11 @@
 #include <mvutil/utime.h>
 
 #include "splitd.h"
+#include "splitd/chain.h"
 #include "splitd/manager.h"
 #include "splitd/splitter_config.h"
-#include "splitd/uplink.h"
 #include "splitd/splitter_instance.h"
+#include "splitd/uplink.h"
 
 #define _MAX_SHUTDOWN_TIMEOUT     10
 
@@ -42,34 +43,23 @@ static struct
 {
     pthread_mutex_t mutex;
     splitd_config_t config;
-
+    splitd_reader_t* reader;
     int init;
-
-    splitd_splitter_instance_t* current_splitters[SPLITD_MAX_SPLITTERS];
-    
-    /* This is the total number of splitters */
-    int num_splitters;
 } _globals = {
     .init = 0,
     .mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP,
-    .num_splitters = 0,
+    .reader = NULL
 };
 
 static int _validate_splitter_config( splitd_splitter_config_t* splitter_config );
 
-/* Return the index of the first splitter that is running this config */
-static int _find_splitter_config( splitd_splitter_config_t* splitter_config );
-
-/* Return the index of the next open splitter slot. */
-static int _find_open_splitter( void );
-
-int splitd_manager_init( splitd_config_t* config )
+int splitd_manager_init( splitd_config_t* config, splitd_reader_t* reader )
 {
     if ( config == NULL ) return errlogargs();
-
-    bzero( &_globals.current_splitters, sizeof( _globals.current_splitters ));
+    if ( reader == NULL ) return errlogargs();
 
     _globals.init = 1;
+    _globals.reader = reader;
 
     if ( splitd_manager_set_config( config ) < 0 ) {
         return errlog( ERR_CRITICAL, "splitd_manager_set_config\n" );
@@ -91,21 +81,15 @@ int splitd_manager_set_config( splitd_config_t* config )
 
     splitd_splitter_instance_t* splitter_instance = NULL;
     
+    splitd_chain_t* chain = NULL;
+    
     int _critical_section() {
         debug( 9, "Loading new config\n" );
 
-        u_char is_active[SPLITD_MAX_SPLITTERS];
-        splitd_splitter_config_t* new_tests[SPLITD_MAX_SPLITTERS];
+        if ( _globals.reader == NULL ) return errlog( ERR_CRITICAL, "The reader is not initialized.\n" );
         
-        int num_new_tests = 0;
-        bzero( is_active, sizeof( is_active ));
-        bzero( new_tests, sizeof( new_tests ));
-
         int c = 0;
-        int d = 0;
-        int test_index = 0;
-
-        splitd_splitter_config_t* splitter_config = NULL;
+        
         splitd_uplink_t* uplink = NULL;
 
         /* Update all of the interface data */
@@ -120,69 +104,37 @@ int splitd_manager_set_config( splitd_config_t* config )
             }
         }
 
-        /* Find all of the tests that are currently running */
+        /* Create a chain of all of the splitters */
+        if (( chain = splitd_chain_create( config )) == NULL ) {
+            return errlog( ERR_CRITICAL, "splitd_chain_create\n" );
+        }
+        
+        /* Create a new splitter instance for each splitter configuration */
         for ( c = 0 ; c < config->splitters_length ; c++ ) {
-            /* Disable all of the tests if splitd isn't enabled.. (this will also not start any new tests.) */
+            /* Disable all of the splitters if splitd isn't enabled.
+             * An empty chain doesn't mark the packets) */
             if ( config->is_enabled == 0 ) {
                 debug( 9, "Skipping all tests because splitd is disabled.\n" );
                 continue;
             }
 
-            splitter_config = &config->splitters[c];
+            splitd_splitter_config_t* splitter_config = &config->splitters[c];
 
-            if ( _validate_splitter_config( splitter_config ) < 0 ) {
-                errlog( ERR_WARNING, "Invalid test configuration\n" );
-                continue;
-            }
-
-            test_index = _find_splitter_config( splitter_config );
-            if ( test_index < 0 ) {
-                new_tests[num_new_tests++] = splitter_config;
-                continue;
-            }
-
-            is_active[test_index] = 1;
-        }
-
-        /* Stop all of the tests that are no longer needed */
-        for ( c = 0 ; c < SPLITD_MAX_SPLITTERS; c++ ) {
-            if ( is_active[c] == 1 ) continue;
-            splitter_instance = _globals.current_splitters[c];
-            _globals.current_splitters[c] = NULL;
-            if ( splitter_instance == NULL ) continue;
-            
-            debug( 5, "Razing the splitter at %d\n", c );
-            if ( splitd_splitter_instance_raze( splitter_instance ) < 0 ) {
-                errlog( ERR_WARNING, "splitd_uplink_splitter_instance_stop\n" );
-            }
-            _globals.num_splitters--;
-        }
-
-        splitter_instance = NULL;
-        
-        /* Start all of the new tests */
-        debug( 5, "Creating %d new tests\n", num_new_tests );
-        for ( c = 0 ; c < num_new_tests ; c++ ) {
-            splitter_config = new_tests[c];
-            if ( splitter_config == NULL ) {
-                errlog( ERR_CRITICAL, "Invalid test config\n" );
-                continue;
-            }
-            
-            char* splitter_name = splitter_config->splitter_name;
             splitd_splitter_class_t* splitter_class = NULL;
+            char* splitter_name = splitter_config->splitter_name;
             
+            /* Get the splitter class for the instance */
             if ( splitd_libs_get_splitter_class( splitter_name, &splitter_class ) < 0 ) {
                 return errlog( ERR_CRITICAL, "splitd_libs_get_splitter_class\n" );
             }
-
+            
             if ( splitter_class == NULL ) {
                 errlog( ERR_WARNING, "The test class name '%s' doesn't exist.\n", splitter_name );
                 continue;
             }
             
-            if (( d = _find_open_splitter()) < 0 ) {
-                errlog( ERR_CRITICAL, "_find_open_splitter\n" );
+            if ( _validate_splitter_config( splitter_config ) < 0 ) {
+                errlog( ERR_WARNING, "Invalid test configuration\n" );
                 continue;
             }
             
@@ -190,12 +142,23 @@ int splitd_manager_set_config( splitd_config_t* config )
                 return errlog( ERR_CRITICAL, "splitd_splitter_instance_create\n" );
             }
 
-            _globals.current_splitters[d] = splitter_instance;
+            splitter_instance->splitter_class = splitter_class;
+
+            if ( splitd_chain_add( chain, splitter_instance ) < 0 ) {
+                return errlog( ERR_CRITICAL, "splitd_chain_add\n" );
+            }
+
             splitter_instance = NULL;
-            _globals.num_splitters++;
         }
-        
-        memcpy( &_globals.config, config, sizeof( _globals.config ));
+
+        /* Send the chain to the reader. */
+        if ( splitd_reader_send_chain( _globals.reader, chain ) < 0 ) {
+            return errlog( ERR_CRITICAL, "splitd_reader_send_chain\n" );
+        }
+                
+        if ( splitd_config_copy( &_globals.config, config ) < 0 ) {
+            return errlog( ERR_CRITICAL, "splitd_config_copy\n" );
+        }
         
         return 0;
     }
@@ -206,6 +169,10 @@ int splitd_manager_set_config( splitd_config_t* config )
 
     if (( splitter_instance != NULL ) && ( splitd_splitter_instance_raze( splitter_instance ) < 0 )) {
         errlog( ERR_CRITICAL, "splitd_uplink_splitter_instance_raze\n" );
+    }
+
+    if ( chain != NULL ) {
+        splitd_chain_destroy( chain );
     }
     
     if ( ret < 0 ) return errlog( ERR_CRITICAL, "_critical_section\n" );
@@ -298,80 +265,9 @@ int splitd_manager_get_config( splitd_config_t* config )
     return 0;
 }
 
-/* Stop all of the active tests */
-int splitd_manager_destroy_all_splitters( void )
-{
-    int _critical_section()
-    {
-        int c = 0;
-        int count = 0;
-        splitd_splitter_instance_t* splitter_instance = NULL;
-
-        /* Stop all of the active tests */
-        for ( c = 0 ; c < SPLITD_MAX_SPLITTERS ; c++ ) {
-            splitter_instance = _globals.current_splitters[c];
-            _globals.current_splitters[c] = NULL;
-            
-            if ( splitter_instance == NULL ) continue;
-            
-            count++;
-
-            if ( splitd_splitter_instance_raze( splitter_instance ) < 0 ) {
-                errlog( ERR_WARNING, "splitd_uplink_splitter_instance_stop\n" );
-            }
-            _globals.num_splitters--;
-        }
-
-        debug( 4, "Destroyed %d splitters\n", count );
-        
-        return 0;
-    }
-
-    if ( _globals.init == 0 ) return errlog( ERR_WARNING, "manager is not initialized.\n" );
-    
-    /* Now wait for num_tests to go to zero */
-    if ( pthread_mutex_lock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_lock" );
-    int ret = _critical_section();
-    if ( pthread_mutex_unlock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_unlock" );
-        
-    if ( ret < 0 ) return errlog( ERR_CRITICAL, "_critical_section\n" );
-    
-    if ( _globals.num_splitters != 0 ) {
-        errlog( ERR_WARNING, "splitter count is not zero[%d] at shutdown.", _globals.num_splitters );
-    }
-
-    return 0;
-}
-
 static int _validate_splitter_config( splitd_splitter_config_t* splitter_config )
 {
     return 0;
 }
 
-/* Return the index of this test in the correct interface */
-static int _find_splitter_config( splitd_splitter_config_t* splitter_config )
-{
-    int c = 0;
-    for ( c = 0 ; c < SPLITD_MAX_SPLITTERS ; c++ ) {
-        splitd_splitter_instance_t* splitter_instance =  _globals.current_splitters[c];
-        if ( splitter_instance == NULL ) continue;
-        
-        if ( splitd_splitter_config_equ( splitter_config, &splitter_instance->config ) == 1 ) {
-            return c;
-        }
-    }
-    
-    return -2;
-}
-
-/* Return the index of the next open splitter slot. */
-static int _find_open_splitter()
-{
-    int c;
-    for ( c = 0 ; c < SPLITD_MAX_SPLITTERS ; c++ ) {
-        if ( _globals.current_splitters[c] == NULL ) return c;
-    }
-
-    return errlog( ERR_CRITICAL, "No empty test slots.\n" );
-}
 

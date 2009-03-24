@@ -19,6 +19,7 @@
 #include <mvutil/debug.h>
 #include <mvutil/errlog.h>
 #include <mvutil/unet.h>
+#include <mvutil/mailbox.h>
 
 #include "splitd.h"
 #include "splitd/reader.h"
@@ -36,12 +37,36 @@
 
 enum {
     _event_code_nfqueue,
-    _event_code_shutdown
+    _event_code_mailbox
 } _event_code;
+
+struct _message
+{
+    enum {
+        _MESSAGE_SHUTDOWN,
+        _MESSAGE_CHAIN
+    } type;
+
+    /* c for contents. */
+    union {
+        splitd_chain_t* chain;
+    } c;
+};
+
+struct 
+{
+    struct _message shutdown_message;
+} _globals = {
+    .shutdown_message = {
+        .type = _MESSAGE_SHUTDOWN
+    }
+};
 
 static int _init_epoll( splitd_reader_t* reader );
 
-static int _handle_packet( splitd_reader_t* reader, splitd_packet_t* packet  );
+static int _handle_packet( splitd_reader_t* reader, splitd_packet_t* packet );
+
+static int _handle_mailbox( splitd_reader_t* reader );
 
 /**
  * Allocate memory to store a reader structure.
@@ -71,11 +96,8 @@ int splitd_reader_init( splitd_reader_t* reader, splitd_nfqueue_t* nfqueue )
 
     if ( pthread_mutex_init( &reader->mutex, NULL ) < 0 ) return perrlog( "pthread_mutex_init" );
     
-    if ( pipe( reader->shutdown_pipe ) < 0 ) return perrlog( "pipe" );
-
-    /* disable blocking on the pipe. */
-    if ( unet_blocking_disable( reader->shutdown_pipe[0] ) < 0 ) {
-        return errlog( ERR_CRITICAL, "unet_blocking_disable\n" );
+    if ( mailbox_init( &reader->mailbox ) < 0 ) {
+        return errlog( ERR_CRITICAL, "mailbox_init\n" );
     }
 
     return 0;
@@ -115,12 +137,8 @@ void splitd_reader_destroy( splitd_reader_t* reader )
     
     if ( pthread_mutex_destroy( &reader->mutex ) < 0 ) perrlog( "pthread_mutex_destroy" );
     
-    if (( reader->shutdown_pipe[0] > 0 ) && ( close( reader->shutdown_pipe[0] ) < 0 )) {
-        perrlog( "close" );
-    }
-
-    if (( reader->shutdown_pipe[1] > 0 ) && ( close( reader->shutdown_pipe[1] ) < 0 )) {
-        perrlog( "close" );
+    if ( mailbox_destroy( &reader->mailbox ) < 0 ) {
+        errlog( ERR_CRITICAL, "mailbox_destroy\n" );
     }
 
     if ( reader->chain != NULL ) splitd_chain_destroy( reader->chain );
@@ -136,6 +154,27 @@ void splitd_reader_free( splitd_reader_t* reader )
     }
     
     free( reader );
+}
+
+int splitd_reader_send_chain( splitd_reader_t* reader, splitd_chain_t* chain )
+{
+    if ( reader == NULL ) return errlogargs();
+    if ( chain == NULL ) return errlogargs();
+    
+    /* Allocate a message */
+    struct _message* message = NULL;
+    if (( message = calloc( 1, sizeof( message ))) == NULL ) {
+        return errlogmalloc();
+    }
+
+    message->type = _MESSAGE_CHAIN;
+    message->c.chain = chain;
+
+    if ( mailbox_put( &reader->mailbox, (void*)message ) < 0 ) {
+        return errlog( ERR_CRITICAL, "mailbox_put\n" );
+    }
+
+    return 0;
 }
 
 /* Donate a thread for the reader */
@@ -159,9 +198,6 @@ void *splitd_reader_donate( void* arg )
     struct epoll_event events[EPOLL_MAX_EVENTS];
     int num_events;
     int c;
-
-    /* Shutdown pipe shouldn't have a lot in it. */
-    char buffer[SHUTDOWN_COUNT * 2];
 
     if (( epoll_fd = _init_epoll( reader )) < 0) return errlog_null( ERR_CRITICAL, "_init_epoll\n" );
 
@@ -203,13 +239,13 @@ void *splitd_reader_donate( void* arg )
                     break;
                 }
                 break;
-            case _event_code_shutdown:
-                if ( read( reader->shutdown_pipe[0], buffer, sizeof( buffer )) < 0 ) perrlog( "read" );
-                debug( 10, "READER: received a shutdown event\n" );
-                if ( pthread_mutex_lock( &reader->mutex ) < 0 ) perrlog_null( "pthread_mutex_lock" );
-                reader->thread = 0;
-                if ( pthread_mutex_unlock( &reader->mutex ) < 0 ) perrlog_null( "pthread_mutex_unlock" );
-                break;
+            case _event_code_mailbox:
+                debug( 11, "READER : _event_code_mailbox\n" );
+                if ( _handle_mailbox( reader ) < 0 ) {
+                    errlog( ERR_CRITICAL, "_handle_mailbox\n" );
+                    usleep( 10000 );
+                    break;
+                }
             }
         }
     }
@@ -237,11 +273,12 @@ int splitd_reader_stop( splitd_reader_t* reader )
     if ( thread == 0 ) return errlog( ERR_WARNING, "The reader has already been stopped.\n" );
     
     int c = 0;
-    char buffer[] = ".";
 
     for ( c = 0; c < SHUTDOWN_COUNT ; c++ ) {
-        debug( 11, "READER: Sending shutdown on pipe: %d\n", reader->shutdown_pipe[1] );
-        if ( write( reader->shutdown_pipe[1], buffer, sizeof( buffer )) < 0 ) return perrlog( "write" );
+        debug( 11, "READER: Sending shutdown in mailbox\n" );
+        if ( mailbox_put( &reader->mailbox, (void*)&_globals.shutdown_message ) < 0 ) {
+            return errlog( ERR_CRITICAL, "mailbox_put\n" );
+        }
         if ( reader->thread == 0 ) break;
         usleep( SHUTDOWN_DELAY );
     }
@@ -270,9 +307,12 @@ static int _init_epoll( splitd_reader_t* reader )
         if ( epoll_ctl( epoll_fd, EPOLL_CTL_ADD, fd, &epoll_event ) < 0 ) return perrlog( "epoll_ctl" );
         
         epoll_event.events = EPOLLIN|EPOLLPRI|EPOLLERR|EPOLLHUP;
-        epoll_event.data.u32 = _event_code_shutdown;
+        epoll_event.data.u32 = _event_code_mailbox;
         
-        fd = reader->shutdown_pipe[0];
+        if (( fd = mailbox_get_pollable_event( &reader->mailbox )) < 0 ) {
+            return errlog( ERR_CRITICAL, "mailbox_get_pollable_event\n" );
+        }
+        
         if ( epoll_ctl( epoll_fd, EPOLL_CTL_ADD, fd, &epoll_event ) < 0 ) return perrlog( "epoll_ctl" );
 
         return 0;
@@ -323,4 +363,51 @@ static int _handle_packet( splitd_reader_t* reader, splitd_packet_t* packet  )
     
     if ( ret < 0 ) return errlog( ERR_CRITICAL, "_critical_section\n" );
     return ret;
+}
+
+static int _handle_mailbox( splitd_reader_t* reader )
+{
+    struct _message* message = NULL;
+    
+    /* Don't really need the mutex since a reader is only run by at most one thread */
+    int _critical_section()
+    {
+        switch ( message->type ) {
+        case _MESSAGE_SHUTDOWN:
+            reader->thread = 0;
+            return 0;
+            
+        case _MESSAGE_CHAIN:
+            if ( message->c.chain == NULL ) {
+                return errlogargs();
+            }
+            
+            /* If necessary destroy the current chain */
+            if ( reader->chain != NULL ) {
+                splitd_chain_destroy( reader->chain );
+            }
+            
+            reader->chain = message->c.chain;
+            return 1;
+            
+        default:
+            return errlog( ERR_CRITICAL, "Unknown message type %d\n", message->type );
+        }
+
+        return 0;
+    }
+    
+    int ret = 0;
+    while (( message = mailbox_try_get( &reader->mailbox )) != NULL ) {
+        if ( pthread_mutex_lock ( &reader->mutex ) < 0 ) return perrlog( "pthread_mutex_lock" );
+        ret = _critical_section();
+        if ( pthread_mutex_unlock ( &reader->mutex ) < 0 ) perrlog( "pthread_mutex_unlock" );
+        
+        if ( ret != 0 ) free( message );
+        if ( ret < 0 ) {
+            return errlog( ERR_CRITICAL, "_critical_section\n" );
+        }        
+    }
+
+    return 0;
 }

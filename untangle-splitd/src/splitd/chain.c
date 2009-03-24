@@ -132,7 +132,6 @@ int splitd_chain_mark_session( splitd_chain_t* chain, splitd_packet_t* packet )
     return 0;
 }
 
-
 void splitd_chain_raze( splitd_chain_t* chain )
 {
     if ( chain == NULL ) {

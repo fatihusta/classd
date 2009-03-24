@@ -13,7 +13,9 @@
 #define __FAILD_MANAGER_H_
 
 #include <netinet/ip.h>
-#include <splitd.h>
+
+#include "splitd.h"
+#include "splitd/reader.h"
 
 typedef struct
 {
@@ -24,7 +26,7 @@ typedef struct
     struct in_addr gateway;
 } splitd_manager_settings_t;
 
-int splitd_manager_init( splitd_config_t* config );
+int splitd_manager_init( splitd_config_t* config, splitd_reader_t* reader );
 
 void splitd_manager_destroy( void );
 
@@ -37,15 +39,5 @@ int splitd_manager_set_config( splitd_config_t* config );
  * Gets the config
  */
 int splitd_manager_get_config( splitd_config_t* config );
-
-/**
- * Get the sttings for an individual IP.
- */
-int splitd_manager_get_ip_settings( struct in_addr* ip, splitd_manager_settings_t* settings );
-
-/**
- * Reload the gateway.
- */
-int splitd_manager_reload_gateway( void );
 
 #endif // #ifndef __FAILD_MANAGER_H_

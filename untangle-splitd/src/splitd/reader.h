@@ -14,6 +14,8 @@
 
 #include <pthread.h>
 
+#include <mvutil/mailbox.h>
+
 #include "splitd/chain.h"
 #include "splitd/nfqueue.h"
 
@@ -22,8 +24,8 @@ typedef struct
     /* This is the queue to read from */
     splitd_nfqueue_t* nfqueue;
 
-    /* Pipe used to tell the queue to shutdown */
-    int shutdown_pipe[2];
+    /* Mailbox used to send shutdown messages and new chains */
+    mailbox_t mailbox;
 
     /* The thread that is running this reader. */
     pthread_t thread;
@@ -59,6 +61,9 @@ void *splitd_reader_donate( void* reader );
 
 /* Stop a running thread for a reader */
 int splitd_reader_stop( splitd_reader_t* reader );
+
+/* Update the chain that the reader is using */
+int splitd_reader_send_chain( splitd_reader_t* reader, splitd_chain_t* chain );
 
 #endif // #ifndef __SPLITD_READER_H_
 
