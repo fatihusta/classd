@@ -81,6 +81,13 @@ int splitd_splitter_instance_destroy( splitd_splitter_instance_t* splitter_insta
 {
     if ( splitter_instance == NULL ) return errlogargs();
 
+    splitd_splitter_class_t* splitter_class = splitter_instance->splitter_class;
+    if (( splitter_class != NULL ) && ( splitter_class->destroy != NULL )) {
+        if ( splitter_class->destroy( splitter_instance ) < 0 ) {
+            errlog( ERR_CRITICAL, "splitter_class->destroy\n" );
+        }
+    }
+
     splitd_splitter_config_destroy( &splitter_instance->config );
 
     bzero( splitter_instance, sizeof( splitd_splitter_instance_t ));

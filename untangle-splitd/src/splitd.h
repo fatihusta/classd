@@ -155,6 +155,8 @@ splitd_config_t* splitd_config_create( void );
 /* Load a configuration */
 int splitd_config_load_json( splitd_config_t* config, struct json_object* json_config );
 
+int splitd_config_copy( splitd_config_t* dest, splitd_config_t* source );
+
 /* Serialize back to JSON */
 struct json_object* splitd_config_to_json( splitd_config_t* config );
 

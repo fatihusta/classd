@@ -10,7 +10,7 @@ INC           = ${build_dir}/include src
 INC_FLAGS     = $(patsubst %,-I%,$(INC))
 LDDIR         = lib $(build_lib_path)  
 LDDIR_FLAGS   = $(patsubst %,-L%,$(LDDIR))
-LIBS          = json microhttpd dl sysfs rt
+LIBS          = netfilter_queue json microhttpd dl sysfs rt
 #LIBS          += efence
 LIBS_FLAGS    = -pthread $(patsubst %,-l%,$(LIBS)) --warn-common
 FLAGS        += -rdynamic -std=c99
@@ -42,7 +42,9 @@ splitd_source=src/json/server.c src/json/object_utils.c \
 	src/json/serializer.c src/main.c src/functions.c \
 	src/splitd/config.c src/splitd/manager.c src/splitd/libs.c \
 	src/splitd/uplink.c src/splitd/splitter_instance.c \
-	src/splitd/splitter_config.c ${mvutil_source}
+	src/splitd/splitter_config.c src/splitd/chain.c \
+	src/splitd/reader.c src/splitd/packet.c src/splitd/nfqueue.c \
+	${mvutil_source}
 
 splitd_objects=$(patsubst %.c,${object_dir}/%.o, ${splitd_source})
 splitd_binary=splitd

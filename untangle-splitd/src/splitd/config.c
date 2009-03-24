@@ -19,9 +19,12 @@
 #include <mvutil/debug.h>
 #include <mvutil/errlog.h>
 
-#include "splitd.h"
 #include "json/object_utils.h"
 #include "json/serializer.h"
+
+#include "splitd.h"
+#include "splitd/splitter_config.h"
+
 
 static int _uplink_array_get_size( void *c_array );
 
@@ -172,6 +175,48 @@ int splitd_config_load_json( splitd_config_t* config, struct json_object* json_c
         return errlog( ERR_CRITICAL, "json_serializer_to_c\n" );
     }
 
+    return 0;
+}
+
+int splitd_config_copy( splitd_config_t* dest, splitd_config_t* source )
+{
+    if ( dest == NULL ) return errlogargs();
+    if ( source == NULL ) return errlogargs();
+    
+    memcpy( dest, source, sizeof( splitd_config_t ));
+    bzero( &dest->uplink_map, sizeof( dest->uplink_map ));
+
+    int aii = 0;
+    splitd_uplink_t* uplink = NULL;
+    for ( int c = 0 ; c < SPLITD_MAX_UPLINKS ; c++ ) {
+        uplink = &dest->uplinks[c];
+
+        aii = uplink->alpaca_interface_id;
+        if ( aii == 0 ) continue;
+
+        if ( aii < 1 || aii > SPLITD_MAX_UPLINKS ) {
+            return errlog( ERR_CRITICAL, "Invalid alpaca interface ID %d\n", aii );
+        }
+        
+        if ( dest->uplink_map[aii-1] != NULL ) {
+            errlog( ERR_WARNING, "Interface ID %d is duplicated\n", aii );
+            continue;
+        }
+
+        dest->uplink_map[aii-1] = uplink;
+    }
+
+    bzero( &dest->splitters, sizeof( dest->splitters ));
+    for ( int c = 0 ; c < SPLITD_MAX_SPLITTERS ; c++ ) {
+        if ( source->splitters[c].params == NULL ) {
+            continue;
+        }
+        
+        if ( splitd_splitter_config_copy( &dest->splitters[c], &source->splitters[c] ) < 0 ) {
+            return errlog( ERR_CRITICAL, "splitd_splitter_config_copy\n" );
+        }
+    }
+    
     return 0;
 }
 
