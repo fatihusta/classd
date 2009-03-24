@@ -73,7 +73,21 @@ int splitd_chain_add( splitd_chain_t* chain, splitd_splitter_instance_t* instanc
     if ( chain == NULL ) return errlogargs();
     if ( instance == NULL ) return errlogargs();
 
-    return errlog( ERR_CRITICAL, "Implement me" );
+    if ( chain->num_splitters < 0 ) return errlogargs();
+    if ( instance->splitter_class == NULL ) return errlogargs();
+
+    if ( chain->num_splitters >= SPLITD_MAX_SPLITTERS ) {
+        return errlog( ERR_WARNING, "Chain is already full, unable to add another instance.\n" );
+    }
+
+    splitd_splitter_instance_t* dest = &chain->splitters[chain->num_splitters++];
+    if ( splitd_splitter_instance_init( dest, &instance->config ) < 0 ) {
+        return errlog( ERR_CRITICAL, "splitd_splitter_instance_init\n" );
+    }
+
+    dest->splitter_class = instance->splitter_class;
+    
+    return 0;
 }
 
 
@@ -83,7 +97,39 @@ int splitd_chain_mark_session( splitd_chain_t* chain, splitd_packet_t* packet )
 {
     if ( chain == NULL ) return errlogargs();
     if ( packet == NULL ) return errlogargs();
-    return errlog( ERR_CRITICAL, "Implement me" );
+    
+    if ( chain->num_splitters < 0 ) return errlogargs();
+    if ( chain->num_splitters > SPLITD_MAX_SPLITTERS ) return errlogargs();
+
+    int scores[SPLITD_MAX_UPLINKS];
+    
+    for ( int c = 0 ; c < SPLITD_MAX_UPLINKS ; c++ ) {
+        /* Give all of the interfaces that are not mapped a -2000
+         * (never use, and a 1 to all of the interfaces that are
+         * mapped. */
+        scores[c] = ( chain->config.uplink_map[c] == NULL ) ? -2000 : 1;
+    }
+
+    for ( int c = 0 ; c < chain->num_splitters ; c++ ) {
+        splitd_splitter_instance_t* instance = &chain->splitters[c];
+        splitd_splitter_class_t* splitter_class = instance->splitter_class;
+        if ( splitter_class == NULL ) {
+            errlog( ERR_WARNING, "Index %d of the chain doesn't have a class", c );
+            continue;
+        }
+
+        splitd_splitter_class_update_counts_f update_counts = splitter_class->update_counts;
+        if ( update_counts == NULL ) {
+            errlog( ERR_WARNING, "The chain '%s' has a NULL update_counts.\n", splitter_class->name );
+            continue;
+        }
+
+        if ( update_counts( instance, chain, scores, packet ) < 0 ) {
+            return errlog( ERR_CRITICAL, "%s->update_counts\n" );
+        }
+    }
+    
+    return 0;
 }
 
 

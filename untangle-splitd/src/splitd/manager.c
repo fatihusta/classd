@@ -186,7 +186,7 @@ int splitd_manager_set_config( splitd_config_t* config )
                 continue;
             }
             
-            if (( splitter_instance = splitd_splitter_instance_create( splitter_config, config )) == NULL ) {
+            if (( splitter_instance = splitd_splitter_instance_create( splitter_config )) == NULL ) {
                 return errlog( ERR_CRITICAL, "splitd_splitter_instance_create\n" );
             }
 

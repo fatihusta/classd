@@ -17,19 +17,6 @@
 #include "splitd.h"
 #include "splitd/nfqueue.h"
 
-typedef struct
-{
-    /* The configuration used to build this chain */
-    splitd_config_t config;
-
-    /* This is the total number of splitters */
-    int num_splitters;
-
-    /* The splitters that belong on this chain (a linked list would be
-     * more appropriate, but don't feel like the hastle.) */
-    splitd_splitter_instance_t splitters[SPLITD_MAX_SPLITTERS];
-} splitd_chain_t;
-
 /**
  * Allocate memory to store a chain structure.
  */

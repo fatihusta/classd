@@ -36,11 +36,9 @@ splitd_splitter_instance_t* splitd_splitter_instance_malloc( void )
 }
 
 int splitd_splitter_instance_init( splitd_splitter_instance_t* splitter_instance, 
-                                   splitd_splitter_config_t* splitter_config, 
-                                   splitd_config_t* config )
+                                   splitd_splitter_config_t* splitter_config )
 {
     if ( splitter_instance == NULL ) return errlogargs();
-    if ( config == NULL ) return errlogargs();
     if ( splitter_config == NULL ) return errlogargs();
 
     bzero( splitter_instance, sizeof( splitd_splitter_instance_t ));
@@ -53,8 +51,7 @@ int splitd_splitter_instance_init( splitd_splitter_instance_t* splitter_instance
     return 0;
 }
 
-splitd_splitter_instance_t* splitd_splitter_instance_create( splitd_splitter_config_t* splitter_config, 
-                                                             splitd_config_t* config )
+splitd_splitter_instance_t* splitd_splitter_instance_create( splitd_splitter_config_t* splitter_config )
 {
     splitd_splitter_instance_t* splitter_instance = NULL;
     
@@ -62,7 +59,7 @@ splitd_splitter_instance_t* splitd_splitter_instance_create( splitd_splitter_con
         return errlog_null( ERR_CRITICAL, "splitd_splitter_instance_malloc\n" );
     }
 
-    if ( splitd_splitter_instance_init( splitter_instance, splitter_config, config ) < 0 ) {
+    if ( splitd_splitter_instance_init( splitter_instance, splitter_config ) < 0 ) {
         free( splitter_instance );
         return errlog_null( ERR_CRITICAL, "splitd_splitter_instance_init\n" );
     }

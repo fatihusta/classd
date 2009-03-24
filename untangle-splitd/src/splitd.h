@@ -20,6 +20,9 @@
 #include <json/json.h>
 #include <netinet/ether.h>
 
+/* This kind of breaks the rules, in order for the lib concept to
+ * work, splitd.h should be self contained. */
+#include "splitd/packet.h"
 
 #define SPLITD_MAX_UPLINKS 8
 
@@ -102,10 +105,24 @@ typedef struct
     void* ptr;
 } splitd_splitter_instance_t;
 
+
+typedef struct
+{
+    /* The configuration used to build this chain */
+    splitd_config_t config;
+
+    /* This is the total number of splitters */
+    int num_splitters;
+
+    /* The splitters that belong on this chain (a linked list would be
+     * more appropriate, but don't feel like the hastle.) */
+    splitd_splitter_instance_t splitters[SPLITD_MAX_SPLITTERS];
+} splitd_chain_t;
+
 typedef int (*splitd_splitter_class_init_f)( splitd_splitter_instance_t* instance );
 typedef int (*splitd_splitter_class_update_counts_f)( splitd_splitter_instance_t* instance, 
-                                                      splitd_uplink_t* uplinks,
-                                                      int* score, int num_uplinks );
+                                                      splitd_chain_t* chain,
+                                                      int* score, splitd_packet_t* packet );
 typedef int (*splitd_splitter_class_destroy_f)( splitd_splitter_instance_t* instance );
 
 typedef struct splitd_splitter_class

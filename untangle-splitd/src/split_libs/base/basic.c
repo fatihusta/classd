@@ -22,8 +22,8 @@
 static int _init( splitd_splitter_instance_t* instance );
 
 /* Update the counts for the uplinks, called for each session */
-static int _update_counts( splitd_splitter_instance_t* instance, splitd_uplink_t* uplinks, int* score, 
-                           int num_uplinks );
+static int _update_counts( splitd_splitter_instance_t* instance, splitd_chain_t* chain,
+                           int* score, splitd_packet_t* packet );
 
 /* Cleanup this instance of a splitter */
 static int _destroy( splitd_splitter_instance_t* instance );
@@ -48,13 +48,15 @@ static int _init( splitd_splitter_instance_t* instance )
 }
 
 /* Update the counts for the uplinks, called for each session */
-static int _update_counts( splitd_splitter_instance_t* instance, splitd_uplink_t* uplinks, int* score,
-                           int num_uplinks )
+static int _update_counts( splitd_splitter_instance_t* instance, splitd_chain_t* chain,
+                           int* score, splitd_packet_t* packet )
 {
     if ( instance == NULL ) return errlogargs();
-    if ( uplinks == NULL ) return errlogargs();
+    if ( chain == NULL ) return errlogargs();
     if ( score == NULL ) return errlogargs();
-    if ( num_uplinks < 0 || num_uplinks > SPLITD_MAX_UPLINKS ) return errlogargs();
+    if ( packet ) return errlogargs();
+    
+    debug( 11, "Running basic update_counts\n" );
 
     return 0;
 }
