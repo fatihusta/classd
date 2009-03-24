@@ -110,6 +110,7 @@ int splitd_manager_set_config( splitd_config_t* config )
         }
         
         /* Create a new splitter instance for each splitter configuration */
+        debug( 9, "Adding %d splitters to chain\n", config->splitters_length );
         for ( c = 0 ; c < config->splitters_length ; c++ ) {
             /* Disable all of the splitters if splitd isn't enabled.
              * An empty chain doesn't mark the packets) */
@@ -155,6 +156,8 @@ int splitd_manager_set_config( splitd_config_t* config )
         if ( splitd_reader_send_chain( _globals.reader, chain ) < 0 ) {
             return errlog( ERR_CRITICAL, "splitd_reader_send_chain\n" );
         }
+
+        chain = NULL;
                 
         if ( splitd_config_copy( &_globals.config, config ) < 0 ) {
             return errlog( ERR_CRITICAL, "splitd_config_copy\n" );

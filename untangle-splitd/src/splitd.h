@@ -120,7 +120,7 @@ typedef struct
 } splitd_chain_t;
 
 typedef int (*splitd_splitter_class_init_f)( splitd_splitter_instance_t* instance );
-typedef int (*splitd_splitter_class_update_counts_f)( splitd_splitter_instance_t* instance, 
+typedef int (*splitd_splitter_class_update_scores_f)( splitd_splitter_instance_t* instance, 
                                                       splitd_chain_t* chain,
                                                       int* score, splitd_packet_t* packet );
 typedef int (*splitd_splitter_class_destroy_f)( splitd_splitter_instance_t* instance );
@@ -132,8 +132,8 @@ typedef struct splitd_splitter_class
     /* All of these functions take themselves as the first argument */
     splitd_splitter_class_init_f init;
 
-    /* Update the counts for the uplinks, called for each session */
-    splitd_splitter_class_update_counts_f update_counts;
+    /* Update the scores for the uplinks, called for each session */
+    splitd_splitter_class_update_scores_f update_scores;
 
     /* Cleanup this instance of a splitter */
     splitd_splitter_class_destroy_f destroy;
@@ -190,14 +190,14 @@ splitd_splitter_class_t* splitd_splitter_class_malloc( void );
 int
 splitd_splitter_class_init( splitd_splitter_class_t* splitter, char* name,
                             splitd_splitter_class_init_f init,
-                            splitd_splitter_class_update_counts_f update_counts,
+                            splitd_splitter_class_update_scores_f update_scores,
                             splitd_splitter_class_destroy_f destroy,
                             struct json_array* params );
 
 splitd_splitter_class_t* 
 splitd_splitter_class_create( char* name,
                               splitd_splitter_class_init_f init,
-                              splitd_splitter_class_update_counts_f update_counts,
+                              splitd_splitter_class_update_scores_f update_scores,
                               splitd_splitter_class_destroy_f destroy,
                               struct json_array* params );
 

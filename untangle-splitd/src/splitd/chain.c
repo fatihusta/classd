@@ -80,6 +80,8 @@ int splitd_chain_add( splitd_chain_t* chain, splitd_splitter_instance_t* instanc
         return errlog( ERR_WARNING, "Chain is already full, unable to add another instance.\n" );
     }
 
+    debug( 9, "Adding '%s' splitter class instance to chain at %d.\n", 
+           instance->splitter_class->name, chain->num_splitters );
     splitd_splitter_instance_t* dest = &chain->splitters[chain->num_splitters++];
     if ( splitd_splitter_instance_init( dest, &instance->config ) < 0 ) {
         return errlog( ERR_CRITICAL, "splitd_splitter_instance_init\n" );
@@ -110,6 +112,7 @@ int splitd_chain_mark_session( splitd_chain_t* chain, splitd_packet_t* packet )
         scores[c] = ( chain->config.uplink_map[c] == NULL ) ? -2000 : 1;
     }
 
+    debug( 11, "Running packet through %d splitters\n", chain->num_splitters );
     for ( int c = 0 ; c < chain->num_splitters ; c++ ) {
         splitd_splitter_instance_t* instance = &chain->splitters[c];
         splitd_splitter_class_t* splitter_class = instance->splitter_class;
@@ -118,14 +121,14 @@ int splitd_chain_mark_session( splitd_chain_t* chain, splitd_packet_t* packet )
             continue;
         }
 
-        splitd_splitter_class_update_counts_f update_counts = splitter_class->update_counts;
-        if ( update_counts == NULL ) {
-            errlog( ERR_WARNING, "The chain '%s' has a NULL update_counts.\n", splitter_class->name );
+        splitd_splitter_class_update_scores_f update_scores = splitter_class->update_scores;
+        if ( update_scores == NULL ) {
+            errlog( ERR_WARNING, "The chain '%s' has a NULL update_scores.\n", splitter_class->name );
             continue;
         }
 
-        if ( update_counts( instance, chain, scores, packet ) < 0 ) {
-            return errlog( ERR_CRITICAL, "%s->update_counts\n" );
+        if ( update_scores( instance, chain, scores, packet ) < 0 ) {
+            return errlog( ERR_CRITICAL, "%s->update_scores\n", splitter_class->name );
         }
     }
     

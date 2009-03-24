@@ -223,6 +223,8 @@ void *splitd_reader_donate( void* arg )
         debug( 11, "READER: epoll_wait received %d events\n", num_events );
 
         for ( c = 0 ; c < num_events ; c++ ) {
+            debug( 11, "READER: received event type: %d\n", events[c].data.u32 );
+
             switch( events[c].data.u32 ) {
             case _event_code_nfqueue:
                 debug( 11, "READER: received a queue event\n" );
@@ -257,7 +259,7 @@ void *splitd_reader_donate( void* arg )
     if ( close( epoll_fd ) < 0 ) perrlog( "close" );
     splitd_packet_raze( packet );
 
-    debug( 10, "READER: shtudown complete.\n" );
+    debug( 10, "READER: shutdown complete.\n" );
 
     return NULL;
 }
@@ -275,7 +277,7 @@ int splitd_reader_stop( splitd_reader_t* reader )
     int c = 0;
 
     for ( c = 0; c < SHUTDOWN_COUNT ; c++ ) {
-        debug( 11, "READER: Sending shutdown in mailbox\n" );
+        debug( 9, "READER: Sending shutdown in mailbox\n" );
         if ( mailbox_put( &reader->mailbox, (void*)&_globals.shutdown_message ) < 0 ) {
             return errlog( ERR_CRITICAL, "mailbox_put\n" );
         }
@@ -283,7 +285,7 @@ int splitd_reader_stop( splitd_reader_t* reader )
         usleep( SHUTDOWN_DELAY );
     }
     
-    debug( 11, "READER: Stopped after %d messages\n", c );
+    debug( 9, "READER: Stopped after %d messages\n", c );
     
     return 0;
 }
@@ -374,10 +376,13 @@ static int _handle_mailbox( splitd_reader_t* reader )
     {
         switch ( message->type ) {
         case _MESSAGE_SHUTDOWN:
+            debug( 9, "Received shutdown message, exiting\n" );
             reader->thread = 0;
             return 0;
             
         case _MESSAGE_CHAIN:
+            debug( 9, "Received a new chain\n" );
+
             if ( message->c.chain == NULL ) {
                 return errlogargs();
             }
@@ -386,6 +391,8 @@ static int _handle_mailbox( splitd_reader_t* reader )
             if ( reader->chain != NULL ) {
                 splitd_chain_destroy( reader->chain );
             }
+
+            debug( 9, "READER: New chain has %d items\n", message->c.chain->num_splitters );
             
             reader->chain = message->c.chain;
             return 1;
