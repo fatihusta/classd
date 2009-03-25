@@ -175,7 +175,7 @@ int splitd_manager_set_config( splitd_config_t* config )
     }
 
     if ( chain != NULL ) {
-        splitd_chain_destroy( chain );
+        splitd_chain_raze( chain );
     }
     
     if ( ret < 0 ) return errlog( ERR_CRITICAL, "_critical_section\n" );

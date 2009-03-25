@@ -44,7 +44,8 @@ int splitd_splitter_lib_base_online_splitter( splitd_splitter_class_t* splitter 
 /* All of these functions take themselves as the first argument */
 static int _init( splitd_splitter_instance_t* instance )
 {
-    if ( instance == NULL ) return errlogargs();
+    debug( 9, "Running online.init\n" );
+
     return 0;
 }
 
@@ -57,7 +58,7 @@ static int _update_scores( splitd_splitter_instance_t* instance, splitd_chain_t*
     if ( score == NULL ) return errlogargs();
     if ( packet == NULL ) return errlogargs();
 
-    debug( 11, "Running online update_scores\n" );
+    debug( 11, "Running online.update_scores\n" );
 
     return 0;
 }

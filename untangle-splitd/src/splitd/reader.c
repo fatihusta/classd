@@ -68,6 +68,8 @@ static int _handle_packet( splitd_reader_t* reader, splitd_packet_t* packet );
 
 static int _handle_mailbox( splitd_reader_t* reader );
 
+static int _handle_message_chain( splitd_chain_t* chain );
+
 /**
  * Allocate memory to store a reader structure.
  */
@@ -275,7 +277,7 @@ int splitd_reader_stop( splitd_reader_t* reader )
     if ( thread == 0 ) return errlog( ERR_WARNING, "The reader has already been stopped.\n" );
     
     int c = 0;
-
+    
     for ( c = 0; c < SHUTDOWN_COUNT ; c++ ) {
         debug( 9, "READER: Sending shutdown in mailbox\n" );
         if ( mailbox_put( &reader->mailbox, (void*)&_globals.shutdown_message ) < 0 ) {
@@ -332,8 +334,6 @@ static int _init_epoll( splitd_reader_t* reader )
 
 static int _handle_packet( splitd_reader_t* reader, splitd_packet_t* packet  )
 {
-    int verdict = NF_ACCEPT;
-
     int _critical_section() {
         if ( reader->chain == NULL ) return errlogargs();
 
@@ -359,7 +359,7 @@ static int _handle_packet( splitd_reader_t* reader, splitd_packet_t* packet  )
 
     int ret = _critical_section();
 
-    if ( splitd_nfqueue_set_verdict( packet, verdict ) < 0 ) {
+    if ( splitd_nfqueue_set_verdict_mark( packet, NF_ACCEPT, 1, packet->nfmark ) < 0 ) {
         ret = errlog( ERR_CRITICAL, "splitd_nfqueue_set_verdict\n" );
     }    
     
@@ -380,22 +380,27 @@ static int _handle_mailbox( splitd_reader_t* reader )
             reader->thread = 0;
             return 0;
             
-        case _MESSAGE_CHAIN:
-            debug( 9, "Received a new chain\n" );
-
-            if ( message->c.chain == NULL ) {
+        case _MESSAGE_CHAIN: {
+            splitd_chain_t* chain = message->c.chain;
+            if ( chain == NULL ) {
                 return errlogargs();
+            }
+            
+            if ( _handle_message_chain( chain ) < 0 ) {
+                splitd_chain_destroy( chain );
+                return errlog( ERR_CRITICAL, "_handle_message_chain\n" );
             }
             
             /* If necessary destroy the current chain */
             if ( reader->chain != NULL ) {
                 splitd_chain_destroy( reader->chain );
             }
-
-            debug( 9, "READER: New chain has %d items\n", message->c.chain->num_splitters );
             
-            reader->chain = message->c.chain;
+            /* Update the reader to use the new chain */
+            reader->chain = chain;
+
             return 1;
+        }
             
         default:
             return errlog( ERR_CRITICAL, "Unknown message type %d\n", message->type );
@@ -416,5 +421,31 @@ static int _handle_mailbox( splitd_reader_t* reader )
         }        
     }
 
+    return 0;
+}
+
+static int _handle_message_chain( splitd_chain_t* chain )
+{
+    debug( 9, "READER: Received a new chain\n" );
+    
+    int num_splitters = chain->num_splitters;
+    if ( num_splitters < 0 || num_splitters > SPLITD_MAX_SPLITTERS ) {
+        return errlog( ERR_CRITICAL, "Chain has an invalid number of splitters %d\n", num_splitters );
+    }
+    
+    /* Initialize all of the splitters in the chain */
+    debug( 9, "READER: New chain has %d items\n", num_splitters );
+    for ( int c = 0 ; c < num_splitters ; c++ ) {
+        splitd_splitter_instance_t* instance = &chain->splitters[c];
+        splitd_splitter_class_t* splitter_class = instance->splitter_class;
+        if ( splitter_class == NULL ) {
+            return errlog( ERR_WARNING, "Instance has NULL splitter class\n" );
+        }
+        if (( splitter_class->init != NULL ) &&
+            ( splitter_class->init( instance ) < 0 )) {
+            return errlog( ERR_WARNING, "%s->init failed\n", splitter_class->name  );
+        }
+    }
+    
     return 0;
 }

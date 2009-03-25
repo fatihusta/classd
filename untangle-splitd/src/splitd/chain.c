@@ -18,6 +18,11 @@
 #include "splitd/chain.h"
 #include "splitd/splitter_instance.h"
 
+#define _MARK_SHIFT  8
+#define _MARK_MASK   0x700
+
+static char* _print_scores( char* scores_str, int scores_str_len, int* scores );
+
 /**
  * Allocate memory to store a chain structure.
  */
@@ -104,6 +109,8 @@ int splitd_chain_mark_session( splitd_chain_t* chain, splitd_packet_t* packet )
     if ( chain->num_splitters > SPLITD_MAX_SPLITTERS ) return errlogargs();
 
     int scores[SPLITD_MAX_UPLINKS];
+    char scores_str[SPLITD_MAX_UPLINKS*8];
+    int scores_str_len = sizeof( scores_str );
     
     for ( int c = 0 ; c < SPLITD_MAX_UPLINKS ; c++ ) {
         /* Give all of the interfaces that are not mapped a -2000
@@ -130,8 +137,38 @@ int splitd_chain_mark_session( splitd_chain_t* chain, splitd_packet_t* packet )
         if ( update_scores( instance, chain, scores, packet ) < 0 ) {
             return errlog( ERR_CRITICAL, "%s->update_scores\n", splitter_class->name );
         }
+
+        debug( 11, "Packet[%d] scores are (%s)\n", c, _print_scores( scores_str, scores_str_len, scores ));
     }
+
+    /* Now mark it for one of the interfaces */
+    int total = 0;
+    for ( int c = 0 ; c < SPLITD_MAX_UPLINKS ; c++ ) {
+        if ( scores[c] < 0 ) continue;
+        total += scores[c];
+    }
+
+    packet->nfmark &= ~_MARK_MASK;
+
+    if ( total == 0 ) {
+        debug( 11, "All interfaces are not desired, not modifying the mark\n" );
+        return 0;
+    }
+
+    double ticket = (( rand() + 0.0 ) / RAND_MAX ) * total;
     
+    total = 0;
+    for ( int c = 0 ; c < SPLITD_MAX_UPLINKS ; c++ ) {
+        if ( scores[c] <= 0 ) continue;
+        total += scores[c];
+        if ( ticket <= total ) {
+            packet->has_nfmark = 1;
+            packet->nfmark |= (( c + 1 ) << _MARK_SHIFT & _MARK_MASK );
+
+            debug( 11, "Marking interface %d,%#010x\n", c + 1, packet->nfmark );
+            break;
+        }
+    }
     return 0;
 }
 
@@ -174,4 +211,16 @@ void splitd_chain_free( splitd_chain_t* chain )
     free( chain );
 }
 
+static char* _print_scores( char* scores_str, int scores_str_len, int* scores )
+{
+    int c = 0;
+    char num_str[7];
+    bzero( scores_str, scores_str_len );
+    for ( c = 0 ; c < SPLITD_MAX_UPLINKS ; c++ ) {
+        const char* format = ( c == 0 ) ? "%d" : ",%d";
+        snprintf( num_str, sizeof( num_str ), format, scores[c] );
+        strncat( scores_str, num_str, scores_str_len );
+    }
 
+    return scores_str;
+}

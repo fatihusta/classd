@@ -9,18 +9,18 @@
         "alpaca_interface_id" : 1
     },{
         "os_name" : "eth2",
-        "alpaca_interface_id" : 2
+        "alpaca_interface_id" : 3
     }],
     
     "splitters" : [{
-        /* Evenly distribute 50 points to each connection */
-        "splitter_name" : "basic",
-        "params" : {
-            "distribution" : [ 50, 50 ]
-        }
-    },{
         /* Disable all interfaces that are not online */
         "splitter_name" : "online",
         "params" : {}
+    },{
+        /* Evenly distribute 50 points to each connection */
+        "splitter_name" : "basic",
+        "params" : {
+            "scores" : [ 500, 50, 120 ]
+        }
     }]
 }

@@ -1,6 +1,6 @@
 #!/bin/dash
 
-FAILD_BIND_PORT=3003
+FAILD_BIND_PORT=3004
 
 if [ $# != 1  ]; then
     echo "USAGE: $0 <config file name>"

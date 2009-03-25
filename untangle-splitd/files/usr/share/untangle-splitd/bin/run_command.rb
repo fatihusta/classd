@@ -5,14 +5,14 @@ require "net/http"
 require "cgi"
 require "getoptlong"
 
-class ArpEater
+class SplitD
   def run_command( command, args = [], options = {} )
     host = options["host"]
     port = options["port"]
     path = options["path"]
     
     host = "127.0.0.1" if host.nil?
-    port = "3002" if port.nil?
+    port = "3004" if port.nil?
     path = "/" if path.nil?
     
     command_hash = {}
@@ -86,5 +86,5 @@ EOF
 end
 
 
-ArpEater.new.run_command( args.shift, args, options )
+SplitD.new.run_command( args.shift, args, options )
 
