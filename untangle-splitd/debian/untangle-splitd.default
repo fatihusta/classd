@@ -1,6 +1,29 @@
 
+## Libraries for the test classes.
+# SPLITD_LIB_DIR="/usr/lib/untangle-splitd/"
+
 ## Uncomment to change the default configuration file.
-FAILD_CONF_FILE=/etc/untangle-splitd.conf
+SPLITD_CONF_FILE=/etc/untangle-splitd.conf
+
+## Uncomment this to change the port splitd is bound to.
+## SPLITD_BIND_PORT="3003"
+
+## This is presently only used inside of the defaults script.
+SPLITD_LOG_DIR="/var/log/untangle-splitd"
 
 # The default debug level
-FAILD_DEBUG_LEVEL=1
+SPLITD_DEBUG_LEVEL=1
+
+## Change this to change where the monitor logs to.
+## SPLITD_LOG_MONITOR="${SPLITD_LOG_DIR}/monitor.log"
+
+## Change this to change the configuration file.
+## SPLITD_CONF_FILE="/etc/untangle-splitd.conf"
+
+## Change to use a diffent log file.
+## SPLITD_LOG_OUT="${SPLITD_LOG_DIR}/debug.log"
+
+## Change to use a different error logging file.
+## SPLITD_LOG_ERR="${SPLITD_LOG_DIR}/error.log"
+
+

@@ -151,7 +151,7 @@ int splitd_chain_mark_session( splitd_chain_t* chain, splitd_packet_t* packet )
     packet->nfmark &= ~_MARK_MASK;
 
     if ( total == 0 ) {
-        debug( 11, "All interfaces are not desired, not modifying the mark\n" );
+        debug( 11, "All interfaces are offline, not modifying the mark\n" );
         return 0;
     }
 

@@ -206,12 +206,13 @@ splitd_splitter_class_create( char* name,
  * Utility function to call a command and wait for the return code.
  * system() does some badnesss with regards to the signal handlers.
  */
-int splitd_libs_system( const char* path, const char* arg0, ... )
+int splitd_libs_system( const char* path, char* buffer, int buffer_len, const char* arg0, ... )
 {
     va_list argptr;
 
     if ( path == NULL ) return errlogargs();
     if ( arg0 == NULL ) return errlogargs();
+    if ( buffer != NULL && buffer_len <= 0 ) return errlogargs();
 
     int size = 0;
     va_start(argptr, arg0);

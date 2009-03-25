@@ -44,7 +44,6 @@ int splitd_splitter_lib_base_basic_splitter( splitd_splitter_class_t* splitter )
     return 0;
 }
 
-
 /* All of these functions take themselves as the first argument */
 static int _init( splitd_splitter_instance_t* instance )
 {
@@ -65,6 +64,11 @@ static int _init( splitd_splitter_instance_t* instance )
     int length = 0;
     if (( length = json_object_array_length( scores_json )) < 0 ) {
         return errlog( ERR_CRITICAL, "json_object_array_length\n" );
+    }
+
+    if ( length > SPLITD_MAX_UPLINKS ) {
+        errlog( ERR_WARNING, "Score array is too long (%d), limiting to %d\n", length, SPLITD_MAX_UPLINKS );
+        length = SPLITD_MAX_UPLINKS;
     }
 
     struct json_object* item_json = NULL;
@@ -120,6 +124,9 @@ static int _update_scores( splitd_splitter_instance_t* instance, splitd_chain_t*
 static int _destroy( splitd_splitter_instance_t* instance )
 {
     if ( instance == NULL ) return errlogargs();
+
+    if ( instance-> ptr != NULL ) free( instance->ptr );
+    instance->ptr = NULL;
 
     return 0;
 }
