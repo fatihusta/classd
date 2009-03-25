@@ -124,7 +124,7 @@ class OSLibrary::Debian::ArpEaterManager < OSLibrary::ArpEaterManager
                               { "Content-Type" => "multipart/form-data; boundary=#{PostBoundary}" } )
         return ActiveSupport::JSON.decode( response.read_body )
       end
-    rescue Errno::ECONNREFUSED, ActiveSupport::JSON::ParserError
+    rescue Errno::ECONNREFUSED, ActiveSupport::JSON::ParseError
       return { "status" => STATUS_ERR }
     end
   end
