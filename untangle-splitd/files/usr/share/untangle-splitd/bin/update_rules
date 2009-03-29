@@ -1,8 +1,30 @@
 #!/bin/dash
 
+UNTANGLE_PRIORITY_BASE="36"
+UNTANGLE_PRIORITY_SPLITD="366"
+
+UNTANGLE_SPLITD_SHIFT=8
+UNTANGLE_SPLITD_MASK=0xE00
+
+IP_RT_TABLE_BASE=64
+
+expected_splitd_ip_rules()
+{
+    local t_index
+    for t_index in `seq 1 8` ; do
+        printf "${UNTANGLE_PRIORITY_SPLITD}%02d:\tfrom all fwmark %#x/%#x lookup uplink.%d \n" ${t_index} \
+            $(( ${t_index} << ${UNTANGLE_SPLITD_SHIFT} )) ${UNTANGLE_SPLITD_MASK} \
+            ${t_index}
+    done
+}
+
 ## This script updates the state of the system so that SplitD can
 ## route traffic through the different interfaces.
+update_splitd_ip_rules()
+{
+    for t_priority in `ip rule show | awk "/^${UNTANGLE_PRIORITY_BASE}[0-9][0-9][0-9]:/ { sub( \":\", \"\", \\$1 ) ; print \\$1 }"` ; do
+        echo ${t_priority}
+    done
+}
 
-
-
-
+expected_splitd_ip_rules

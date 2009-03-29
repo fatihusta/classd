@@ -8,8 +8,8 @@ ourInit() {
     fi
 }
 
-FAILD_CONFIG_FILE="/etc/untangle-splitd.conf"
-FAILD_DEFAULT_CONFIG="/usr/share/untangle-splitd/sample-config/default.js"
+SPLITD_CONFIG_FILE="/etc/untangle-splitd.conf"
+SPLITD_DEFAULT_CONFIG="/usr/share/untangle-splitd/sample-config/default.js"
 
 LOG_FILE=/var/log/untangle-splitd/debug.log
 
@@ -17,9 +17,9 @@ mkdir -p `dirname ${LOG_FILE}`
 
 echo "[`date`] DEBUG debian upgrade." >> ${LOG_FILE}
 
-if [ ! -f ${FAILD_CONFIG_FILE} ]; then
-    echo "Copying in ${FAILD_DEFAULT_CONFIG} to ${FAILD_CONFIG_FILE}"
-    cp ${FAILD_DEFAULT_CONFIG} ${FAILD_CONFIG_FILE}
+if [ ! -f ${SPLITD_CONFIG_FILE} ]; then
+    echo "Copying in ${SPLITD_DEFAULT_CONFIG} to ${SPLITD_CONFIG_FILE}"
+    cp ${SPLITD_DEFAULT_CONFIG} ${SPLITD_CONFIG_FILE}
 fi
 
 if [ -x "/etc/init.d/untangle-splitd" ]; then

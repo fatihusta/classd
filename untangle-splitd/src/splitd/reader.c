@@ -157,6 +157,11 @@ void splitd_reader_destroy( splitd_reader_t* reader )
     }
     
     if ( pthread_mutex_destroy( &reader->mutex ) < 0 ) perrlog( "pthread_mutex_destroy" );
+
+    /* Destroy the queue */
+    if ( reader->nfqueue.nfq_fd > 0 ) {
+        splitd_nfqueue_destroy( &reader->nfqueue );
+    }
     
     if ( mailbox_destroy( &reader->mailbox ) < 0 ) {
         errlog( ERR_CRITICAL, "mailbox_destroy\n" );
@@ -280,7 +285,7 @@ void *splitd_reader_donate( void* arg )
     if ( pthread_mutex_lock( &reader->mutex ) < 0 ) perrlog_null( "pthread_mutex_lock" );
     reader->thread = 0;
     if ( pthread_mutex_unlock( &reader->mutex ) < 0 ) perrlog_null( "pthread_mutex_unlock" );
-    
+        
     if ( close( epoll_fd ) < 0 ) perrlog( "close" );
     splitd_packet_raze( packet );
 

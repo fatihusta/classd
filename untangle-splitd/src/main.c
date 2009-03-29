@@ -44,7 +44,7 @@
 #define FLAG_ALIVE      0x543F00D
 
 /* Shield is 46 */
-#define DEFAULT_QUEUE_NUM 47
+#define DEFAULT_QUEUE_NUM 3004
 
 static struct
 {
@@ -247,6 +247,7 @@ static int _usage( char *name )
     fprintf( stderr, "\t-e <log-file>: File to place standard error(more useful with -d).\n" );
     fprintf( stderr, "\t-l <debug-level>: Debugging level.\n" );
     fprintf( stderr, "\t-t <lib-dir>: Directory containing all of the test libraries.\n" );
+    fprintf( stderr, "\t-q <queue-number>: Queue number to use for queueing packets.\n" );
     fprintf( stderr, "\t-h: Halp (show this message)\n" );
     return -1;
 }

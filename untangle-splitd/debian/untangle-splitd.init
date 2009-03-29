@@ -12,7 +12,7 @@
 
 . /lib/lsb/init-functions
 
-DESC="Untangle FailD"
+DESC="Untangle SplitD"
 
 DAEMON_NAME="splitd"
 
@@ -20,6 +20,8 @@ MONITOR="monitor.splitd"
 MONITOR_SCRIPT=/usr/share/untangle-splitd/bin/${MONITOR}
 
 PID_FILE="/var/run/untangle-splitd.pid"
+
+test -f /etc/default/untangle-splitd && . /etc/default/untangle-splitd
 
 start()
 {

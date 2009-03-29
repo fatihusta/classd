@@ -1,8 +1,17 @@
+## Path to the splitd binary.
+# SPLITD_BIN=/usr/bin/splitd
+
+## Javascript file that is update with the status of online status of each interface.
+## SPLITD_ONLINE_FILE="/etc/untangle-splitd/online.js"
+
 ## Libraries for the splitters.
 # SPLITD_LIB_DIR="/usr/lib/untangle-splitd/"
 
 ## Uncomment this to change the port splitd is bound to.
 ## SPLITD_BIND_PORT="3004"
+
+## Uncomment this to change the queue number that splitd uses.
+## SPLITD_QUEUE_NUM="3004"
 
 ## This is presently only used inside of the defaults script.
 SPLITD_LOG_DIR="/var/log/untangle-splitd"
@@ -21,5 +30,4 @@ SPLITD_DEBUG_LEVEL=1
 
 ## Change to use a different error logging file.
 ## SPLITD_LOG_ERR="${SPLITD_LOG_DIR}/error.log"
-
 
