@@ -300,7 +300,7 @@ void splitd_nfqueue_free( splitd_nfqueue_t* nfqueue )
 int  splitd_nfqueue_get_fd( splitd_nfqueue_t* nfqueue )
 {
     if ( nfqueue == NULL ) return errlogargs();
-    if ( nfqueue->nfq_fd <= 0 ) return errlog( ERR_CRITICAL, "NFQUEUE: unitialized." );
+    if ( nfqueue->nfq_fd <= 0 ) return errlog( ERR_CRITICAL, "NFQUEUE: unitialized.\n" );
     return nfqueue->nfq_fd;
 }
 

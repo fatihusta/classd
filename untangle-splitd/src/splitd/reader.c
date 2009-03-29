@@ -44,7 +44,9 @@ struct _message
 {
     enum {
         _MESSAGE_SHUTDOWN,
-        _MESSAGE_CHAIN
+        _MESSAGE_CHAIN,
+        _MESSAGE_ENABLE,
+        _MESSAGE_DISABLE
     } type;
 
     /* c for contents. */
@@ -56,9 +58,20 @@ struct _message
 struct 
 {
     struct _message shutdown_message;
+    struct _message enable_message;
+    struct _message disable_message;
 } _globals = {
     .shutdown_message = {
-        .type = _MESSAGE_SHUTDOWN
+        .type = _MESSAGE_SHUTDOWN,
+        .c.chain = NULL
+    },
+    .enable_message = {
+        .type = _MESSAGE_ENABLE,
+        .c.chain = NULL
+    },
+    .disable_message = {
+        .type = _MESSAGE_DISABLE,
+        .c.chain = NULL
     }
 };
 
@@ -66,9 +79,15 @@ static int _init_epoll( splitd_reader_t* reader );
 
 static int _handle_packet( splitd_reader_t* reader, splitd_packet_t* packet );
 
-static int _handle_mailbox( splitd_reader_t* reader );
+static int _handle_mailbox( splitd_reader_t* reader, int epoll_fd );
 
 static int _handle_message_chain( splitd_chain_t* chain );
+
+static int _handle_message_enable( splitd_reader_t* reader, int epoll_fd );
+
+static int _handle_message_disable( splitd_reader_t* reader, int epoll_fd );
+
+static int _send_message( splitd_reader_t* reader, struct _message *message );
 
 /**
  * Allocate memory to store a reader structure.
@@ -85,16 +104,16 @@ splitd_reader_t* splitd_reader_malloc( void )
 /**
  * @param bucket_size Size of the memory block to store the requested reader
  */
-int splitd_reader_init( splitd_reader_t* reader, splitd_nfqueue_t* nfqueue )
+int splitd_reader_init( splitd_reader_t* reader, u_int16_t queue_num )
                         
 {
     if ( reader == NULL ) return errlogargs();
 
-    if ( nfqueue == NULL ) return errlogargs();
+    if ( queue_num == 0 ) return errlogargs();
     
     bzero( reader, sizeof( splitd_reader_t ));
 
-    reader->nfqueue = nfqueue;
+    reader->queue_num = queue_num;
 
     if ( pthread_mutex_init( &reader->mutex, NULL ) < 0 ) return perrlog( "pthread_mutex_init" );
     
@@ -108,7 +127,7 @@ int splitd_reader_init( splitd_reader_t* reader, splitd_nfqueue_t* nfqueue )
 /**
  * @param bucket_size Size of the memory block to store the requested reader
  */
-splitd_reader_t* splitd_reader_create( splitd_nfqueue_t* nfqueue )
+splitd_reader_t* splitd_reader_create( u_int16_t queue_num )
 {
     splitd_reader_t* reader = NULL;
         
@@ -116,7 +135,7 @@ splitd_reader_t* splitd_reader_create( splitd_nfqueue_t* nfqueue )
         return errlog_null( ERR_CRITICAL, "splitd_reader_malloc\n" );
     }
 
-    if ( splitd_reader_init( reader, nfqueue ) < 0 ) {
+    if ( splitd_reader_init( reader, queue_num ) < 0 ) {
         splitd_reader_raze( reader );
         return errlog_null( ERR_CRITICAL, "splitd_reader_init\n" );
     }
@@ -201,13 +220,16 @@ void *splitd_reader_donate( void* arg )
     int num_events;
     int c;
 
-    if (( epoll_fd = _init_epoll( reader )) < 0) return errlog_null( ERR_CRITICAL, "_init_epoll\n" );
+    if (( epoll_fd = _init_epoll( reader )) < 0) {
+        reader->thread = 0;
+        return errlog_null( ERR_CRITICAL, "_init_epoll\n" );
+    }
 
     /* Since there is only one thread reading and using this queue, it
      * is safe to reuse the allocated packet. */
 
     splitd_packet_t* packet;
-    if (( packet = splitd_packet_create( reader->nfqueue->copy_size )) < 0 ) {
+    if (( packet = splitd_packet_create( 0xFFFF )) < 0 ) {
         if ( close( epoll_fd ) < 0 ) perrlog( "close" );
         return errlog_null( ERR_CRITICAL, "splitd_packet_create\n" );
     }
@@ -216,6 +238,7 @@ void *splitd_reader_donate( void* arg )
 
     while ( reader->thread == thread )
     {
+        debug( 10, "READER: reader thread %d\n", reader->thread );
         if (( num_events = epoll_wait( epoll_fd, events, EPOLL_MAX_EVENTS, -1 )) < 0 ) {
             perrlog( "epoll_wait" );
             usleep( 10000 );
@@ -230,7 +253,7 @@ void *splitd_reader_donate( void* arg )
             switch( events[c].data.u32 ) {
             case _event_code_nfqueue:
                 debug( 11, "READER: received a queue event\n" );
-                if ( splitd_nfqueue_read( reader->nfqueue, packet ) < 0 ) {
+                if ( splitd_nfqueue_read( &reader->nfqueue, packet ) < 0 ) {
                     errlog( ERR_CRITICAL, "splitd_nfqueue_read\n" );
                     usleep( 10000 );
                     break;
@@ -245,7 +268,7 @@ void *splitd_reader_donate( void* arg )
                 break;
             case _event_code_mailbox:
                 debug( 11, "READER : _event_code_mailbox\n" );
-                if ( _handle_mailbox( reader ) < 0 ) {
+                if ( _handle_mailbox( reader, epoll_fd ) < 0 ) {
                     errlog( ERR_CRITICAL, "_handle_mailbox\n" );
                     usleep( 10000 );
                     break;
@@ -266,6 +289,36 @@ void *splitd_reader_donate( void* arg )
     return NULL;
 }
 
+int splitd_reader_enable( splitd_reader_t* reader )
+{
+    if ( reader == NULL ) return errlogargs();
+    int thread = reader->thread;
+    if ( thread == 0 ) return errlog( ERR_WARNING, "The reader has already been stopped.\n" );
+    
+    debug( 9, "READER: Sending enable message\n" );
+
+    if ( _send_message( reader, &_globals.enable_message ) < 0 ) {
+        return errlog( ERR_CRITICAL, "_send_message\n" );
+    }
+    
+    return 0;
+}
+
+int splitd_reader_disable( splitd_reader_t* reader )
+{
+    if ( reader == NULL ) return errlogargs();
+    int thread = reader->thread;
+    if ( thread == 0 ) return errlog( ERR_WARNING, "The reader has already been stopped.\n" );
+    
+    debug( 9, "READER: Sending disable message\n" );
+
+    if ( _send_message( reader, &_globals.disable_message ) < 0 ) {
+        return errlog( ERR_CRITICAL, "_send_message\n" );
+    }
+    
+    return 0;
+}
+
 
 /* Stop a running thread for a reader */
 int splitd_reader_stop( splitd_reader_t* reader )
@@ -279,10 +332,11 @@ int splitd_reader_stop( splitd_reader_t* reader )
     int c = 0;
     
     for ( c = 0; c < SHUTDOWN_COUNT ; c++ ) {
-        debug( 9, "READER: Sending shutdown in mailbox\n" );
-        if ( mailbox_put( &reader->mailbox, (void*)&_globals.shutdown_message ) < 0 ) {
-            return errlog( ERR_CRITICAL, "mailbox_put\n" );
+        debug( 9, "READER: Sending shutdown in mailbox %d\n", reader->thread );
+        if ( _send_message( reader, &_globals.shutdown_message ) < 0 ) {
+            return errlog( ERR_CRITICAL, "_send_message\n" );
         }
+
         if ( reader->thread == 0 ) break;
         usleep( SHUTDOWN_DELAY );
     }
@@ -296,23 +350,16 @@ static int _init_epoll( splitd_reader_t* reader )
 {
     int epoll_fd = -1;
         
-    int _critical_section() {
+    int _critical_section() {        
         struct epoll_event epoll_event = {
             .events = EPOLLIN|EPOLLPRI|EPOLLERR|EPOLLHUP,
             .data.u32 = _event_code_nfqueue
         };
 
-        int fd;
-
-        if (( fd = splitd_nfqueue_get_fd( reader->nfqueue )) < 0 ) {
-            return errlog( ERR_CRITICAL, "splitd_nfqueue_get_fd\n" );
-        }
-        
-        if ( epoll_ctl( epoll_fd, EPOLL_CTL_ADD, fd, &epoll_event ) < 0 ) return perrlog( "epoll_ctl" );
-        
         epoll_event.events = EPOLLIN|EPOLLPRI|EPOLLERR|EPOLLHUP;
         epoll_event.data.u32 = _event_code_mailbox;
         
+        int fd;
         if (( fd = mailbox_get_pollable_event( &reader->mailbox )) < 0 ) {
             return errlog( ERR_CRITICAL, "mailbox_get_pollable_event\n" );
         }
@@ -367,7 +414,7 @@ static int _handle_packet( splitd_reader_t* reader, splitd_packet_t* packet  )
     return ret;
 }
 
-static int _handle_mailbox( splitd_reader_t* reader )
+static int _handle_mailbox( splitd_reader_t* reader, int epoll_fd )
 {
     struct _message* message = NULL;
     
@@ -399,8 +446,22 @@ static int _handle_mailbox( splitd_reader_t* reader )
             /* Update the reader to use the new chain */
             reader->chain = chain;
 
-            return 1;
+            return 0;
         }
+
+            
+        case _MESSAGE_ENABLE:
+            if ( _handle_message_enable( reader, epoll_fd ) < 0 ) {
+                return errlog( ERR_CRITICAL, "_handle_message_enable\n" );
+            }
+            
+            return 0;
+            
+        case _MESSAGE_DISABLE:
+            if ( _handle_message_disable( reader, epoll_fd ) < 0 ) {
+                return errlog( ERR_CRITICAL, "_handle_message_disable\n" );
+            }
+            return 0;
             
         default:
             return errlog( ERR_CRITICAL, "Unknown message type %d\n", message->type );
@@ -415,7 +476,7 @@ static int _handle_mailbox( splitd_reader_t* reader )
         ret = _critical_section();
         if ( pthread_mutex_unlock ( &reader->mutex ) < 0 ) perrlog( "pthread_mutex_unlock" );
         
-        if ( ret != 0 ) free( message );
+        free( message );
         if ( ret < 0 ) {
             return errlog( ERR_CRITICAL, "_critical_section\n" );
         }        
@@ -448,4 +509,104 @@ static int _handle_message_chain( splitd_chain_t* chain )
     }
     
     return 0;
+}
+
+static int _handle_message_enable( splitd_reader_t* reader, int epoll_fd )
+{
+    splitd_nfqueue_t* nfqueue = &reader->nfqueue;
+
+    if ( reader->queue_num == 0 ) return errlogargs();
+
+    /* Check if the queue is running on the right queue number */
+    if ( nfqueue->queue_num == reader->queue_num ) {
+        debug( 9, "Queue is already running on queue %d\n", reader->queue_num );
+        return 0;
+    }
+
+    struct epoll_event epoll_event = {
+        .events = EPOLLIN|EPOLLPRI|EPOLLERR|EPOLLHUP,
+        .data.u32 = _event_code_nfqueue
+    };
+
+    /* Destroy the queue if it exists (it is bound to the incorrect queue number) */
+    int fd = reader->nfqueue.nfq_fd;
+    if ( fd > 0 ) {
+        debug( 9, "Destroying queue, bound to incorrect queue number (%d,%d).\n", reader->queue_num, 
+               nfqueue->queue_num );
+
+        if ( epoll_ctl( epoll_fd, EPOLL_CTL_DEL, fd, &epoll_event ) < 0 ) {
+            return errlog( ERR_CRITICAL, "epoll_ctl\n" );
+        }
+
+        splitd_nfqueue_destroy( &reader->nfqueue );
+    }
+    
+    /* Enable the queue */
+    if ( splitd_nfqueue_init( &reader->nfqueue, reader->queue_num,
+                              NFQNL_COPY_PACKET | NFQNL_COPY_UNTANGLE_MODE, 0xFFFF ) < 0 ) {
+        return errlog( ERR_CRITICAL, "splitd_nfqueue_init\n" );
+    }
+    
+    /* Add the queue to epoll */    
+    if (( fd = splitd_nfqueue_get_fd( &reader->nfqueue )) < 0 ) {
+        return errlog( ERR_CRITICAL, "splitd_nfqueue_get_fd\n" );
+    }
+    
+    if ( epoll_ctl( epoll_fd, EPOLL_CTL_ADD, fd, &epoll_event ) < 0 ) return perrlog( "epoll_ctl" );
+    
+    return 0;
+}
+
+static int _handle_message_disable( splitd_reader_t* reader, int epoll_fd )
+{
+    splitd_nfqueue_t* nfqueue = &reader->nfqueue;
+
+    if ( reader->queue_num == 0 ) return errlogargs();
+
+    /* Check if the queue is running on the right queue number */
+    if ( nfqueue->nfq_fd == 0 ) {
+        debug( 9, "Queue is already disabled %d\n", nfqueue->nfq_fd );
+        return 0;
+    }
+
+    struct epoll_event epoll_event = {
+        .events = EPOLLIN|EPOLLPRI|EPOLLERR|EPOLLHUP,
+        .data.u32 = _event_code_nfqueue
+    };
+
+    if ( epoll_ctl( epoll_fd, EPOLL_CTL_DEL, nfqueue->nfq_fd, &epoll_event ) < 0 ) {
+        return errlog( ERR_CRITICAL, "epoll_ctl\n" );
+    }
+
+    /* Destroy the queue if it exists (it is bound to the incorrect queue number) */
+    debug( 9, "Destroying queue, bound to incorrect queue number (%d,%d).\n", reader->queue_num, 
+           nfqueue->queue_num );
+
+    splitd_nfqueue_destroy( &reader->nfqueue );
+
+    return 0;
+}
+
+static int _send_message( splitd_reader_t* reader, struct _message *message )
+{
+    struct _message* message_copy = NULL;
+
+    if ( reader->thread == 0 ) {
+        errlog( ERR_WARNING, "The reader has already been stopped.\n" );
+        return 0;
+    }
+
+    if (( message_copy = calloc( 1, sizeof( struct _message ))) == NULL ) {
+        return errlogmalloc();
+    }
+    
+    memcpy( message_copy, message, sizeof( struct _message ));
+
+    if ( mailbox_put( &reader->mailbox, (void*)message_copy ) < 0 ) {
+        return errlog( ERR_CRITICAL, "mailbox_put\n" );
+    }
+
+    return 0;
+
+    
 }

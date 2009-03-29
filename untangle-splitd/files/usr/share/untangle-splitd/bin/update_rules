@@ -1,0 +1,8 @@
+#!/bin/dash
+
+## This script updates the state of the system so that SplitD can
+## route traffic through the different interfaces.
+
+
+
+

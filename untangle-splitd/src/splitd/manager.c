@@ -87,6 +87,22 @@ int splitd_manager_set_config( splitd_config_t* config )
         debug( 9, "Loading new config\n" );
 
         if ( _globals.reader == NULL ) return errlog( ERR_CRITICAL, "The reader is not initialized.\n" );
+
+        if ( config->is_enabled == 0 ) {
+            if ( splitd_reader_disable( _globals.reader ) < 0 ) {
+                return errlog( ERR_CRITICAL, "splitd_reader_disable\n" );
+            }
+
+            if ( splitd_config_copy( &_globals.config, config ) < 0 ) {
+                return errlog( ERR_CRITICAL, "splitd_config_copy\n" );
+            }
+            
+            return 0;
+        }
+
+        if ( splitd_reader_enable( _globals.reader ) < 0 ) {
+            return errlog( ERR_CRITICAL, "splitd_reader_enable\n" );
+        }
         
         int c = 0;
         

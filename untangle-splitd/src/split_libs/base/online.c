@@ -156,6 +156,12 @@ static int _update_online_status( _config_t* config )
             return 0;
         }
         
+        if ( is_error( online_status_json )) {
+            online_status_json = NULL;
+            errlog( ERR_WARNING, "json_object_from_file\n" );
+            return 0;
+        }
+        
         struct json_object* is_online_json = NULL;
         if ( json_object_utils_get_array( online_status_json, "is_online", &is_online_json ) < 0 ) {
             return errlog( ERR_CRITICAL, "json_object_utils_get_array\n" );

@@ -1,12 +1,8 @@
-
-## Libraries for the test classes.
+## Libraries for the splitters.
 # SPLITD_LIB_DIR="/usr/lib/untangle-splitd/"
 
-## Uncomment to change the default configuration file.
-SPLITD_CONF_FILE=/etc/untangle-splitd.conf
-
 ## Uncomment this to change the port splitd is bound to.
-## SPLITD_BIND_PORT="3003"
+## SPLITD_BIND_PORT="3004"
 
 ## This is presently only used inside of the defaults script.
 SPLITD_LOG_DIR="/var/log/untangle-splitd"
@@ -18,7 +14,7 @@ SPLITD_DEBUG_LEVEL=1
 ## SPLITD_LOG_MONITOR="${SPLITD_LOG_DIR}/monitor.log"
 
 ## Change this to change the configuration file.
-## SPLITD_CONF_FILE="/etc/untangle-splitd.conf"
+## SPLITD_CONF_FILE="/etc/untangle-splitd/config.js"
 
 ## Change to use a diffent log file.
 ## SPLITD_LOG_OUT="${SPLITD_LOG_DIR}/debug.log"

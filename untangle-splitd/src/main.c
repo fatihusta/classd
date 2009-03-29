@@ -35,7 +35,6 @@
 
 #include "splitd/manager.h"
 #include "splitd/uplink.h"
-#include "splitd/nfqueue.h"
 
 #define DEFAULT_CONFIG_FILE  "/etc/untangle-splitd/config.js"
 #define DEFAULT_DEBUG_LEVEL  1
@@ -57,7 +56,6 @@ static struct
     int port;
     int debug_level;
     int queue_num;
-    splitd_nfqueue_t nfqueue;
     splitd_reader_t reader;
     int daemonize;
     json_server_t json_server;
@@ -293,13 +291,13 @@ static int _init( int argc, char** argv )
         return errlog( ERR_CRITICAL, "splitd_nfqueue_global_init\n" );
     }
 
-    if ( splitd_nfqueue_init( &_globals.nfqueue, _globals.queue_num,
-                              NFQNL_COPY_PACKET | NFQNL_COPY_UNTANGLE_MODE, 0xFFFF ) < 0 ) {
-        return errlog( ERR_CRITICAL, "splitd_nfqueue_init\n" );
+    if ( splitd_reader_init( &_globals.reader, _globals.queue_num ) < 0 ) {
+        return errlog( ERR_CRITICAL, "barfight_bouncer_reader_init\n" );
     }
 
-    if ( splitd_reader_init( &_globals.reader, &_globals.nfqueue ) < 0 ) {
-        return errlog( ERR_CRITICAL, "barfight_bouncer_reader_init\n" );
+    pthread_t thread;
+    if ( pthread_create( &thread, &uthread_attr.other.medium, splitd_reader_donate, &_globals.reader )) {
+        return perrlog( "pthread_create" );
     }
 
     if ( splitd_manager_init( &config, &_globals.reader ) < 0 ) {
@@ -346,11 +344,6 @@ static int _init( int argc, char** argv )
 
     if ( _globals.daemon == NULL ) return errlog( ERR_CRITICAL, "MHD_start_daemon: %s\n", strerror(errno));
 
-    pthread_t thread;
-    if ( pthread_create( &thread, &uthread_attr.other.medium, splitd_reader_donate, &_globals.reader )) {
-        return perrlog( "pthread_create" );
-    }
-
     return 0;
 }
 
@@ -369,9 +362,6 @@ static void _destroy( void )
 
     splitd_reader_destroy( &_globals.reader );
     
-    /* Cleanup the queue */
-    splitd_nfqueue_destroy( &_globals.nfqueue );
-
     splitd_nfqueue_global_destroy();
 
     /* XXX can hang indefinitely */

@@ -22,13 +22,16 @@
 typedef struct
 {
     /* This is the queue to read from */
-    splitd_nfqueue_t* nfqueue;
+    splitd_nfqueue_t nfqueue;
 
     /* Mailbox used to send shutdown messages and new chains */
     mailbox_t mailbox;
 
     /* The thread that is running this reader. */
-    pthread_t thread;
+    volatile pthread_t thread;
+
+    /* The queue that the NFQUEUE should use */
+    u_int16_t queue_num;
 
     /* The chain that determines how to allocate the packets. */
     splitd_chain_t* chain;
@@ -45,12 +48,12 @@ splitd_reader_t* splitd_reader_malloc( void );
 /**
  * @param nfqueue The queue to read from.
  */
-int splitd_reader_init( splitd_reader_t* reader, splitd_nfqueue_t* nfqueue );
+int splitd_reader_init( splitd_reader_t* reader, u_int16_t queue_num );
 
 /**
  * @param nfqueue The queue to read from.
  */
-splitd_reader_t* splitd_reader_create( splitd_nfqueue_t* nfqueue );
+splitd_reader_t* splitd_reader_create( u_int16_t queue_num );
 
 void splitd_reader_raze( splitd_reader_t* reader );
 void splitd_reader_destroy( splitd_reader_t* reader );
@@ -64,6 +67,12 @@ int splitd_reader_stop( splitd_reader_t* reader );
 
 /* Update the chain that the reader is using */
 int splitd_reader_send_chain( splitd_reader_t* reader, splitd_chain_t* chain );
+
+/* Enable a reader if it is not enabled (asynchronous) */
+int splitd_reader_enable( splitd_reader_t* reader );
+
+/* Disable a reader if it is not disabled (asynchronous) */
+int splitd_reader_disable( splitd_reader_t* reader );
 
 #endif // #ifndef __SPLITD_READER_H_
 
