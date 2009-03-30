@@ -17,7 +17,6 @@
         "splitter_name" : "online",
         "params" : {}
     },{
-        /* Evenly distribute 50 points to each connection */
         "splitter_name" : "basic",
         "params" : {
             "scores" : [ 500, 50, 120 ]
