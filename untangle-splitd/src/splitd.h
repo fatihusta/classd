@@ -201,4 +201,6 @@ splitd_splitter_class_create( char* name,
                               splitd_splitter_class_destroy_f destroy,
                               struct json_array* params );
 
+int splitd_libs_system( const char* path, const char* arg0, ... );
+
 #endif // __SPLITD_H_

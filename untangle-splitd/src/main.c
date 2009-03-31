@@ -451,7 +451,6 @@ static int _set_signals( void )
      sigaction( SIGINT,  &signal_action, NULL );
     
      signal_action.sa_handler = SIG_IGN;
-     sigaction( SIGCHLD, &signal_action, NULL );
      sigaction( SIGPIPE, &signal_action, NULL );
     
      return 0;

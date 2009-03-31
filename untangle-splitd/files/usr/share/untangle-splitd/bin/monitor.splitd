@@ -43,6 +43,8 @@ reap_child()
         kill -$1 ${SPLITD_PID}
         wait ${SPLITD_PID}
         echo "[`date`] SplitD Stopped    (monitor: $$) (splitd: $SPLITD_PID)"
+
+        /etc/init.d/untangle-net-alpaca-iptables restart
     fi
 
     exit 0

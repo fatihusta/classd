@@ -35,6 +35,10 @@
 /* Number of useconds to wait in between sending shutdown signals. */
 #define SHUTDOWN_DELAY 200000
 
+/* Script to update iptables rules. */
+#define UPDATE_IPTABLES_DEFAULT "/usr/share/untangle-splitd/bin/update_iptables"
+#define UPDATE_IPTABLES_ENV     "SPLITD_UPDATE_IPTABLES"
+
 enum {
     _event_code_nfqueue,
     _event_code_mailbox
@@ -88,6 +92,8 @@ static int _handle_message_enable( splitd_reader_t* reader, int epoll_fd );
 static int _handle_message_disable( splitd_reader_t* reader, int epoll_fd );
 
 static int _send_message( splitd_reader_t* reader, struct _message *message );
+
+static int _run_update_iptables( void );
 
 /**
  * Allocate memory to store a reader structure.
@@ -558,6 +564,10 @@ static int _handle_message_enable( splitd_reader_t* reader, int epoll_fd )
     }
     
     if ( epoll_ctl( epoll_fd, EPOLL_CTL_ADD, fd, &epoll_event ) < 0 ) return perrlog( "epoll_ctl" );
+
+    if ( _run_update_iptables() < 0 ) {
+        return errlog( ERR_CRITICAL, "_run_update_iptables\n" );
+    }
     
     return 0;
 }
@@ -569,7 +579,7 @@ static int _handle_message_disable( splitd_reader_t* reader, int epoll_fd )
     if ( reader->queue_num == 0 ) return errlogargs();
 
     /* Check if the queue is running on the right queue number */
-    if ( nfqueue->nfq_fd == 0 ) {
+    if ( nfqueue->nfq_fd <= 0 ) {
         debug( 9, "Queue is already disabled %d\n", nfqueue->nfq_fd );
         return 0;
     }
@@ -584,10 +594,14 @@ static int _handle_message_disable( splitd_reader_t* reader, int epoll_fd )
     }
 
     /* Destroy the queue if it exists (it is bound to the incorrect queue number) */
-    debug( 9, "Destroying queue, bound to incorrect queue number (%d,%d).\n", reader->queue_num, 
+    debug( 9, "Destroying queue, received disable message.\n", reader->queue_num, 
            nfqueue->queue_num );
 
     splitd_nfqueue_destroy( &reader->nfqueue );
+
+    if ( _run_update_iptables() < 0 ) {
+        return errlog( ERR_CRITICAL, "_run_update_iptables\n" );
+    }
 
     return 0;
 }
@@ -612,6 +626,15 @@ static int _send_message( splitd_reader_t* reader, struct _message *message )
     }
 
     return 0;
+}
 
-    
+static int _run_update_iptables( void )
+{
+    char *cmd_name = getenv( UPDATE_IPTABLES_ENV );
+    if ( cmd_name == NULL ) cmd_name = UPDATE_IPTABLES_DEFAULT;
+    if ( splitd_libs_system( cmd_name, cmd_name, NULL ) < 0 ) {
+        return errlog( ERR_CRITICAL, "splitd_libs_system\n" );
+    }
+
+    return 0;
 }

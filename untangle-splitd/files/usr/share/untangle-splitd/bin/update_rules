@@ -95,7 +95,7 @@ is_queue_open || {
 }
 
 if [ "`expected_splitd_ip_rules | md5sum`" = "`current_splitd_ip_rules  | md5sum`" ]; then
-    debug "Rules are up to date."
+    debug "ip rules are up to date."
 else
     flush_splitd_ip_rules
     insert_splitd_ip_rules
