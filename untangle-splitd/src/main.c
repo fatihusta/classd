@@ -39,7 +39,7 @@
 #define DEFAULT_CONFIG_FILE  "/etc/untangle-splitd/config.js"
 #define DEFAULT_DEBUG_LEVEL  1
 #define DEFAULT_BIND_PORT 3004
-#define DEFAULT_LIB_DIR        "build/libs"
+#define DEFAULT_LIB_DIR        "/usr/lib/untangle-splitd"
 
 #define FLAG_ALIVE      0x543F00D
 

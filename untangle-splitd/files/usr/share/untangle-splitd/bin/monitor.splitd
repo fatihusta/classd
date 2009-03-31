@@ -62,6 +62,7 @@ start_splitd()
     test -n "${SPLITD_LOG_OUT}" && t_args="${t_args} -o ${SPLITD_LOG_OUT}"
     test -n "${SPLITD_LOG_ERR}" && t_args="${t_args} -e ${SPLITD_LOG_ERR}"
     test -n "${SPLITD_DEBUG_LEVEL}" && t_args="${t_args} -l ${SPLITD_DEBUG_LEVEL}"
+    test -n "${SPLITD_LIB_DIR}" && t_args="${t_args} -t ${SPLITD_LIB_DIR}"
     test -n "${SPLITD_QUEUE_NUM}" && t_args="${t_args} -q ${SPLITD_QUEUE_NUM}"
     
     /usr/bin/${NAME} ${t_args} &
