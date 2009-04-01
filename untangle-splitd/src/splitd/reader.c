@@ -319,7 +319,10 @@ int splitd_reader_disable( splitd_reader_t* reader )
 {
     if ( reader == NULL ) return errlogargs();
     int thread = reader->thread;
-    if ( thread == 0 ) return errlog( ERR_WARNING, "The reader has already been stopped.\n" );
+    if ( thread == 0 ) {
+        debug( 1, "The reader is not running.\n" );
+        return 0;
+    }
     
     debug( 9, "READER: Sending disable message\n" );
 
@@ -611,7 +614,7 @@ static int _send_message( splitd_reader_t* reader, struct _message *message )
     struct _message* message_copy = NULL;
 
     if ( reader->thread == 0 ) {
-        errlog( ERR_WARNING, "The reader has already been stopped.\n" );
+        debug( 1, "The reader has already been stopped.\n" );
         return 0;
     }
 
