@@ -331,10 +331,16 @@ static struct json_object *_get_status( struct json_object* request )
 
     struct json_object* response = NULL;
     struct json_object* status_json = NULL;
+    struct json_object* temp = NULL;
     
     int _critical_section()
     {
-        if ( faild_manager_get_status( &status ) < 0 ) {
+        int clear_last_fail = 0;
+        if (( temp = json_object_object_get( request, "clear_last_fail" )) != NULL ) {
+            clear_last_fail = json_object_get_boolean( temp );
+        }
+        
+        if ( faild_manager_get_status( &status, clear_last_fail ) < 0 ) {
             return errlog( ERR_CRITICAL, "faild_manager_get_status\n" );
         }
         
@@ -384,6 +390,11 @@ static struct json_object *_get_uplink_status( struct json_object* request )
         return response;
     }
 
+    int clear_last_fail = 0;
+    if (( temp = json_object_object_get( request, "clear_last_fail" )) != NULL ) {
+        clear_last_fail = json_object_get_boolean( temp );
+    }
+
     if ( faild_uplink_status_init( &uplink_status ) < 0 ) {
         errlog( ERR_CRITICAL, "faild_uplink_status_init\n" );
         return json_object_get( _globals.internal_error );        
@@ -393,7 +404,7 @@ static struct json_object *_get_uplink_status( struct json_object* request )
     
     int _critical_section()
     {
-        if ( faild_manager_get_uplink_status( &uplink_status, alpaca_interface_id ) < 0 ) {
+        if ( faild_manager_get_uplink_status( &uplink_status, alpaca_interface_id, clear_last_fail ) < 0 ) {
             return errlog( ERR_CRITICAL, "faild_manager_get_uplink_status\n" );
         }
 

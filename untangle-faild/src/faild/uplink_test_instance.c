@@ -243,7 +243,7 @@ void* _run_instance( void* arg )
         }
 
         /* If the iteration passed, the thread should have updated iteration_result */
-        if ( faild_uplink_results_add( &test_instance->results, result ) < 0 ) {
+        if ( faild_uplink_results_add( &test_instance->results, result, test_config ) < 0 ) {
             errlog( ERR_CRITICAL, "faild_uplink_results_add\n" );
             break;
         }

@@ -25,6 +25,7 @@
 /* Sanity limit */
 #define _SIZE_MAX  1024
 
+static int _last_fail_array_get_size( void *c_array );
 
 static int _serializer_to_c_results( struct json_object* json_object, json_serializer_field_t* field, 
                                      void* c_data );
@@ -37,6 +38,29 @@ static json_serializer_string_t _test_class_string = {
     .len = sizeof((( faild_uplink_results_t *)0)->test_class_name )
 };
 
+static json_serializer_t _last_fail_serializer = {
+    .name = "last_fail",
+    .fields = {{
+            .name = "time",
+            .fetch_arg = 1,
+            .if_empty = JSON_SERIALIZER_FIELD_EMPTY_ERROR,
+            .to_c = json_serializer_to_c_timeval,
+            .to_json = json_serializer_to_json_timeval,
+            .arg = (void*)0
+        }, JSON_SERIALIZER_FIELD_TERM }
+};
+
+static json_serializer_array_t _last_fail_array_arg =
+{
+    .max_length = FAILD_TRACK_FAIL_COUNT,
+    .data_offset = offsetof( faild_uplink_results_t, last_fail ),
+    .length_offset = offsetof( faild_uplink_results_t, num_last_fail ),
+    .get_size = _last_fail_array_get_size,
+    .default_value = NULL,
+    .serializer = &_last_fail_serializer,
+    .item_size = sizeof( struct timeval ),
+    .is_pointers = 0
+};
 
 /* This is the serializer used to serialize results */
 json_serializer_t faild_uplink_results_serializer = 
@@ -84,6 +108,20 @@ json_serializer_t faild_uplink_results_serializer =
             .to_c = _serializer_to_c_results,
             .to_json = _serializer_to_json_results,
             .arg = NULL
+        },{
+            .name = "last_fail",
+            .fetch_arg = 1,
+            .if_empty = JSON_SERIALIZER_FIELD_EMPTY_ERROR,
+            .to_c = json_serializer_to_c_array,
+            .to_json = json_serializer_to_json_array,
+            .arg = &_last_fail_array_arg
+        },{
+            .name = "last_fail_position",
+            .fetch_arg = 1,
+            .if_empty = JSON_SERIALIZER_FIELD_EMPTY_ERROR,
+            .to_c = json_serializer_to_c_int,
+            .to_json = json_serializer_to_json_int,
+            .arg = (void*)offsetof( faild_uplink_results_t, last_fail_position )
         }, JSON_SERIALIZER_FIELD_TERM }    
 };
 
@@ -113,6 +151,8 @@ int faild_uplink_results_init( faild_uplink_results_t* results, int size )
     results->size = size;
     results->success = size;
     results->position = 0;
+
+    results->num_last_fail = 0;
     
     return 0;
 }
@@ -167,16 +207,45 @@ int faild_uplink_results_raze( faild_uplink_results_t* results )
  * if a test passes, results = [ 1, 1, 0, 1 ] (success still equals 3.)
  * If a test fails, resuls = [ 1, 1, 0, 0 ] (success equals 2)
  */
-int faild_uplink_results_add( faild_uplink_results_t* results, int result )
+int faild_uplink_results_add( faild_uplink_results_t* results, int result, faild_test_config_t* test_config )
 {
     if ( results == NULL ) return errlogargs();
     if ( results->results == NULL ) return errlogargs();
+    if ( test_config == NULL ) return errlogargs();
     
     if (( results->position < 0 ) || ( results->position >= results->size )) {
         return errlogargs();
     }
 
-    if ( results->results[results->position] == 1 ) results->success--;
+    if ( results->clear_last_fail ) {
+        results->num_last_fail = 0;
+        results->last_fail_position = 0;
+        results->clear_last_fail = 0;
+    }
+
+    if ( results->results[results->position] == 1 ) {
+        results->success--;
+        /* log if the success rate just went below the threshold */
+        if ( results->success == test_config->threshold ) {
+            debug( 1, "The test %d crossed the fail threshold.\n", test_config->test_id );
+            
+
+            if ( results->num_last_fail < FAILD_TRACK_FAIL_COUNT ) {
+                results->num_last_fail++;
+            }
+
+            if (( results->last_fail_position < 0 ) || 
+                ( results->last_fail_position >= FAILD_TRACK_FAIL_COUNT )) {
+                results->last_fail_position = 0;
+            }
+
+            if ( gettimeofday( &results->last_fail[results->last_fail_position], NULL ) < 0 ) {
+                return perrlog( "gettimeofday" );
+            }
+
+            results->last_fail_position++;
+        }
+    }
     if ( result == 1 ) results->success++;
 
     results->results[results->position]  = result;
@@ -206,8 +275,10 @@ int faild_uplink_results_copy( faild_uplink_results_t* destination, faild_uplink
      memcpy( destination->results, source->results, sizeof( u_char ) *destination->size );
      strncpy( destination->test_class_name, source->test_class_name, 
               sizeof( destination->test_class_name ));
-              
 
+     destination->num_last_fail = source->num_last_fail;
+     destination->last_fail_position = source->last_fail_position;
+     memcpy( &destination->last_fail, &source->last_fail, sizeof( destination->last_fail ));
 
      return 0;
 }
@@ -238,6 +309,14 @@ struct json_object* faild_uplink_results_to_json( faild_uplink_results_t* uplink
 
     return json_object;
 }
+
+static int _last_fail_array_get_size( void *c_array )
+{
+    if ( c_array == NULL ) return errlogargs();
+
+    return ((faild_uplink_results_t*)c_array)->num_last_fail;
+}
+
 
 static int _serializer_to_c_results( struct json_object* json_object, json_serializer_field_t* field, 
                                      void* c_data )

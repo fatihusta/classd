@@ -26,6 +26,7 @@ class ArpEater
         next
       end
       
+      value = true if ( value == "true" )
       command_hash[key] = value
     end
     

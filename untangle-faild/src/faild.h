@@ -31,6 +31,11 @@
 // This MUST match what is used in the alpaca.  See /etc/network/if-up.d/alpaca IP_RT_TABLE_BASE.
 #define FAILD_IP_RT_TABLE_BASE 64
 
+/* This is the number of failures to track in last_fail.  last fail is
+ * a circular buffer that keeps track of the last N times a test
+ * went below its threshold. */
+#define FAILD_TRACK_FAIL_COUNT 32
+
 typedef struct
 {
     /* This is the os ifindex index of the interface (/sys/class/net/eth0/ifindex). */
@@ -56,6 +61,10 @@ typedef struct
     int alpaca_interface_id;
     
     char test_class_name[FAILD_TEST_CLASS_NAME_SIZE];
+
+    /* This is the ID of the test, if it is not provided a random value will be assigned.
+     * this can be used to uniquely identify which test failed later */
+    int test_id;
 
     /* Timeout to run a test in milliseconds. */
     int timeout_ms;
@@ -122,6 +131,17 @@ typedef struct
     /* Position inside of results of the current test, results is a circular
      * buffer. */
     int position;
+
+    /* Circular buffer of fail.  Tracks the last n times that this test
+     * went below the success rate. */
+    struct timeval last_fail[FAILD_TRACK_FAIL_COUNT];
+
+    int num_last_fail;
+
+    int clear_last_fail;
+
+    /* This is the position inside of last fail (it is a circular buffer) */
+    int last_fail_position;
 } faild_uplink_results_t;
 
 typedef struct

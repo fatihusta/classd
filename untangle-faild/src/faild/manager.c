@@ -346,7 +346,7 @@ int faild_manager_get_config( faild_config_t* config )
 /**
  * Retrieve the status of all of the interfaces.
  */
-int faild_manager_get_status( faild_status_t* status )
+int faild_manager_get_status( faild_status_t* status, int clear_last_fail )
 {
     if ( status == NULL ) return errlogargs();
 
@@ -364,7 +364,7 @@ int faild_manager_get_status( faild_status_t* status )
                 return errlog( ERR_CRITICAL, "faild_uplink_status_create\n" );
             }
 
-            if ( faild_manager_get_uplink_status( uplink_status, c + 1 ) < 0 ) {
+            if ( faild_manager_get_uplink_status( uplink_status, c + 1, clear_last_fail ) < 0 ) {
                 return errlog( ERR_CRITICAL, "faild_manager_get_uplink_status\n" );
             }
 
@@ -409,7 +409,8 @@ int faild_manager_get_status( faild_status_t* status )
 /**
  * Retrieve the status of a single uplink.
  */
-int faild_manager_get_uplink_status( faild_uplink_status_t* uplink_status, int alpaca_interface_id )
+int faild_manager_get_uplink_status( faild_uplink_status_t* uplink_status, int alpaca_interface_id,
+                                     int clear_last_fail )
 {
     if ( uplink_status == NULL ) return errlogargs();
     if (( alpaca_interface_id < 1 ) || ( alpaca_interface_id > FAILD_MAX_INTERFACES )) return errlogargs();
@@ -454,6 +455,11 @@ int faild_manager_get_uplink_status( faild_uplink_status_t* uplink_status, int a
             /* Copy in the results from the active test */
             if ( faild_uplink_results_copy( uplink_results, source_uplink_results ) < 0 ) {
                 return errlog( ERR_CRITICAL, "faild_uplink_results_copy\n" );   
+            }
+            
+            /* If necessary clear the last fail */
+            if ( clear_last_fail ) {
+                source_uplink_results->clear_last_fail = 1;
             }
 
             /* Online if all of the tests pass */
@@ -594,7 +600,7 @@ int faild_manager_change_active_uplink( int aii )
 
         _globals.active_alpaca_interface_id = aii;
 
-        if ( faild_manager_get_status( &status ) < 0 ) {
+        if ( faild_manager_get_status( &status, 0 ) < 0 ) {
             return errlog( ERR_CRITICAL, "faild_manager_get_status\n" );
         }
         
@@ -629,7 +635,7 @@ int faild_manager_run_script( void )
 
     int _critical_section()
     {
-        if ( faild_manager_get_status( &status ) < 0 ) {
+        if ( faild_manager_get_status( &status, 0 ) < 0 ) {
             return errlog( ERR_CRITICAL, "faild_manager_get_status\n" );
         }
 
@@ -677,7 +683,7 @@ int faild_manager_update_uplink_status( faild_uplink_test_instance_t* test_insta
             return 0;
         }
 
-        if ( faild_manager_get_uplink_status( &uplink_status, aii ) < 0 ) {
+        if ( faild_manager_get_uplink_status( &uplink_status, aii, 0 ) < 0 ) {
             return errlog( ERR_CRITICAL, "faild_manager_get_uplink_status\n" );
         }
         

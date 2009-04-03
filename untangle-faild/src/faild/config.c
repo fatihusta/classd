@@ -32,6 +32,13 @@ static int _interface_array_get_size( void *c_array );
 
 static int _test_config_array_get_size( void *c_array );
 
+static int _test_config_init_to_json( struct json_object* json_object, json_serializer_field_t* field, 
+                                      void* c_data );
+
+static int _test_config_init_to_c( struct json_object* json_object, json_serializer_field_t* field, 
+                                   void* c_data );
+
+
 static json_serializer_string_t _os_string = {
     .offset = offsetof( faild_uplink_t, os_name ),
     .len = sizeof((( faild_uplink_t *)0)->os_name )
@@ -76,12 +83,27 @@ static json_serializer_string_t _test_class_name = {
 static json_serializer_t _test_config_serializer = {
     .name = "test",
     .fields = {{
+            /* This is used to initialize the test config */
+            .name = "nop",
+            .fetch_arg = 0,
+            .if_empty = JSON_SERIALIZER_FIELD_EMPTY_CALL,
+            .to_c = _test_config_init_to_c,
+            .to_json = _test_config_init_to_json,
+            .arg = (void*)offsetof( faild_test_config_t, alpaca_interface_id )
+        },{
             .name = "alpaca_interface_id",
             .fetch_arg = 1,
             .if_empty = JSON_SERIALIZER_FIELD_EMPTY_ERROR,
             .to_c = json_serializer_to_c_int,
             .to_json = json_serializer_to_json_int,
             .arg = (void*)offsetof( faild_test_config_t, alpaca_interface_id )
+        },{
+            .name = "test_id",
+            .fetch_arg = 1,
+            .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
+            .to_c = json_serializer_to_c_int,
+            .to_json = json_serializer_to_json_int,
+            .arg = (void*)offsetof( faild_test_config_t, test_id )
         },{
             .name = "test_class_name",
             .fetch_arg = 1,
@@ -171,6 +193,8 @@ static json_serializer_t _config_serializer = {
             .arg = &_test_config_array_arg
         }, JSON_SERIALIZER_FIELD_TERM}
 };
+
+static int _test_id = 1;
 
 faild_config_t* faild_config_malloc( void )
 {
@@ -274,4 +298,25 @@ static int _test_config_array_get_size( void *c_array )
 {
     return sizeof((( faild_config_t *)0)->tests );    
 }
+
+static int _test_config_init_to_json( struct json_object* json_object, json_serializer_field_t* field, 
+                                      void* c_data )
+{
+    /* Nothing to do here */
+    return 0;
+}
+
+static int _test_config_init_to_c( struct json_object* json_object, json_serializer_field_t* field, 
+                                   void* c_data )
+{
+    if ( json_object == NULL ) return errlogargs();
+    if ( c_data == NULL ) return errlogargs();
+
+    faild_test_config_t* test_config = (faild_test_config_t*)c_data;
+    
+    test_config->test_id = _test_id++;
+
+    return 0;
+}
+
 

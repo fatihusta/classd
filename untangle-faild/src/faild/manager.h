@@ -55,9 +55,10 @@ int faild_manager_get_config( faild_config_t* config );
 /**
  * Get the status of all of the interfaces
  */
-int faild_manager_get_status( faild_status_t* status );
+int faild_manager_get_status( faild_status_t* status, int clear_last_fail );
 
-int faild_manager_get_uplink_status( faild_uplink_status_t* uplink_status, int alpaca_interface_id );
+int faild_manager_get_uplink_status( faild_uplink_status_t* uplink_status, int alpaca_interface_id, 
+                                     int clear_last_fail );
 
 /**
  * Switch the active interface.
