@@ -88,6 +88,13 @@ json_serializer_t faild_uplink_results_serializer =
             .to_json = json_serializer_to_json_string,
             .arg = &_test_class_string
         },{
+            .name = "test_id",
+            .fetch_arg = 1,
+            .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
+            .to_c = json_serializer_to_c_int,
+            .to_json = json_serializer_to_json_int,
+            .arg = (void*)offsetof( faild_uplink_results_t, test_id )
+        },{
             .name = "size",
             .fetch_arg = 1,
             .if_empty = JSON_SERIALIZER_FIELD_EMPTY_ERROR,
@@ -278,6 +285,7 @@ int faild_uplink_results_copy( faild_uplink_results_t* destination, faild_uplink
 
      destination->num_last_fail = source->num_last_fail;
      destination->last_fail_position = source->last_fail_position;
+     destination->test_id = source->test_id;
      memcpy( &destination->last_fail, &source->last_fail, sizeof( destination->last_fail ));
 
      return 0;

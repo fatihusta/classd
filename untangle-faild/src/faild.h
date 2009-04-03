@@ -140,6 +140,8 @@ typedef struct
 
     int clear_last_fail;
 
+    int test_id;
+
     /* This is the position inside of last fail (it is a circular buffer) */
     int last_fail_position;
 } faild_uplink_results_t;

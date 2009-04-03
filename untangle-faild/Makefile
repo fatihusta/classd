@@ -100,6 +100,7 @@ clean:
 	@echo "==> Removing object files in ${object_dir}"
 	@rm -rf ${object_dir}
 	@rm -f ${faild_binary}
+	@rm -f ${library_binary}
 
 install:
 	@echo "Installing"

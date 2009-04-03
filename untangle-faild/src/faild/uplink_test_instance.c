@@ -123,6 +123,8 @@ int faild_uplink_test_instance_init( faild_uplink_test_instance_t* test_instance
         return errlog( ERR_CRITICAL, "faild_uplink_results_init\n" );
     }
 
+    test_instance->results.test_id = test_config->test_id;
+
     return 0;
 }
 
