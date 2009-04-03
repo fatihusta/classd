@@ -2,7 +2,7 @@
 FAILD_BIN=./faild
 
 ## Debugging level
-FAILD_DEBUG_LEVEL=1
+FAILD_DEBUG_LEVEL=10
 
 ## HTTP Script
 HTTP_SCRIPT=./files/usr/share/untangle-faild/bin/http_test
@@ -27,7 +27,7 @@ FAILD_LIB_DIR="build/libs"
 
 
 ## Uncomment this to change the port faild is bound to.
-FAILD_BIND_PORT="3005"
+FAILD_BIND_PORT="3003"
 
 ## This is presently only used inside of the defaults script.
 FAILD_LOG_DIR="./var/log/untangle-faild"

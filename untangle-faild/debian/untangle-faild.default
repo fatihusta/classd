@@ -2,7 +2,7 @@
 # FAILD_BIN=/usr/bin/faild
 
 ## Debugging level
-# FAILD_DEBUG_LEVEL=1
+FAILD_DEBUG_LEVEL=1
 
 ## HTTP Script
 # HTTP_SCRIPT=/usr/share/untangle-faild/bin/http_test
