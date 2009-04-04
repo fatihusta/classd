@@ -27,6 +27,8 @@ int faild_uplink_results_destroy( faild_uplink_results_t* results );
 int faild_uplink_results_raze( faild_uplink_results_t* results );
 
 int faild_uplink_results_add( faild_uplink_results_t* results, int result, faild_test_config_t* test_config );
+int faild_uplink_results_clear_last_fail( faild_uplink_results_t* results );
+
 int faild_uplink_results_copy( faild_uplink_results_t* destination, faild_uplink_results_t* source );
 
 

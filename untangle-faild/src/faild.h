@@ -138,8 +138,6 @@ typedef struct
 
     int num_last_fail;
 
-    int clear_last_fail;
-
     int test_id;
 
     /* This is the position inside of last fail (it is a circular buffer) */

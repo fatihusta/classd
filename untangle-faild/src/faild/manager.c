@@ -431,7 +431,6 @@ int faild_manager_get_uplink_status( faild_uplink_status_t* uplink_status, int a
         int result_index = 0;
         faild_uplink_results_t* source_uplink_results = NULL;
         faild_test_config_t* test_config = NULL;
-        
 
         faild_uplink_t* test_uplink = NULL;
 
@@ -459,7 +458,9 @@ int faild_manager_get_uplink_status( faild_uplink_status_t* uplink_status, int a
             
             /* If necessary clear the last fail */
             if ( clear_last_fail ) {
-                source_uplink_results->clear_last_fail = 1;
+                if ( faild_uplink_results_clear_last_fail( source_uplink_results ) < 0 ) {
+                    return errlog( ERR_CRITICAL, "faild_uplink_results_clear_last_fail\n" );   
+                }
             }
 
             /* Online if all of the tests pass */

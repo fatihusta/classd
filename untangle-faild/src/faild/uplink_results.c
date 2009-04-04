@@ -9,6 +9,8 @@
  * $Id$
  */
 
+#include <pthread.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
@@ -24,6 +26,7 @@
 
 /* Sanity limit */
 #define _SIZE_MAX  1024
+
 
 static int _last_fail_array_get_size( void *c_array );
 
@@ -60,6 +63,13 @@ static json_serializer_array_t _last_fail_array_arg =
     .serializer = &_last_fail_serializer,
     .item_size = sizeof( struct timeval ),
     .is_pointers = 0
+};
+
+static struct
+{
+    pthread_mutex_t mutex;
+} _globals = {
+    .mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
 };
 
 /* This is the serializer used to serialize results */
@@ -224,46 +234,71 @@ int faild_uplink_results_add( faild_uplink_results_t* results, int result, faild
         return errlogargs();
     }
 
-    if ( results->clear_last_fail ) {
+    int _critical_section()
+    {
+        if ( results->results[results->position] == 1 ) {
+            results->success--;
+            /* log if the success rate just went below the threshold */
+            if ( results->success == test_config->threshold ) {
+                debug( 1, "The test %d crossed the fail threshold.\n", test_config->test_id );
+                
+                
+                if ( results->num_last_fail < FAILD_TRACK_FAIL_COUNT ) {
+                    results->num_last_fail++;
+                }
+                
+                if (( results->last_fail_position < 0 ) || 
+                    ( results->last_fail_position >= FAILD_TRACK_FAIL_COUNT )) {
+                    results->last_fail_position = 0;
+                }
+                
+                if ( gettimeofday( &results->last_fail[results->last_fail_position], NULL ) < 0 ) {
+                    return perrlog( "gettimeofday" );
+                }
+                
+                results->last_fail_position++;
+            }
+        }
+        if ( result == 1 ) results->success++;
+        
+        results->results[results->position]  = result;
+        
+        results->position++;
+        if ( results->position >= results->size ) results->position = 0;
+        
+        /* Update the last update time */
+        if ( gettimeofday( &results->last_update, NULL ) < 0 ) return perrlog( "gettimeofday" );
+
+        return 0;
+    }
+
+    if ( pthread_mutex_lock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_lock" );
+    int ret = _critical_section();
+    if ( pthread_mutex_unlock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_unlock" );
+
+    if ( ret < 0 ) return errlog( ERR_CRITICAL, "_critical_section\n" );
+
+    return 0;
+}
+
+int faild_uplink_results_clear_last_fail( faild_uplink_results_t* results )
+{
+    if ( results == NULL ) return errlogargs();
+
+    int _critical_section()
+    {
         results->num_last_fail = 0;
         results->last_fail_position = 0;
-        results->clear_last_fail = 0;
+        return 0;
     }
 
-    if ( results->results[results->position] == 1 ) {
-        results->success--;
-        /* log if the success rate just went below the threshold */
-        if ( results->success == test_config->threshold ) {
-            debug( 1, "The test %d crossed the fail threshold.\n", test_config->test_id );
-            
+    if ( pthread_mutex_lock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_lock" );
+    int ret = _critical_section();
+    if ( pthread_mutex_unlock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_unlock" );
 
-            if ( results->num_last_fail < FAILD_TRACK_FAIL_COUNT ) {
-                results->num_last_fail++;
-            }
+    if ( ret < 0 ) return errlog( ERR_CRITICAL, "_critical_section\n" );
 
-            if (( results->last_fail_position < 0 ) || 
-                ( results->last_fail_position >= FAILD_TRACK_FAIL_COUNT )) {
-                results->last_fail_position = 0;
-            }
-
-            if ( gettimeofday( &results->last_fail[results->last_fail_position], NULL ) < 0 ) {
-                return perrlog( "gettimeofday" );
-            }
-
-            results->last_fail_position++;
-        }
-    }
-    if ( result == 1 ) results->success++;
-
-    results->results[results->position]  = result;
-    
-    results->position++;
-    if ( results->position >= results->size ) results->position = 0;
-
-    /* Update the last update time */
-    if ( gettimeofday( &results->last_update, NULL ) < 0 ) return perrlog( "gettimeofday" );
-    
-    return 0;
+    return 0;    
 }
 
 int faild_uplink_results_copy( faild_uplink_results_t* destination, faild_uplink_results_t* source )
@@ -275,24 +310,35 @@ int faild_uplink_results_copy( faild_uplink_results_t* destination, faild_uplink
      if ( destination->size < 1 ) return errlogargs();
      if ( destination->size > _SIZE_MAX ) return errlogargs();
 
-     destination->success = source->success;
-     destination->position = source->position;
+     int _critical_section()
+     {
+         destination->success = source->success;
+         destination->position = source->position;
+         
+         memcpy( &destination->last_update, &source->last_update, sizeof( destination->last_update ));
+         memcpy( destination->results, source->results, sizeof( u_char ) *destination->size );
+         strncpy( destination->test_class_name, source->test_class_name, 
+                  sizeof( destination->test_class_name ));
+         
+         destination->num_last_fail = source->num_last_fail;
+         destination->last_fail_position = source->last_fail_position;
+         destination->test_id = source->test_id;
+         memcpy( &destination->last_fail, &source->last_fail, sizeof( destination->last_fail ));
 
-     memcpy( &destination->last_update, &source->last_update, sizeof( destination->last_update ));
-     memcpy( destination->results, source->results, sizeof( u_char ) *destination->size );
-     strncpy( destination->test_class_name, source->test_class_name, 
-              sizeof( destination->test_class_name ));
+         return 0;
+     }
 
-     destination->num_last_fail = source->num_last_fail;
-     destination->last_fail_position = source->last_fail_position;
-     destination->test_id = source->test_id;
-     memcpy( &destination->last_fail, &source->last_fail, sizeof( destination->last_fail ));
+    if ( pthread_mutex_lock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_lock" );
+    int ret = _critical_section();
+    if ( pthread_mutex_unlock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_unlock" );
 
-     return 0;
+    if ( ret < 0 ) return errlog( ERR_CRITICAL, "_critical_section\n" );
+
+    return 0;
 }
 
 int faild_uplink_results_load_json( faild_uplink_results_t* uplink_results,
-                                   struct json_object* json_uplink_results )
+                                    struct json_object* json_uplink_results )
 {
     if ( uplink_results == NULL ) return errlogargs();
     if ( json_uplink_results == NULL ) return errlogargs();
@@ -305,6 +351,9 @@ int faild_uplink_results_load_json( faild_uplink_results_t* uplink_results,
     return 0;
 }
 
+/**
+ * This normally operates on a copy, which is why it doesn't use the mutex
+ */
 struct json_object* faild_uplink_results_to_json( faild_uplink_results_t* uplink_results )
 {
     if ( uplink_results == NULL ) return errlogargs_null();
