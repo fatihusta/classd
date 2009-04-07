@@ -759,8 +759,12 @@ static int _find_test_config( faild_test_config_t* test_config )
         if ( test_instance == NULL ) continue;
         
         if ( faild_test_config_equ( test_config, &test_instance->config ) == 1 ) {
+            /* Update the test ID */
+            test_instance->results.test_id = test_config->test_id;
+            test_instance->config.test_id = test_config->test_id;
             return c;
         }
+
     }
     
     return -2;

@@ -53,10 +53,11 @@ update_dns_servers()
     awk '/^(# *)?server=.*('${t_online_links}')$/ { sub( /^(# *)?/, "" ) ; print ; next } ; /^(# *)?server=.*('${t_offline_links}')$/ { sub( /^(# *)?/, "# " ) ; print ; next } ;  { print } ' /etc/dnsmasq.conf >> ${t_temp}
 
     diff -q ${t_temp} /etc/dnsmasq.conf > /dev/null || {
+        echo "[DEBUG:`date`] Updating DNS file."
+
         mv ${t_temp} /etc/dnsmasq.conf
         chmod 664 /etc/dnsmasq.conf
         /etc/init.d/dnsmasq restart
-        exit 0
     }
     
     echo "[DEBUG:`date`] DNS File is up to date."
@@ -67,9 +68,9 @@ update_dns_servers()
 
 active_link=${FAILD_UPLINK_ACTIVE}
 
-if [ -z "${active_link}" ] ; then
+if [ -z "${active_link}" ] || [ "${active_link}" = "0" ]; then
     echo "[DEBUG:`date`] No uplinks are active, using first available link"
-    active_link=`printf "%s" ${FAILD_UPLINKS}`
+    active_link=`printf "%s\n" ${FAILD_UPLINKS} | head -n 1`
 fi
 
 if [ -z "${active_link}" ] ; then

@@ -32,6 +32,8 @@ struct _dns_test
     struct in_addr dns_server;
 };
 
+#define _DEFAULT_HOSTNAME  "example.com"
+
 #define _DNS_COMMAND_ENVIRONMENT "DNS_SCRIPT"
 #define _DNS_COMMAND_DEFAULT "/usr/share/untangle-faild/bin/dns_test"
 
@@ -60,7 +62,8 @@ static int _init( faild_uplink_test_instance_t *instance )
         
         char *hostname = NULL;
         if (( hostname = json_object_utils_get_string( params, "dns_hostname" )) == NULL )  {
-            return errlog( ERR_CRITICAL, "Params are missing the hostname.\n" );
+            debug( 5, "DNS params missing the hostname\n" );
+            hostname = _DEFAULT_HOSTNAME;
         }
         strncpy( dns_test->hostname, hostname, sizeof( dns_test->hostname ));
         
