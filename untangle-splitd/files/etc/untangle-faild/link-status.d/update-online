@@ -1,0 +1,10 @@
+#!/bin/dash
+
+## This script requires elevated sudo privileges.
+if [ -x /usr/share/untangle-splitd/bin/update-online ] ; then
+    sudo /usr/share/untangle-splitd/bin/update-online
+else
+    echo "Missing the script  /usr/share/untangle-splitd/bin/update-online"
+fi
+
+

@@ -1,5 +1,11 @@
 #!/bin/sh
 
+SPLITD_CONFIG_FILE="/etc/untangle-splitd/config.js"
+SPLITD_DEFAULT_CONFIG="/usr/share/untangle-splitd/sample-config/default.js"
+LOG_FILE=/var/log/untangle-splitd/debug.log
+SUDOERS_CONF_FILE=/etc/sudoers
+
+
 ourInit() {
     if [ -x /usr/sbin/invoke-rc.d ] && [ ! "`readlink /usr/sbin/invoke-rc.d`" = /bin/true ] ; then
         invoke-rc.d $1 $2
@@ -8,10 +14,45 @@ ourInit() {
     fi
 }
 
-SPLITD_CONFIG_FILE="/etc/untangle-splitd.conf"
-SPLITD_DEFAULT_CONFIG="/usr/share/untangle-splitd/sample-config/default.js"
 
-LOG_FILE=/var/log/untangle-splitd/debug.log
+sudoers_awk_script()
+{
+    ## Grant privileges to faild.
+    cat <<'EOF'
+/# untangle-splitd.postinst$/ { next }
+{ print }
+END { 
+  print "# Start of Untangle FailD elevated privileges # untangle-splitd.postinst";
+  print "faild              ALL = NOPASSWD: /usr/share/untangle-splitd/bin/update-online # untangle-splitd.postinst";
+  print "# End of Untangle FailD elevated privileges # untangle-splitd.postinst";
+  }
+EOF
+}
+
+update_sudoers_file()
+{
+    local t_temp
+
+    if [ ! -f "${SUDOERS_CONF_FILE}" ]; then
+        echo "Missing sudoers file (${SUDOERS_CONF_FILE})."
+        return 1
+    fi
+    
+    t_temp=`mktemp` || {
+        echo "Unable to create temp file, sudoers will not be updated."
+        return 2
+    }
+
+    awk "`sudoers_awk_script`" ${SUDOERS_CONF_FILE} >  ${t_temp} || {
+        echo "Unable to modify sudoers file, aborting."
+        return 3
+    }
+
+    mv ${t_temp} ${SUDOERS_CONF_FILE}
+
+    chmod 0440  ${SUDOERS_CONF_FILE}
+}
+
 
 mkdir -p `dirname ${LOG_FILE}`
 
@@ -19,6 +60,7 @@ echo "[`date`] DEBUG debian upgrade." >> ${LOG_FILE}
 
 if [ ! -f ${SPLITD_CONFIG_FILE} ]; then
     echo "Copying in ${SPLITD_DEFAULT_CONFIG} to ${SPLITD_CONFIG_FILE}"
+    mkdir -p `dirname ${SPLITD_CONFIG_FILE}`
     cp ${SPLITD_DEFAULT_CONFIG} ${SPLITD_CONFIG_FILE}
 fi
 
@@ -32,5 +74,7 @@ if [ -x "/etc/init.d/untangle-splitd" ]; then
     ourInit untangle-splitd stop > /dev/null 2>&1 || exit 0
     ourInit untangle-splitd start || exit 0
 fi
+
+update_sudoers_file
 
 exit 0

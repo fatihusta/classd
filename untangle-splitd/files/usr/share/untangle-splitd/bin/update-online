@@ -1,0 +1,29 @@
+#!/bin/dash
+
+
+
+load_defaults()
+{
+    SPLITD_ONLINE_FILE="/etc/untangle-splitd/online.js"
+    
+    if [ -f /etc/default/untangle-splitd ] ; then
+        . /etc/default/untangle-splitd
+    fi
+}
+
+update_is_online()
+{
+    mkdir -p `dirname ${SPLITD_ONLINE_FILE}`
+
+    ## This is the definition of filthy
+    cat<<EOF >${SPLITD_ONLINE_FILE}
+{
+    "is_online" : [ ${FAILD_UPLINK_1_ONLINE:-false}, ${FAILD_UPLINK_2_ONLINE:-false}, ${FAILD_UPLINK_3_ONLINE:-false}, ${FAILD_UPLINK_4_ONLINE:-false}, ${FAILD_UPLINK_5_ONLINE:-false}, ${FAILD_UPLINK_6_ONLINE:-false}, ${FAILD_UPLINK_7_ONLINE:-false}, ${FAILD_UPLINK_8_ONLINE:-false} ]
+}
+EOF
+}
+
+## Start of script
+load_defaults
+
+update_is_online
