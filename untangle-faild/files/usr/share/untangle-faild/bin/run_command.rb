@@ -67,11 +67,18 @@ class ArpEater
   end
 
   def display_get_status( body )
+    puts "Startup time: #{body["startup_time"].to_json.strip}"
     puts "Retrieved the status\n#{body["faild_status"].to_json}"
   end
 
   def display_get_uplink_status( body )
+    puts "Startup time: #{body["startup_time"].to_json.strip}"
     puts "Retrieved uplink status\n#{body["uplink_status"].to_json}"
+  end
+
+  def display_hello_world( body )
+    puts "Startup Time: #{body["startup_time"].to_json.strip}"
+    puts "#{body["message"]}"
   end
 end
 

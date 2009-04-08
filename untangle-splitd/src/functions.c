@@ -60,10 +60,18 @@ static struct
     char *config_file;
     /* Use this response when there is an internal error */
     struct json_object* internal_error;
+
+    /* The time that instance started. */
+    struct timeval startup_time;
+
+    /* Time of the startup in json */
+    struct json_object* startup_time_json;
+
     json_server_function_entry_t function_table[];
 } _globals = {
     .config_file = NULL,
     .internal_error = NULL,
+    .startup_time_json = NULL,
     .function_table = {
         { .name = "hello_world", .function = _hello_world },
         { .name = "get_config", .function = _get_config },
@@ -81,6 +89,16 @@ static struct
 int splitd_functions_init( char* config_file )
 {
     _globals.config_file = config_file;
+
+    /* Update the startup time */
+    if ( gettimeofday( &_globals.startup_time, NULL ) < 0 ) {
+        return perrlog( "gettimeofday" );
+    }
+
+    _globals.startup_time_json = json_object_utils_create_timeval( &_globals.startup_time );
+    if ( _globals.startup_time_json == NULL ) {
+        return errlog( ERR_CRITICAL, "json_object_utils_create_timeval\n" );
+    }
 
     if (( _globals.internal_error = json_server_build_response( STATUS_ERR, 0, "Internal error occurred" ))
         == NULL ) {
@@ -112,6 +130,8 @@ static struct json_object* _hello_world( struct json_object* request )
     if (( response = json_server_build_response( STATUS_OK, 0, "Hello from splitd" )) == NULL ) {
         return errlog_null( ERR_CRITICAL, "json_server_build_response\n" );
     }
+    json_object_object_add( response, "startup_time", json_object_get( _globals.startup_time_json ));
+
     return response;
 }
 

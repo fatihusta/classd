@@ -119,7 +119,7 @@ int faild_status_destroy( faild_status_t* status )
     for ( c =0 ; c < FAILD_MAX_INTERFACES ; c++ ) {
         if (( uplink_status = status->uplink_status[c] ) == NULL ) continue;
 
-        faild_uplink_status_destroy( uplink_status );
+        faild_uplink_status_raze( uplink_status );
         status->uplink_status[c] = NULL;
     }
 

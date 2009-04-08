@@ -103,7 +103,6 @@ int faild_manager_init( faild_config_t* config, char* switch_script )
     
     int len = strnlen( switch_script, FILENAME_MAX );
     if (( _globals.switch_script = calloc( 1, len )) == NULL ) {
-        
         return errlogmalloc();
         return -1;
     }
@@ -307,7 +306,7 @@ int faild_manager_get_uplink( faild_uplink_t* uplink )
         }
 
         /* Copy in the values */
-        memcpy( uplink, uplink_source, sizeof( *uplink ));
+        memcpy( uplink, uplink_source, sizeof( faild_uplink_t ));
         
         return 1;
     }
@@ -836,7 +835,7 @@ static int _update_environment( faild_status_t* status )
     
     bzero( uplinks, sizeof( uplinks ));
     bzero( uplinks_online, sizeof( uplinks_online ));
-    bzero( uplinks_online, sizeof( uplinks_offline ));
+    bzero( uplinks_offline, sizeof( uplinks_offline ));
     bzero( active, sizeof( active ));
     
     int c = 0;

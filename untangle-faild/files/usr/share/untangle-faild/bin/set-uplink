@@ -35,6 +35,7 @@ update_dns_servers()
     local t_online_links
 
     local t_temp
+    local t_temp_2
 
     t_active_link=$1
 
@@ -50,7 +51,17 @@ update_dns_servers()
         t_offline_links="${t_offline_links}uplink.${t_uplink}"
     done
     
-    awk '/^(# *)?server=.*('${t_online_links}')$/ { sub( /^(# *)?/, "" ) ; print ; next } ; /^(# *)?server=.*('${t_offline_links}')$/ { sub( /^(# *)?/, "# " ) ; print ; next } ;  { print } ' /etc/dnsmasq.conf >> ${t_temp}
+    awk '/^(# *)?server=.*('${t_online_links}')$/ { sub( /^(# *)?/, "" ) ; print ; next } ; /^(# *)?server=.*('${t_offline_links}')$/ { sub( /^(# *)?/, "# " ) ; print ; next } ;  { print } ' /etc/dnsmasq.conf > ${t_temp}
+
+    ## If all of the DNS servers are disabled, enabled the first one.
+    grep -q "^server=" /etc/dnsmasq.conf > /dev/null 2>&1 || {
+        echo "[DEBUG:`date`] All DNS servers are disabled, enabling first server."
+
+        t_temp_2=`mktemp`
+
+        awk -v p=false '/^(# *)?server=.*$/ { if ( p == "false" ) { sub( /^(# *)?/, "" ) } ; print ; p="true"; next } ; { print } ' ${t_temp} > ${t_temp_2}
+        mv ${t_temp_2} ${t_temp}
+    }
 
     diff -q ${t_temp} /etc/dnsmasq.conf > /dev/null || {
         echo "[DEBUG:`date`] Updating DNS file."

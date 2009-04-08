@@ -132,7 +132,7 @@ int faild_uplink_status_destroy( faild_uplink_status_t* uplink_status )
     for ( c =0 ; c < FAILD_MAX_INTERFACE_TESTS ; c++ ) {
         if (( results = uplink_status->results[c] ) == NULL ) continue;
 
-        faild_uplink_results_destroy( results );
+        faild_uplink_results_raze( results );
         uplink_status->results[c] = NULL;
     }
 
