@@ -52,6 +52,7 @@ class SSHPlugin < Plugin
 
   @@USER = "rbot"
   @@HOST = "activation.untangle.com"
+  @@PORT = 443
   @@PRIVATE_KEY_FILE = "/home/#{@@USER}/.ssh/key.dsa"
   @@CGI_URL = "/cgi-bin/sshkey.rb?license_key=%s&internal_ip=%s"
   @@ACTIVATION_KEY_FILE = "/usr/share/untangle/activation.key"
@@ -147,7 +148,7 @@ class SSHPlugin < Plugin
         fh.puts('#!/bin/bash')
         fh.puts("/bin/echo #{params[:passphrase]}")
         fh.close
-        command = "DISPLAY=:0 SSH_ASKPASS='#{tmpName}' ssh -v -N -n -R '*:#{@port}:localhost:2222' -o StrictHostKeyChecking=no -i #{@@PRIVATE_KEY_FILE} #{@@USER}@#{@@HOST} < /dev/null"
+        command = "DISPLAY=:0 SSH_ASKPASS='#{tmpName}' ssh -p #{params.fetch(:port ,@@PORT)} -v -N -n -R '*:#{@port}:localhost:2222' -o StrictHostKeyChecking=no -i #{@@PRIVATE_KEY_FILE} #{@@USER}@#{@@HOST} < /dev/null"
         
         Open3.popen3(command) { |stdin, stdout, stderr|
 #          m.reply "Executing #{command}"
@@ -189,6 +190,7 @@ class SSHPlugin < Plugin
         pickRandomPort
 
         Net::SSH.start(@@HOST, @@USER,
+                       :port => params.fetch(:port ,@@PORT),
                        :auth_methods => [ "publickey" ],
                        :paranoid => false,
                        :keys => [ @@PRIVATE_KEY_FILE ] ) do |@session|
@@ -283,7 +285,7 @@ class SSHPlugin < Plugin
 end
 
 plugin = SSHPlugin.new
-plugin.map 'ssh enable :passphrase', :action => 'enable', :public => false
-plugin.map 'ssh enable2 :passphrase', :action => 'enable2', :public => false
+plugin.map 'ssh enable :passphrase :port', :action => 'enable', :public => false
+plugin.map 'ssh enable2 :passphrase :port', :action => 'enable2', :public => false
 plugin.map 'ssh disable', :action => 'disable', :public => false
 plugin.map 'ssh download_key', :action => 'downloadKey', :public => false
