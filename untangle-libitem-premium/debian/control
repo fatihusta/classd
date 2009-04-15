@@ -1226,7 +1226,7 @@ Section: premium/admin
 Architecture: all
 Depends: untangle-node-nas
 XB-View-Position: 1018
-XB-Display-Name: NAS Limited Trial
+XB-Display-Name: Untangle NAS Limited Trial
 XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-nas
 XB-Untangle-Pkg-Type: trial
