@@ -52,7 +52,7 @@ class SSHPlugin < Plugin
 
   @@USER = "rbot"
   @@HOST = "activation.untangle.com"
-  @@PORT = 443
+  @@PORT = 22
   @@PRIVATE_KEY_FILE = "/home/#{@@USER}/.ssh/key.dsa"
   @@CGI_URL = "/cgi-bin/sshkey.rb?license_key=%s&internal_ip=%s"
   @@ACTIVATION_KEY_FILE = "/usr/share/untangle/activation.key"
