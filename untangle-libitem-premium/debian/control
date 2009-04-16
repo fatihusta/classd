@@ -749,7 +749,7 @@ Architecture: all
 Depends: untangle-libitem-boxbackup
 Provides: untangle-libitem-trial14-support
 XB-View-Position: 1015
-XB-Display-Name: Untangle Support
+XB-Display-Name: Live Support
 XB-Untangle-Type: lib_item
 XB-Is-Core: true
 XB-Untangle-Pkg-Type: lib_item
@@ -802,8 +802,8 @@ XB-Desc-Icon:  R0lGODlhKgAqAPcAAB4PCJytc32ERl9oHru4u08cCK+tre7u54GHb2ITA4l5NFha
  6ApBQfCBIkzrq5fpgBg6MIZVaBIvDchKLXbB1gwe7wXnSx9BWdAHJHi1ARLAgF4l
  cBlTdICs3NBkEtDKk7WylQUBuN3tRNUCFuzCrlroxRGeQFnK3iQZFsmsZjObjHUM
  ZCGgDW1COhsQADs=
-Description: Untangle Support
- The Untangle Support Package.
+Description: Live Support
+ The Live Support Package.
 
 Package: untangle-libitem-pcremote
 Section: premium/admin
