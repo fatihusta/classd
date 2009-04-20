@@ -154,7 +154,7 @@ def setup_registration( config, dbh )
     end
   end
 
-  [ "regKey", "email", "name", "firstName", "lastName", "numseats", "find_untangle", "country", "environment" ].each do |key|
+  [ "regKey", "emailAddr", "name", "firstName", "lastName", "numSeats", "find_untangle", "country", "environment" ].each do |key|
     param = registration[key]
 
     next if param.nil?
@@ -234,6 +234,13 @@ end
 
 $logger.info( "Using the config file" )
 Kernel.system( "cat #{config_file}" )
+
+$logger.info( "Converting the file to UTF-8" )
+config_file_utf8=config_file.sub( /.js$/, "-utf8.js" )
+config_file_utf8="#{config_file}-utf8" if ( config_file_utf8 == config_file )
+Kernel.system( "/usr/bin/iconv -f ISO-8859-1 -t UTF-8 #{config_file} > #{config_file_utf8} || /usr/bin/iconv -f MS936 -t UTF-8 #{config_file} > #{config_file_utf8}" )
+Kernel.system( "mv #{config_file_utf8} #{config_file}" )
+
 
 File.open( config_file, "r" ) { |f| f.each_line { |l| config << l }}
 config = ::JSON.parse( config )

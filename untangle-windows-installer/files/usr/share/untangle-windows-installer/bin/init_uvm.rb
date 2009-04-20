@@ -24,11 +24,16 @@ def start_nodes( config )
 
   ENV["NODE_LIST"] = nodes.join( " " )
 
+  language_code = config["language"]
+  language_code = "" if language_code.nil?
+
+  ENV["UVM_LANGUAGE"] = language_code.to_s
+
   rush_shell=ENV["RUSH_SHELL"]
   rush_shell="/usr/bin/rush" if rush_shell.nil?
 
   install_nodes = ENV["INSTALL_NODES"]
-  install_nodes = "/usr/share/untangle-windows-installer/bin/install_nodes.rb"
+  install_nodes = "/usr/share/untangle-windows-installer/bin/install_nodes.rb" if install_nodes.nil?
 
   $logger.info( "#{rush_shell} #{install_nodes}" )
   Kernel.system( "#{rush_shell} #{install_nodes} 2>&1" )
