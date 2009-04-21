@@ -51,7 +51,9 @@ CIDR = {
   "32" => "255.255.255.255"
 }
 
-def get_num_active_hosts()
+def get_active_hosts()
+  $result["active_hosts"] = nil
+  
   begin
     Net::HTTP.start( "localhost", "3002" ) do |session|
       command_hash = {}
@@ -63,96 +65,24 @@ def get_num_active_hosts()
       unless ( response.is_a?( Net::HTTPOK ))
         $logger.warn "Invalid response: #{response}"
         $logger.warn "Body: #{json_body}"
-        $result["num_active_hosts"] = -1
         return
       end
       
       body = JSON.parse( json_body )
       ## Remove all of the hosts that are not enabled.
-      hosts = body["hosts"].delete_if { |host| not host["enabled"] }
-      $result["num_active_hosts"] = hosts.length
+      $result["active_hosts"] = body["hosts"]
     end
   rescue
     $logger.warn "Unable to connect to the ARP Eater. (#{$!})"
-    $result["num_active_hosts"] = -1
+    
   end
-end
-
-def get_memory_usage()
-  memory_free = 0
-  memory_total = 0
-
-  File.open( "/proc/meminfo" ) do |f|
-    f.each_line do |line|
-      begin
-        line_array = line.split
-        case line_array[0]
-        when "MemTotal:"
-          memory_total = line_array[1].to_i 
-        when "MemFree:"
-          memory_free += line_array[1].to_i
-        when "Cached:" 
-          memory_free +=  line_array[1].to_i
-        when "Buffers:"
-          memory_free += line_array[1].to_i
-        end
-      rescue
-        $logger.warn "Error parsing the line '#{line}'"
-      end
-    end
-  end
-  
-  $result["memory"] =  {
-    "total" => memory_total,
-    "free"  => memory_free
-  }
-end
-
-def get_network_config()
-  address,netmask = `ip addr show eth0 | awk '/inet/ { print $2 ; exit }'`.strip.split( "/" )
-
-  address = "" if address.nil?
-
-  netmask = CIDR[netmask]
-  netmask = "" if netmask.nil?
-  gateway = `ip route show table all | awk '/^default/ { print $3 ; exit }'`.strip
-  config_type = `awk '/^iface.*eth0/ {  print $4 ; exit } ' /etc/network/interfaces`.strip
-  
-  $result["network"] = {
-    "config_type" => config_type,
-    "address" => address,
-    "netmask" => netmask,
-    "gateway" => gateway
-  }
-end
-
-def get_disk_usage()
-  total,free = `df | awk '/\\/$/ { print $2 " " $4 ; exit }'`.strip.split
-  total = -1 if total.nil?
-  free = -1 if free.nil?
-
-  total = total.to_i
-  free = free.to_i
-
-  $result["disk"] = {
-    "total" => total,
-    "free" => free
-  }
-end
-
-def get_uptime()
-  $result["uptime"] = `awk '{ print $1 }' /proc/uptime`.strip.to_f
 end
 
 ## Start of script
 $result = {}
 $logger = Logger.new( $stderr )
 
-get_num_active_hosts
-get_memory_usage
-get_network_config
-get_disk_usage
-get_uptime
-
+get_active_hosts
 
 puts $result.to_json
+
