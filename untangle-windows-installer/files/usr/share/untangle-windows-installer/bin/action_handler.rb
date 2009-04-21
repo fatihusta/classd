@@ -10,55 +10,78 @@
 ## 
 
 require "ftools"
+require "logger"
 
-action_file = ENV["ACTION_FILE"]
+def get_properties
+  properties = {}
 
-ActionFile = action_file.nil? ? "/mnt/hgfs/untangle/action" : action_file
-ActionSizeRange = 1..2048
+  `VBoxControl -nologo guestproperty enumerate -patterns "#{PropertyPrefix}*"`.each_line do |line|
+    match = PropertyRegex.match( line )
+    $logger.debug( "Testing #{line} for #{PropertyRegex}" )
+    next if match.nil?
 
-poll_timeout = ENV["POLL_TIMEOUT"]
-PollTimeout = poll_timeout.nil? ? 1.0 : poll_timeout
+    ## Wakeup is used to tell the action handler to ... wakeup.
+    property_name = match[1]
+    next if ( property_name == "#{PropertyPrefix}wakeup" )
+    
+    ## Ignoring the timestamp
+    properties[property_name] = match[2]
+  end
 
-module Actions
-  Shutdown = "shutdown"
+  properties
 end
 
-def get_action
-  return nil unless File.exists? ActionFile
-  
-  ## File must have been corrupted or something, or it is empty.
-  return nil unless ActionSizeRange.include?( File.size( ActionFile ))
-  
-  ## Make sure you can write the file.
-  return nil unless File.writable?( ActionFile )
+def handle_actions
+  ## Just wait for a change (all of the parameters are enumerated in parse_properties).
+  Kernel.system( "VBoxControl -nologo guestproperty wait '#{PropertyPrefix}*' > /dev/null 2>&1" )
 
-  action = File.readlines( ActionFile )
+  properties = get_properties
 
-  ## Always make sure to empty the contents of file.
-  File.open( ActionFile, "w" ) { |f| f.truncate 0  }
+  return if properties.nil?
 
-  return nil unless ( action.length == 1 )
+  properties.each do |name,value|
+    ## Remove the property
+    Kernel.system( "VBoxControl", "-nologo",  "guestproperty", "set", name )
 
-  action = action[0].downcase.strip
-  return nil if action.empty?
-  return action
-end
+    output_prefix = name.sub( PropertyPrefix, "#{OutputDirectory}" )
+    if ( name == output_prefix )
+      $logger.warn "Invalid key #{name}"
+      next
+    end
 
-def handle_action( action )
-  case action
-  when Actions::Shutdown
-    Kernel.system( "shutdown -h now" )
-    $is_running = false
-  else
-    puts "unknown action: #{action}"
+    ## Should add a command timeout.
+    $logger.debug( "Running the command #{value} > #{output_prefix}.out 2>#{output_prefix}.err" )
+    Kernel.system( "#{value} > #{output_prefix}.out 2>#{output_prefix}.err" )
+
+    ret_key = name.sub( PropertyPrefix, "#{ReturnPrefix}" )
+
+    ## Exit is used to tell the action handler to ... exit
+    $is_running = false if ( name == "#{PropertyPrefix}exit" )
+
+    Kernel.system( "VBoxControl", "-nologo", "guestproperty", "set", "#{ret_key}.ret", $?.exitstatus.to_s )
   end
 end
 
+SharedDirectory = "/mnt/hgfs"
+poll_timeout = ENV["POLL_TIMEOUT"]
+PollTimeout = poll_timeout.nil? ? 1.0 : poll_timeout
+
+PropertyPrefix = "/Untangle/Host/Command/"
+ReturnPrefix = "/Untangle/Host/ReturnCode/"
+
+OutputDirectory = "/mnt/hgfs/logs/"
+PropertyRegex = /Name: (.*), value: (.*), timestamp: (.*), flags: .*/
+
 $is_running = true
+$logger = Logger.new(STDERR)
+$logger.level = Logger::INFO
 
+Kernel.system( "mkdir", "-p", OutputDirectory )
 while $is_running
-  sleep PollTimeout
-  action = get_action
-  handle_action( action ) unless action.nil?
+  begin
+    sleep PollTimeout
+    handle_actions
+  rescue
+    sleep( PollTimeout * 2 )
+  end
 end
-
