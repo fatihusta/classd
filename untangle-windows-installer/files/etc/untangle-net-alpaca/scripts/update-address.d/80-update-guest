@@ -12,9 +12,9 @@
 update_guest_address()
 {
     local t_external_interface
-    UVM_VMWARE_IP=${UVM_VMWARE_IP:-/mnt/hgfs/untangle/guest_address}
+    local t_address
     
-    [ -d `dirname ${UVM_VMWARE_IP}` ] || return
+    type VBoxControl > /dev/null 2>&1 || return
     
     ## Determine the external interface
     ## First use try the default gateway.
@@ -31,9 +31,13 @@ update_guest_address()
         }
     }
     
-    [ -n "${t_external_interface}" ] && {
-        ip -f inet addr show ${t_external_interface} 2>|/dev/null | awk '/inet/ { ip = $2 ; sub( /\/.*$/, "", ip ) ; print ip ; exit 0  }' >| ${UVM_VMWARE_IP}
-    }
+    if [ -n "${t_external_interface}" ]; then
+        t_address=`ip -f inet addr show ${t_external_interface} 2>|/dev/null | awk '/inet/ { sub( /\/.*$/, "", $2 ) ; print $2 ; exit 0  }'`
+    else
+        t_address=""
+    fi
+
+    VBoxControl -nologo guestproperty set /Untangle/Network/address "${t_address}"
 }
 
 ## Run this script regardless of whether or not the UVM is running.

@@ -92,7 +92,7 @@ def get_memory_usage()
         when "MemFree:"
           memory_free += line_array[1].to_i
         when "Cached:" 
-          memory_free +=  line_array[1].to_i
+          memory_free += line_array[1].to_i
         when "Buffers:"
           memory_free += line_array[1].to_i
         end
@@ -109,14 +109,18 @@ def get_memory_usage()
 end
 
 def get_network_config()
-  address,netmask = `ip addr show eth0 | awk '/inet/ { print $2 ; exit }'`.strip.split( "/" )
+  ## Use the default route to try to determine the external interface
+  gateway, os_name = `ip route show table all | awk '/^default/ { print $3  " "  $5 }'`.strip.split
+  os_name = "eth0" if os_name.nil?
+  
+  address,netmask = `ip -f inet addr show #{os_name} | awk '/inet/ { print $2 ; exit }'`.strip.split( "/" )
 
   address = "" if address.nil?
 
   netmask = CIDR[netmask]
   netmask = "" if netmask.nil?
   gateway = `ip route show table all | awk '/^default/ { print $3 ; exit }'`.strip
-  config_type = `awk '/^iface.*eth0/ {  print $4 ; exit } ' /etc/network/interfaces`.strip
+  config_type = `awk '/^iface.*#{os_name}/ {  print $4 ; exit } ' /etc/network/interfaces`.strip
   
   $result["network"] = {
     "config_type" => config_type,
