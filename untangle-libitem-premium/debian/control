@@ -9,7 +9,7 @@ Standards-Version: 3.8.0
 Package: untangle-libitem-professional-package
 Section: premium/admin
 Architecture: all
-Depends: untangle-libitem-portal, untangle-libitem-boxbackup, untangle-libitem-support, untangle-libitem-adconnector, untangle-libitem-policy, untangle-libitem-branding
+Depends: untangle-libitem-portal, untangle-libitem-boxbackup, untangle-libitem-support, untangle-libitem-adconnector, untangle-libitem-policy, untangle-libitem-branding, untangle-libitem-faild
 XB-View-Position: 11
 XB-Display-Name: Professional Package
 XB-Untangle-Type: lib_item
@@ -297,7 +297,7 @@ Description: Untangle Failover
 Package: untangle-libitem-splitd
 Section: premium/admin
 Architecture: all
-Depends: untangle-node-splitd
+Depends: untangle-node-splitd, untangle-libitem-faild
 XB-View-Position: 60
 XB-Display-Name: Untangle WAN Balancer
 XB-Untangle-Type: lib_item
