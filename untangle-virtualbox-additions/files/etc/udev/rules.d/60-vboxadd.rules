@@ -1,0 +1,1 @@
+KERNEL=="vboxadd", NAME="vboxadd", OWNER="vboxadd", MODE="0660"

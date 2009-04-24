@@ -1,0 +1,46 @@
+#! /bin/bash
+
+## Don't run update db on vmware filesystems.
+update_db()
+{
+    if [ ! -f /etc/updatedb.conf ]; then
+        return
+    fi
+
+    grep -q 'PRUNEFS=.*vboxsf' /etc/updatedb.conf || {
+        sed -i 's|^\(PRUNEFS="[^"]*\)"|\1 vboxsf"|' /etc/updatedb.conf
+    }
+}
+
+## Mount the vbox filesystem at startup.
+fix_fstab()
+{
+    local t_temp
+    t_temp=`mktemp`
+    
+    awk '/vboxsf/ { next } ; { print } ; END { print "shared             /mnt/hgfs               vboxsf  defaults     0 0" }' /etc/fstab > ${t_temp}
+    
+    diff -q ${t_temp} /etc/fstab || {
+        chown root:root ${t_temp}
+        chmod 644 ${t_temp}
+        mv ${t_temp} /etc/fstab
+    }
+    
+    rm -f ${t_temp}
+}
+
+mkdir -p /mnt/hgfs
+
+## Update the module dependencies for this version of the kernel.
+depmod -a 2.6.26-1-untangle-686 || true
+
+## Start virtualbox services at startup
+update-rc.d vboxadd defaults 01 99
+update-rc.d vboxadd-timesync defaults 02 98
+
+## Create a virtualbox user.
+adduser --no-create-home --home /var/run/vboxadd --system --gecos "" --shell /bin/sh --disabled-password vboxadd > /dev/null 2>&1
+
+fix_fstab
+
+true
