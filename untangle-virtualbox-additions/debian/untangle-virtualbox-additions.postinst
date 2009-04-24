@@ -1,5 +1,28 @@
 #! /bin/bash
 
+BACKUP_SUFFIX=".untangle-virtualbox-additions-`date +"%s"`"
+
+replace_file() {
+    local t_src=$1
+    local t_dst=$2
+
+    if [ ! -f ${t_src} ]; then
+        echo "Missing the file ${t_src}"
+        return
+    fi
+
+    if [ -f ${t_dst} ]; then
+        diff -q ${t_dst} ${t_src} >/dev/null 2>&1 && return
+        
+        cp ${t_dst} ${t_dst}.${BACKUP_SUFFIX}
+    fi
+
+    cp ${t_src} ${t_dst}
+    chown root:root ${t_dst}
+    chmod 644 ${t_dst}
+}
+
+
 ## Don't run update db on vmware filesystems.
 update_db()
 {
@@ -20,12 +43,7 @@ fix_fstab()
     
     awk '/vboxsf/ { next } ; { print } ; END { print "shared             /mnt/hgfs               vboxsf  defaults     0 0" }' /etc/fstab > ${t_temp}
     
-    diff -q ${t_temp} /etc/fstab || {
-        chown root:root ${t_temp}
-        chmod 644 ${t_temp}
-        mv ${t_temp} /etc/fstab
-    }
-    
+    replace_file ${t_temp} /etc/fstab
     rm -f ${t_temp}
 }
 
@@ -42,5 +60,7 @@ update-rc.d vboxadd-timesync defaults 02 98
 adduser --no-create-home --home /var/run/vboxadd --system --gecos "" --shell /bin/sh --disabled-password vboxadd > /dev/null 2>&1
 
 fix_fstab
+
+replace_file /usr/share/untangle-virtualbox-additions/xorg.conf /etc/X11/xorg.conf
 
 true
