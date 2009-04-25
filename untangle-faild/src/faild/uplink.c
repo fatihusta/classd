@@ -42,7 +42,7 @@ static struct
     int rtnetlink_socket;
     struct sockaddr_nl local_address;
 
-    char recv_buffer[2048];
+    char recv_buffer[8192];
 } _globals = {
     .mutex = PTHREAD_MUTEX_INITIALIZER,
     .rtnetlink_socket = -1
