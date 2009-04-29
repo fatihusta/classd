@@ -3,7 +3,7 @@
 UNTANGLE_PRIORITY_BASE="36"
 UNTANGLE_PRIORITY_SPLITD="366"
 
-UNTANGLE_SPLITD_SHIFT=8
+UNTANGLE_SPLITD_SHIFT=9
 UNTANGLE_SPLITD_MASK=0xE00
 
 UNTANGLE_SPLITD_QUEUE_NUM=3004
@@ -48,7 +48,7 @@ flush_splitd_ip_rules()
 expected_splitd_ip_rules()
 {
     local t_index
-    for t_index in `seq 1 8` ; do
+    for t_index in `seq 1 7` ; do
         printf "${UNTANGLE_PRIORITY_SPLITD}%02d:\tfrom all fwmark %#x/%#x lookup uplink.%d \n" ${t_index} \
             $(( ${t_index} << ${UNTANGLE_SPLITD_SHIFT} )) ${UNTANGLE_SPLITD_MASK} \
             ${t_index}
@@ -66,7 +66,7 @@ insert_splitd_ip_rules()
 {
     local t_index
     local t_priority
-    for t_index in `seq 1 8` ; do
+    for t_index in `seq 1 7` ; do
         t_priority=`printf "${UNTANGLE_PRIORITY_SPLITD}%02d" ${t_index}`
         ip rule add priority  ${t_priority} \
             fwmark $(( ${t_index} << ${UNTANGLE_SPLITD_SHIFT} ))/${UNTANGLE_SPLITD_MASK} \
