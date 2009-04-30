@@ -36,44 +36,6 @@ is_queue_open()
     return 0
 }
 
-flush_splitd_ip_rules()
-{
-    local t_priority
-
-    for t_priority in `ip rule show | awk "/^${UNTANGLE_PRIORITY_SPLITD}[0-9][0-9]:/ { sub( \":\", \"\", \\$1 ) ; print \\$1 }"`; do
-        ip rule del priority ${t_priority}
-    done
-}
-
-expected_splitd_ip_rules()
-{
-    local t_index
-    for t_index in `seq 1 7` ; do
-        printf "${UNTANGLE_PRIORITY_SPLITD}%02d:\tfrom all fwmark %#x/%#x lookup uplink.%d \n" ${t_index} \
-            $(( ${t_index} << ${UNTANGLE_SPLITD_SHIFT} )) ${UNTANGLE_SPLITD_MASK} \
-            ${t_index}
-    done
-}
-
-current_splitd_ip_rules()
-{
-    ip rule show | awk "/^${UNTANGLE_PRIORITY_SPLITD}[0-9][0-9]:/ { print }" 
-}
-
-## This script updates the state of the system so that SplitD can
-## route traffic through the different interfaces.
-insert_splitd_ip_rules()
-{
-    local t_index
-    local t_priority
-    for t_index in `seq 1 7` ; do
-        t_priority=`printf "${UNTANGLE_PRIORITY_SPLITD}%02d" ${t_index}`
-        ip rule add priority  ${t_priority} \
-            fwmark $(( ${t_index} << ${UNTANGLE_SPLITD_SHIFT} ))/${UNTANGLE_SPLITD_MASK} \
-            lookup uplink.${t_index} 
-    done
-}
-
 insert_splitd_iptables_rules()
 {
     ## Using alpaca-redirect because this guarantees this occurs
@@ -81,6 +43,7 @@ insert_splitd_iptables_rules()
     ## because the decision must be made before routing.
     ${IPTABLES} -t nat -I alpaca-redirect 1 -m addrtype --dst-type unicast -j NFQUEUE --queue-num ${UNTANGLE_SPLITD_QUEUE_NUM}
 }
+
 
 ## Start of script
 if [ -f /etc/default/untangle-shield ]; then 
@@ -90,15 +53,7 @@ fi
 
 ## If the queue is not open, flush the rules and exit
 is_queue_open || {
-    flush_splitd_ip_rules
     exit 0
 }
-
-if [ "`expected_splitd_ip_rules | md5sum`" = "`current_splitd_ip_rules  | md5sum`" ]; then
-    debug "ip rules are up to date."
-else
-    flush_splitd_ip_rules
-    insert_splitd_ip_rules
-fi
 
 insert_splitd_iptables_rules
