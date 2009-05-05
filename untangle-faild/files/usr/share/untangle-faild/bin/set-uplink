@@ -24,7 +24,7 @@ update_default_link_rule()
     printf "[DEBUG:`date`] Bringing up uplink.%d\n" ${t_active_link}
     
     ## Use printf to get rid of the spacing
-    ip rule add priority ${UNTANGLE_PRIORITY_DEFAULT} lookup `printf "uplink.%d" ${FAILD_UPLINK_ACTIVE}`
+    ip rule add priority ${UNTANGLE_PRIORITY_DEFAULT} lookup `printf "uplink.%d" ${t_active_link}`
 }
 
 update_dns_servers()
@@ -50,6 +50,14 @@ update_dns_servers()
         if [ -n "${t_offline_links}" ]; then t_offline_links="${t_offline_links}|" ; fi
         t_offline_links="${t_offline_links}uplink.${t_uplink}"
     done
+
+    if [ -z "${t_online_links}" ]; then
+        t_online_links="this_will_never_match"
+    fi
+    
+    if [ -z "${t_offline_links}" ]; then
+        t_offline_links="this_will_never_match"
+    fi
     
     awk '/^(# *)?server=.*('${t_online_links}')$/ { sub( /^(# *)?/, "" ) ; print ; next } ; /^(# *)?server=.*('${t_offline_links}')$/ { sub( /^(# *)?/, "# " ) ; print ; next } ;  { print } ' /etc/dnsmasq.conf > ${t_temp}
 
