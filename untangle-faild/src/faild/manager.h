@@ -15,15 +15,6 @@
 #include <netinet/ip.h>
 #include <faild.h>
 
-typedef struct
-{
-    int is_enabled;
-    int is_passive;
-    /* This is the address these settings are for. */
-    struct in_addr address;
-    struct in_addr gateway;
-} faild_manager_settings_t;
-
 int faild_manager_init( faild_config_t* config, char* switch_script );
 
 void faild_manager_destroy( void );

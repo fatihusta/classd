@@ -356,7 +356,6 @@ int faild_manager_get_status( faild_status_t* status, int clear_last_fail )
         int num_active = 0;
 
         int c = 0;
-        bzero( _globals.uplink_status, sizeof( _globals.uplink_status ));
 
         for ( c = 0 ; c < FAILD_MAX_INTERFACES ; c++ ) {
             if (( uplink_status == NULL ) && (( uplink_status = faild_uplink_status_create()) == NULL )) {
@@ -372,8 +371,6 @@ int faild_manager_get_status( faild_status_t* status, int clear_last_fail )
             
             if ( uplink_status->online == 1 ) num_active++;
             
-            _globals.uplink_status[c] = uplink_status->online;
-
             status->uplink_status[c] = uplink_status;
             
             uplink_status = NULL;
@@ -694,6 +691,8 @@ int faild_manager_update_uplink_status( faild_uplink_test_instance_t* test_insta
 
         debug( 6, "Link %d status changed from %d to %d\n", aii, uplink_status.online,
                _globals.uplink_status[aii-1] );
+
+        _globals.uplink_status[aii-1] = uplink_status.online;
             
         run_script = 1;
 
@@ -706,9 +705,24 @@ int faild_manager_update_uplink_status( faild_uplink_test_instance_t* test_insta
         
         return 0;
     }
-
+    
     if ( pthread_mutex_lock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_lock" );
     int ret = _critical_section();
+    /* Do this here as a weak lock, if the script takes longer than
+     * interface_min ms, then this won't work.  But this does two
+     * things, prevents the script from firing twice quickly, and
+     * Prevents the need for a lock.  (A lock is bad in the case where
+     * a child script tries to also run change the interface from
+     * outside.  (instant Deadlock)
+     */
+    if (( run_script == 1) && ( ret >= 0 )) {
+        clock_gettime( CLOCK_MONOTONIC, &mt_now );
+        
+        if ( utime_timespec_add( &_globals.next_update, &mt_now, 
+                                 MSEC_TO_NSEC( _globals.interface_min_ms )) < 0 ) {
+            errlog( ERR_CRITICAL, "utime_timespec_add\n" );
+        }
+    }
     if ( pthread_mutex_unlock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_unlock" );
 
     faild_uplink_status_destroy( &uplink_status );
