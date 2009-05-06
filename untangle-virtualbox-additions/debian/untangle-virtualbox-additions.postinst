@@ -23,7 +23,7 @@ replace_file() {
 }
 
 
-## Don't run update db on vmware filesystems.
+## Don't run update db on virtualbox filesystems.
 update_db()
 {
     if [ ! -f /etc/updatedb.conf ]; then
