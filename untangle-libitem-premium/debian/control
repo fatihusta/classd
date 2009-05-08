@@ -228,7 +228,7 @@ Package: untangle-libitem-faild
 Section: premium/admin
 Architecture: all
 Depends: untangle-node-faild
-XB-View-Position: 60
+XB-View-Position: 61
 XB-Display-Name: WAN Failover
 XB-Untangle-Type: lib_item
 XB-Untangle-Pkg-Type: lib_item
@@ -307,7 +307,7 @@ Package: untangle-libitem-splitd
 Section: premium/admin
 Architecture: all
 Depends: untangle-node-splitd, untangle-libitem-faild
-XB-View-Position: 60
+XB-View-Position: 61
 XB-Display-Name: WAN Balancer
 XB-Untangle-Type: lib_item
 XB-Untangle-Pkg-Type: lib_item
@@ -1592,7 +1592,7 @@ Description: Untangle PC Remote
 Package: untangle-libitem-trial14-splitd
 Section: premium/admin
 Architecture: all
-Depends: untangle-node-splitd
+Depends: untangle-node-splitd, untangle-libitem-trial14-faild
 XB-View-Position: 1016
 XB-Display-Name: WAN Balancer 14-Day Trial
 XB-Untangle-Type: trial
