@@ -8,5 +8,5 @@ if [ "${TIMEOUT}" = "0" ]; then
     TIMEOUT=1
 fi
 
-wget --header="FailD-Flag: true" -T ${TIMEOUT} --tries=${NUM_TRIES} -O /dev/null ${URL} 2>/dev/null
+wget --bind-address=${FAILD_PRIMARY_ADDRESS}  --header="FailD-Flag: true" -T ${TIMEOUT} --tries=${NUM_TRIES} -O /dev/null ${URL} 2>/dev/null
 
