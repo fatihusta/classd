@@ -897,7 +897,7 @@ Description: foo
 Package: untangle-libitem-trial14-professional-package
 Section: premium/admin
 Architecture: all
-Depends: untangle-libitem-trial14-portal, untangle-libitem-trial14-boxbackup, untangle-libitem-trial14-support, untangle-libitem-trial14-adconnector, untangle-libitem-trial14-policy
+Depends: untangle-libitem-trial14-portal, untangle-libitem-trial14-boxbackup, untangle-libitem-trial14-support, untangle-libitem-trial14-adconnector, untangle-libitem-trial14-policy, untangle-libitem-trial14-faild
 XB-View-Position: 10
 XB-Display-Name: Professional Package 14-Day Trial
 XB-Untangle-Type: trial
