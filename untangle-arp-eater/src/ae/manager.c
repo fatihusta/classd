@@ -11,8 +11,12 @@
 
 #include <pthread.h>
 
+#include <sys/socket.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <asm/types.h>
+#include <linux/netlink.h>
+#include <linux/rtnetlink.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 
@@ -42,9 +46,12 @@ static struct
     arpeater_ae_config_t config;
     struct in_addr gateway;
     arpeater_ae_config_network_t broadcast_network;
-    char gateway_interface[IF_NAMESIZE];
+    int rtnetlink_socket;
+    struct sockaddr_nl local_address;
+    char recv_buffer[8192];
 } _globals = {
     .mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP,
+    .rtnetlink_socket = -1,
     .gateway = { .s_addr = INADDR_ANY },
     .broadcast_network = { 
         .gateway = { .s_addr = INADDR_ANY },
@@ -61,7 +68,12 @@ static int _get_network( arpeater_ae_config_t* config , struct in_addr* ip,
 
 static int _is_gateway( struct in_addr* ip );
 
-/*&
+static int _send_request( struct nlmsghdr* nl );
+static int _recv_request( char* recv_buffer, int recv_buffer_len );
+static int _get_route_info( struct nlmsghdr* nlmsghdr, struct in_addr* destination, 
+                            struct in_addr* gateway, int* ifindex );
+
+/*
  * Returns 1 if the address is not the global broadcast address,
  * multicast address or any address.
  */
@@ -73,12 +85,34 @@ int arpeater_ae_manager_init( arpeater_ae_config_t* config )
 
     memcpy( &_globals.config, config, sizeof( _globals.config ));
 
+    if ( _globals.rtnetlink_socket > 0 ) return errlog( ERR_CRITICAL, "Already initialized.\n" );
+
+    if (( _globals.rtnetlink_socket = socket( AF_NETLINK, SOCK_RAW, NETLINK_ROUTE )) < 0 ) {
+        return perrlog( "socket" );
+    }
+
+    bzero( &_globals.local_address, sizeof( _globals.local_address ));
+    _globals.local_address.nl_family = AF_NETLINK;
+    _globals.local_address.nl_pid = getpid();
+    if ( bind( _globals.rtnetlink_socket, (struct sockaddr*)&_globals.local_address, 
+               sizeof( _globals.local_address )) < 0 ) {
+        return perrlog( "bind" );
+    }
+
     if ( arpeater_ae_manager_reload_gateway() < 0 ) {
         return errlog( ERR_CRITICAL, "arpeater_ae_manager_reload_gateway\n" );
     }
 
     return 0;
 }
+
+int arpeater_ae_manager_destroy( void )
+{
+    if ( _globals.rtnetlink_socket > 0 ) close( _globals.rtnetlink_socket );
+    _globals.rtnetlink_socket = -1;
+    return 0;
+}
+
 
 /**
  * Copies in the config to the global config
@@ -203,51 +237,67 @@ int arpeater_ae_manager_get_ip_settings( struct in_addr* ip, arpeater_ae_manager
 
 int arpeater_ae_manager_reload_gateway( void )
 {
-    int proc_fd = -1;
+    int _critical_section()
+    {
+        struct {
+            struct nlmsghdr nl;
+            struct rtmsg rt;
+        } request;
 
-    int _critical_section() {
-        _globals.gateway.s_addr = INADDR_ANY;
-        bzero( &_globals.gateway_interface, sizeof( _globals.gateway_interface ));
-        
-        char buffer[_ROUTE_READ_SIZE * 16];
-        int size;
-        int c;
-        char interface[IF_NAMESIZE];
+        /* Build a request to get the routing table for this uplink */
+        bzero( &request, sizeof( request ));
 
-        struct in_addr destination, netmask, gateway;
-        
-        if (( proc_fd = open( _ROUTE_FILE, O_RDONLY )) < 0 ) return perrlog( "open" );
-        
-        while (( size = read( proc_fd, buffer, sizeof( buffer ))) > 0 ) {
-            for ( c = 0 ; c < size ; c += _ROUTE_READ_SIZE ) {
-                buffer[c + _ROUTE_READ_SIZE - 1] = '\0';
+        struct nlmsghdr* nl = &request.nl;
+        struct rtmsg* rt = &request.rt;
+        int response_length;
 
-                /* Kind of unfortunate, but 16 is hardcoded in there. */
-                if ( sscanf( &buffer[c], "%16s\t%x\t%x\t%*d\t%*d\t%*d\t%*d\t%x\t%*d\t%*d%*d",
-                             interface, &destination.s_addr, &gateway.s_addr, &netmask.s_addr ) < 4 ) {
-                    if ( strncmp( interface, "Iface", sizeof( interface )) != 0 ) {
-                        debug( 4, "Unable to parse the string: %s\n", &buffer[c] );
-                    }
-                    continue;
-                }
+        nl->nlmsg_len = NLMSG_LENGTH(sizeof( struct rtmsg ));
+        nl->nlmsg_flags = NLM_F_REQUEST | NLM_F_DUMP | NLM_F_ACK;
+        nl->nlmsg_type = RTM_GETROUTE;
+        rt->rtm_family = AF_INET;
 
-                debug( 4, "Parsed the route: %s %s/%s -> %s\n", interface, 
-                       unet_next_inet_ntoa( destination.s_addr ), 
-                       unet_next_inet_ntoa( netmask.s_addr ), 
-                       unet_next_inet_ntoa( gateway.s_addr ));
-                
-                if (( destination.s_addr == INADDR_ANY ) && ( netmask.s_addr == INADDR_ANY )) {
-                    strncpy( _globals.gateway_interface, interface, sizeof( _globals.gateway_interface ));
-                    memcpy( &_globals.gateway, &gateway, sizeof( _globals.gateway ));
-                    debug( 4, "Setting the default gateway to %s / %s\n", _globals.gateway_interface, 
-                           unet_next_inet_ntoa( _globals.gateway.s_addr ));
-                    break;
-                }
-            }
+        /* Get the routing table for the correct uplink (as far as i can
+         * tell, this doesn't actually do anything) */
+        rt->rtm_table = 0;
+    
+        if ( _send_request( nl ) < 0 ) return errlog( ERR_CRITICAL, "_send_request\n" );
+
+        if (( response_length = _recv_request( _globals.recv_buffer, sizeof( _globals.recv_buffer ))) < 0 ) {
+            return errlog( ERR_CRITICAL, "_recv_request\n" );
         }
+    
+        struct rtmsg* rtmsg = NULL;
 
-        if ( size < 0 ) return perrlog( "read" );        
+        struct in_addr destination;
+        struct in_addr gateway;
+        unsigned char netmask;
+        int ifindex;
+
+        struct nlmsghdr* nlmsghdr = (struct nlmsghdr*)_globals.recv_buffer;
+        for ( ; NLMSG_OK( nlmsghdr, response_length ) ; nlmsghdr = NLMSG_NEXT( nlmsghdr, response_length )) {
+            rtmsg = (struct rtmsg*)NLMSG_DATA( nlmsghdr );
         
+            if ( rtmsg == NULL ) return errlog( ERR_CRITICAL, "NLMSG_DATA\n" );
+        
+            netmask = rtmsg->rtm_dst_len;
+        
+            if ( _get_route_info( nlmsghdr, &destination, &gateway, &ifindex ) < 0 ) {
+                return errlog( ERR_CRITICAL, "_get_route_info\n" );
+            }
+
+            debug( 7, "Found the route: %s/%d -> %s on table %d\n", unet_inet_ntoa( destination.s_addr ), 
+                   netmask, unet_inet_ntoa( gateway.s_addr ), rtmsg->rtm_table );
+                   
+
+            if ( gateway.s_addr == INADDR_ANY ) {
+                debug( 7, "Ignoring invalid route entry on table %d\n", rtmsg->rtm_table );
+                continue;
+            }
+        
+            memcpy( &_globals.gateway, &gateway, sizeof( _globals.gateway ));
+            break;
+        }
+    
         return 0;
     }
 
@@ -256,8 +306,6 @@ int arpeater_ae_manager_reload_gateway( void )
     int ret = _critical_section();
 
     if ( pthread_mutex_unlock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_unlock" );
-
-    if (( proc_fd >= 0 ) && ( close( proc_fd ) < 0 )) perrlog( "close" );
 
     if ( ret < 0 ) return errlog( ERR_CRITICAL, "_critical_section\n" );
         
@@ -346,3 +394,99 @@ static int _is_gateway( struct in_addr* address )
     
 }
 
+static int _send_request( struct nlmsghdr* nl )
+{
+    struct msghdr msg;
+    struct sockaddr_nl remote_address;
+    struct iovec iov;
+    
+    bzero( &msg, sizeof( msg ));
+    bzero( &remote_address, sizeof( remote_address ));
+    remote_address.nl_family = AF_NETLINK;
+
+    bzero( &iov, sizeof( iov ));
+    
+    msg.msg_name = (void*)&remote_address;
+    msg.msg_namelen = sizeof( remote_address );
+    
+    iov.iov_base = (void*)nl;
+    iov.iov_len = nl->nlmsg_len;
+    msg.msg_iov = &iov;
+    msg.msg_iovlen = 1;
+
+    size_t size = sendmsg( _globals.rtnetlink_socket, &msg, 0 );
+    if ( size  < 0 ) return perrlog( "sendmsg" );
+
+    return size;
+}
+
+static int _recv_request( char* recv_buffer, int recv_buffer_len )
+{
+    if ( recv_buffer == NULL ) return errlogargs();
+    if ( recv_buffer_len <= 0 ) return errlogargs();
+
+    char* position = recv_buffer;
+    int response_size = 0;
+    int recv_size;
+    struct nlmsghdr *nlp;
+
+    while ( 1 ) {
+        recv_size = recv_buffer_len - response_size;
+        if ( recv_size <= 0 ) return errlog( ERR_CRITICAL, "Buffer is not large enough.\n" );
+
+        if (( recv_size = recv( _globals.rtnetlink_socket, position, recv_size, 0  )) < 0 ) {
+            return perrlog( "recv" );
+        }
+
+        nlp = (struct nlmsghdr *)position;
+
+        if ( nlp->nlmsg_type == NLMSG_ERROR ) {
+            return errlog( ERR_CRITICAL, "Received error %d\n", nlp->nlmsg_type );
+        } else if ( nlp->nlmsg_type ==  NLMSG_DONE ) {
+            break;
+        }
+
+        response_size += recv_size;
+        position += recv_size;
+
+        /* If monitoring then break after receiving the first message */
+        if (( _globals.local_address.nl_groups & RTMGRP_IPV4_ROUTE ) == RTMGRP_IPV4_ROUTE ) break;
+    }
+    
+    return response_size;
+}
+
+static int _get_route_info( struct nlmsghdr* nlmsghdr, struct in_addr* destination, 
+                            struct in_addr* gateway, int* ifindex )
+{
+    *ifindex = 0;
+    bzero( destination, sizeof( struct in_addr ));
+    bzero( gateway, sizeof( struct in_addr ));
+
+    struct rtmsg* rtmsg = NULL;
+    struct rtattr* rtattr = NULL;
+
+    rtmsg = (struct rtmsg*)NLMSG_DATA(nlmsghdr);
+    int rt_length = RTM_PAYLOAD( nlmsghdr );
+
+    
+    rtattr = RTM_RTA( rtmsg );
+
+    for ( ; RTA_OK( rtattr, rt_length ) ; rtattr = RTA_NEXT( rtattr, rt_length )) {
+        switch ( rtattr->rta_type ) {
+        case RTA_DST:
+            memcpy( destination, RTA_DATA(rtattr), sizeof( *destination ));
+            break;
+            
+        case RTA_GATEWAY:
+            memcpy( gateway, RTA_DATA(rtattr), sizeof( *gateway ));
+            break;
+            
+        case RTA_OIF:
+            *ifindex = *((int*)RTA_DATA( rtattr ));
+            break;
+        }
+    }
+
+    return 0;
+}

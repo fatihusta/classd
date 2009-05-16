@@ -311,6 +311,8 @@ static void _destroy( void )
     
     json_server_destroy( &_globals.json_server );
 
+    arpeater_ae_manager_destroy();
+
     libmvutil_cleanup();
 
     /* Close the two open file descriptors */

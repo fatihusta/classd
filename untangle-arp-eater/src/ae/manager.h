@@ -26,6 +26,8 @@ typedef struct
 
 int arpeater_ae_manager_init( arpeater_ae_config_t* config );
 
+int arpeater_ae_manager_destroy( void );
+
 /**
  * Copies in the config to the global config
  */
