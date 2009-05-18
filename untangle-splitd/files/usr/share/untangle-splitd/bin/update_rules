@@ -46,14 +46,14 @@ insert_splitd_iptables_rules()
 
 
 ## Start of script
-if [ -f /etc/default/untangle-shield ]; then 
-    . /etc/default/untangle-shield
+if [ -f /etc/default/untangle-splitd ]; then 
+    . /etc/default/untangle-splitd
 fi
 
 
-## If the queue is not open, flush the rules and exit
-is_queue_open || {
-    exit 0
+## If the queue is open generate the new rules
+is_queue_open && {
+    insert_splitd_iptables_rules
 }
 
-insert_splitd_iptables_rules
+true
