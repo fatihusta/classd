@@ -275,10 +275,10 @@ class SSHPlugin < Plugin
 
   def help(plugin, topic="")
     <<-eos
-      ssh enable :passphrase  => Enable SSH forwarding channel
-      ssh enable2 :passphrase => Enable SSH forwarding channel (no ruby-ssh library involved)
-      ssh disable             => Disable SSH forwarding channel
-      ssh download_key        => Download an SSH key
+      ssh enable :passphrase :port  => Enable SSH forwarding channel
+      ssh enable2 :passphrase :port => Enable SSH forwarding channel (no ruby-ssh library involved)
+      ssh disable                   => Disable SSH forwarding channel
+      ssh download_key              => Download an SSH key
     eos
   end
 
