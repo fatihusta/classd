@@ -27,8 +27,8 @@ typedef struct host_handler
     mailbox_t mbox;
     struct ether_addr host_mac;
     struct ether_addr gateway_mac;
-    struct timeval starttime;
-    struct timeval timeout;
+    struct timespec starttime;
+    struct timespec timeout;
 } host_handler_t;
 
 typedef enum

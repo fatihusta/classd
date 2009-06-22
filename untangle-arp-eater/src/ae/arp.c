@@ -311,9 +311,9 @@ int arp_host_handler_send_message ( host_handler_t* host, handler_message_t mesg
  */
 static int _host_handler_reset_timer (host_handler_t* host)
 {
-    if ( gettimeofday ( &host->timeout, NULL ) < 0) 
-        return perrlog("gettimeofday");
-
+    if (clock_gettime( CLOCK_MONOTONIC, &host->timeout) < 0)
+        return perrlog( "clock_gettime");
+    
     host->timeout.tv_sec += 60 * 60; /* XXX 1 hour - should be variable */
     return 0;
 }
@@ -332,7 +332,7 @@ static int _host_handler_is_broadcast (host_handler_t* host)
  */
 static int _host_handler_is_timedout (host_handler_t* host)
 {
-    struct timeval now;
+    struct timespec now;
 
     /**
      * Broadcast and "active" threads don't time out
@@ -340,8 +340,8 @@ static int _host_handler_is_timedout (host_handler_t* host)
     if (_host_handler_is_broadcast (host) || !host->settings.is_passive)
         return 0;
     
-    if ( gettimeofday( &now, NULL ) < 0 ) {
-        perrlog("gettimeofday");
+    if ( clock_gettime( CLOCK_MONOTONIC, &now ) < 0 ) {
+        perrlog("clock_gettime");
         return 0;
     }
 
@@ -603,8 +603,8 @@ static int _host_handler_start ( in_addr_t addr )
 
         newhost->addr.s_addr = addr;
 
-        if ( gettimeofday( &newhost->starttime, NULL ) < 0 ) {
-            ret = perrlog("gettimeofday");
+        if ( clock_gettime( CLOCK_MONOTONIC, &newhost->starttime ) < 0 ) {
+            ret = perrlog("clock_gettime");
             free(newhost);
             break;
         }   
