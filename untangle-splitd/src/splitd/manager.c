@@ -79,7 +79,7 @@ int splitd_manager_set_config( splitd_config_t* config )
 {
     if ( config == NULL ) return errlogargs();
 
-#define ALWAYS_LOAD_CACHER
+//#define ALWAYS_LOAD_CACHER
 #ifdef ALWAYS_LOAD_CACHER
     debug(1,"Forcing load of cacher\n");
     char* config_str = " { \"cache_creation_timeout\" : 2592000, \"cache_access_timeout\" : 7200, \"cache_max_size\" : 2000, \"cache_hard_max_size\" : 10000,  \"cache_clean_interval\" : 60 } ";
