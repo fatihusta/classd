@@ -20,6 +20,8 @@
 #include "splitd.h"
 #include "json/object_utils.h"
 
+#define MIN_CLEAN_INTERVAL 60
+
 typedef struct
 {
     /* this timeout is the maximum entry age */
@@ -162,7 +164,7 @@ static int _init( splitd_splitter_instance_t* instance )
     config->cache_clean_interval = _get_param("cache_clean_interval",instance); 
     if (config->cache_clean_interval == -1) {
         errlog(ERR_WARNING,"Error fetching parameter - assuming default\n");
-        config->cache_clean_interval = 60;
+        config->cache_clean_interval = 60*20;
     }
 
     debug(11,"Cacher: config->cache_creation_timeout %i\n",config->cache_creation_timeout);
@@ -312,6 +314,13 @@ static int _cache_clean ( _config_t* config )
     list_node_t* node;
 
     if (!cache) return errlogargs();
+
+    /* if MIN_CLEAN_INTERVAL hasn't passed - do nothing */
+    if (config->cache_table_last_clean_time + MIN_CLEAN_INTERVAL > _clock_seconds_now()) {
+        debug( 8, "Cache-Clean: skipping clean (MIN_CLEAN_INTERVAL not passed)\n");
+        return 0;
+    }
+
     bucket_list = ht_get_bucket_list(cache);
 
     /* because this is single threaded - no lock is needed here */
