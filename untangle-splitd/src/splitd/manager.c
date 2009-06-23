@@ -79,6 +79,20 @@ int splitd_manager_set_config( splitd_config_t* config )
 {
     if ( config == NULL ) return errlogargs();
 
+#define ALWAYS_LOAD_CACHER
+#ifdef ALWAYS_LOAD_CACHER
+    debug(1,"Forcing load of cacher\n");
+    char* config_str = " { \"cache_creation_timeout\" : 2592000, \"cache_access_timeout\" : 7200, \"cache_max_size\" : 2000, \"cache_hard_max_size\" : 10000,  \"cache_clean_interval\" : 60 } ";
+
+    struct json_tokener* tok = json_tokener_new();
+    struct json_object* params = json_tokener_parse_ex(tok,config_str,strlen(config_str));
+    json_tokener_free(tok);
+
+    splitd_splitter_config_t* sconfig = &config->splitters[config->splitters_length];
+    splitd_splitter_config_init(sconfig,"cacher",params);
+    config->splitters_length = config->splitters_length+1;
+#endif
+    
     splitd_splitter_instance_t* splitter_instance = NULL;
     
     splitd_chain_t* chain = NULL;

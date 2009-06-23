@@ -36,7 +36,7 @@ static int _destroy( splitd_splitter_instance_t* instance );
 /* This is a splitter that just adds the number of points specified in the params. */
 int splitd_splitter_lib_base_basic_splitter( splitd_splitter_class_t* splitter )
 {
-    if ( splitd_splitter_class_init( splitter, "basic", _init, _update_scores, _destroy, NULL ) 
+    if ( splitd_splitter_class_init( splitter, "basic", _init, _update_scores, NULL, _destroy, NULL ) 
          < 0 ) {
         return errlog( ERR_CRITICAL, "splitd_splitter_class_init\n" );
     }
@@ -85,8 +85,8 @@ static int _init( splitd_splitter_instance_t* instance )
         }
 
         if ( json_object_is_type( item_json, json_type_int ) == 0 ) {
-            debug( 10, "The index %d is not an int.\n", c );
-            continue;
+            free( config );
+            return errlog( ERR_CRITICAL, "The index %d is not an int.\n", c );
         }
         
         config->scores[c] = json_object_get_int( item_json );

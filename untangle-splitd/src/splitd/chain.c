@@ -158,10 +158,12 @@ int splitd_chain_mark_session( splitd_chain_t* chain, splitd_packet_t* packet )
     double ticket = (( rand() + 0.0 ) / RAND_MAX ) * total;
     
     total = 0;
+    int uplink = 0;
     for ( int c = 0 ; c < SPLITD_MAX_UPLINKS ; c++ ) {
         if ( scores[c] <= 0 ) continue;
         total += scores[c];
         if ( ticket <= total ) {
+            uplink = c;
             packet->has_nfmark = 1;
             packet->nfmark |= (( c + 1 ) << _MARK_SHIFT & _MARK_MASK );
 
@@ -169,6 +171,30 @@ int splitd_chain_mark_session( splitd_chain_t* chain, splitd_packet_t* packet )
             break;
         }
     }
+
+    debug( 11, "Running packet through %d splitters\n", chain->num_splitters );
+    for ( int c = 0 ; c < chain->num_splitters ; c++ ) {
+        splitd_splitter_instance_t* instance = &chain->splitters[c];
+        splitd_splitter_class_t* splitter_class = instance->splitter_class;
+        if ( splitter_class == NULL ) {
+            errlog( ERR_WARNING, "Index %d of the chain doesn't have a class", c );
+            continue;
+        }
+
+        splitd_splitter_class_uplink_chosen_f uplink_chosen = splitter_class->uplink_chosen;
+        if ( uplink_chosen == NULL ) {
+            /* this is normal and not an error */
+            continue;
+        }
+
+        if ( uplink_chosen( instance, chain, uplink, packet ) < 0 ) {
+            return errlog( ERR_CRITICAL, "%s->uplink_chosen\n", splitter_class->name );
+        }
+
+        debug( 11, "Packet[%d] scores are (%s)\n", c, _print_scores( scores_str, scores_str_len, scores ));
+    }
+
+    
     return 0;
 }
 

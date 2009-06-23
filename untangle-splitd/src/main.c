@@ -119,7 +119,7 @@ int main( int argc, char** argv )
         }
         
         if ( chdir( "/" ) < 0 ) {
-            syslog( LOG_DAEMON | LOG_ERR, "chrdir: %s\n", errstr );
+            syslog( LOG_DAEMON | LOG_ERR, "chdir: %s\n", errstr );
             return -6;
         }
         
@@ -293,7 +293,7 @@ static int _init( int argc, char** argv )
     }
 
     if ( splitd_reader_init( &_globals.reader, _globals.queue_num ) < 0 ) {
-        return errlog( ERR_CRITICAL, "barfight_bouncer_reader_init\n" );
+        return errlog( ERR_CRITICAL, "splitd_reader_init\n" );
     }
 
     pthread_t thread;
@@ -331,7 +331,7 @@ static int _init( int argc, char** argv )
                 errlog( ERR_CRITICAL, "splitd_config_load_json\n" );
             } else {
                 if ( splitd_functions_load_config( &config ) < 0 ) {
-                    errlog( ERR_CRITICAL, "barfight_functions_load_config\n" );
+                    errlog( ERR_CRITICAL, "splitd_functions_load_config\n" );
                 }
             }
         }        

@@ -143,10 +143,10 @@ int splitd_libs_get_splitter_class( char* splitter_name, splitd_splitter_class_t
     if ( splitter_name == NULL ) return errlogargs();
     if ( splitter == NULL ) return errlogargs();
 
-    debug( 5, "Lookup up the test class '%s'\n", splitter_name );
+    debug( 5, "Lookup the splitter class '%s'\n", splitter_name );
     *splitter = (splitd_splitter_class_t*)ht_lookup( &_globals.name_to_splitter, splitter_name );
     if ( *splitter == NULL ) {
-        debug( 5, "The test class '%s' doesn't exist\n", splitter_name );
+        debug( 5, "The splitter class '%s' doesn't exist\n", splitter_name );
     }
 
     return 0;
@@ -166,6 +166,7 @@ int
 splitd_splitter_class_init( splitd_splitter_class_t* splitter, char* name,
                             splitd_splitter_class_init_f init,
                             splitd_splitter_class_update_scores_f update_scores,
+                            splitd_splitter_class_uplink_chosen_f uplink_chosen,
                             splitd_splitter_class_destroy_f destroy,
                             struct json_array* params )
 {
@@ -175,6 +176,7 @@ splitd_splitter_class_init( splitd_splitter_class_t* splitter, char* name,
 
     splitter->init = init;
     splitter->update_scores = update_scores;
+    splitter->uplink_chosen = uplink_chosen;
     splitter->destroy = destroy;
     splitter->params = params;
 
@@ -186,6 +188,7 @@ splitd_splitter_class_t*
 splitd_splitter_class_create( char* name,
                               splitd_splitter_class_init_f init,
                               splitd_splitter_class_update_scores_f update_scores,
+                              splitd_splitter_class_uplink_chosen_f uplink_chosen,
                               splitd_splitter_class_destroy_f destroy,
                               struct json_array* params )
 {
@@ -195,7 +198,7 @@ splitd_splitter_class_create( char* name,
         return errlog_null( ERR_CRITICAL, "splitd_splitter_class_malloc\n" );
     }
 
-    if ( splitd_splitter_class_init( splitter, name, init, update_scores, destroy, params ) < 0 ) {
+    if ( splitd_splitter_class_init( splitter, name, init, update_scores, uplink_chosen, destroy, params ) < 0 ) {
         return errlog_null( ERR_CRITICAL, "splitd_splitter_class_init\n" );
     }
 
@@ -329,7 +332,7 @@ static int _load_library( char* lib_path_name, char* lib_file_name, splitd_split
                 return errlogmalloc();
             }
             memcpy( splitter, &splitters[c], sizeof( splitd_splitter_class_t ));
-            debug( 4, "Loading the test '%s'\n", splitter->name );
+            debug( 4, "Loading the splitter '%s'\n", splitter->name );
             if ( ht_add( &_globals.name_to_splitter, splitter->name, splitter ) < 0 ) {
                 return errlog( ERR_CRITICAL, "ht_add" );
             }

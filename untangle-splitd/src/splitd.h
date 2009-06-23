@@ -124,6 +124,9 @@ typedef int (*splitd_splitter_class_update_scores_f)( splitd_splitter_instance_t
                                                       splitd_chain_t* chain,
                                                       int* score, splitd_packet_t* packet );
 typedef int (*splitd_splitter_class_destroy_f)( splitd_splitter_instance_t* instance );
+typedef int (*splitd_splitter_class_uplink_chosen_f)( splitd_splitter_instance_t* instance, 
+                                                   splitd_chain_t* chain,
+                                                   int wan, splitd_packet_t* packet );
 
 typedef struct splitd_splitter_class
 {
@@ -135,6 +138,9 @@ typedef struct splitd_splitter_class
     /* Update the scores for the uplinks, called for each session */
     splitd_splitter_class_update_scores_f update_scores;
 
+    /* This event is called after a WAN is chosen for a given packet/session */
+    splitd_splitter_class_uplink_chosen_f uplink_chosen;
+    
     /* Cleanup this instance of a splitter */
     splitd_splitter_class_destroy_f destroy;
 
@@ -191,6 +197,7 @@ int
 splitd_splitter_class_init( splitd_splitter_class_t* splitter, char* name,
                             splitd_splitter_class_init_f init,
                             splitd_splitter_class_update_scores_f update_scores,
+                            splitd_splitter_class_uplink_chosen_f uplink_chosen,
                             splitd_splitter_class_destroy_f destroy,
                             struct json_array* params );
 
@@ -198,6 +205,7 @@ splitd_splitter_class_t*
 splitd_splitter_class_create( char* name,
                               splitd_splitter_class_init_f init,
                               splitd_splitter_class_update_scores_f update_scores,
+                              splitd_splitter_class_uplink_chosen_f uplink_chosen,
                               splitd_splitter_class_destroy_f destroy,
                               struct json_array* params );
 

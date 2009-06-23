@@ -373,8 +373,9 @@ int  splitd_nfqueue_set_verdict_mark( splitd_packet_t* packet, int verdict,
     if ( packet == NULL ) return errlogargs();
 
     if ( packet->nfqueue == NULL ) return errlogargs();
-    
-    if ( packet->nf_packet_id == 0 ) return errlogargs();
+
+    /* this in not an error - first packet reports id 0 */
+    //if ( packet->nf_packet_id == 0 ) return errlogargs();
 
     u_int32_t nf_packet_id = packet->nf_packet_id;
     splitd_nfqueue_t* nfqueue = packet->nfqueue;

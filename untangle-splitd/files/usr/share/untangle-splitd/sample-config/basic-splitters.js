@@ -13,6 +13,15 @@
     }],
     
     "splitters" : [{
+        "splitter_name" : "cacher",
+        "params" : {
+            "cache_creation_timeout" : 2592000, /* 60*60*24*30 */ 
+            "cache_access_timeout" : 7200,  /* 60*60*2 */
+            "cache_max_size" : 2000,
+            "cache_hard_max_size" : 10000, 
+            "cache_clean_interval" : 60
+        }
+    },{
         /* Disable all interfaces that are not online */
         "splitter_name" : "online",
         "params" : {}

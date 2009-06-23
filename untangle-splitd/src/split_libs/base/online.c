@@ -50,7 +50,7 @@ static int _update_online_status( _config_t* config );
  * that are not online */
 int splitd_splitter_lib_base_online_splitter( splitd_splitter_class_t* splitter )
 {
-    if ( splitd_splitter_class_init( splitter, "online", _init, _update_scores, _destroy, NULL ) < 0 ) {
+    if ( splitd_splitter_class_init( splitter, "online", _init, _update_scores, NULL, _destroy, NULL ) < 0 ) {
         return errlog( ERR_CRITICAL, "splitd_splitter_class_init\n" );
     }
 

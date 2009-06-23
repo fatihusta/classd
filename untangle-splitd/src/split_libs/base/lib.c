@@ -21,6 +21,7 @@
  * that are not online */
 int splitd_splitter_lib_base_online_splitter( splitd_splitter_class_t* splitter );
 int splitd_splitter_lib_base_basic_splitter( splitd_splitter_class_t* splitter );
+int splitd_splitter_lib_base_cacher_splitter( splitd_splitter_class_t* splitter );
 
 static int _init( void );
 
@@ -42,6 +43,7 @@ static struct
     .splitter_getters = {
         splitd_splitter_lib_base_online_splitter,
         splitd_splitter_lib_base_basic_splitter,
+        splitd_splitter_lib_base_cacher_splitter,
         NULL
     }
 };
