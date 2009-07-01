@@ -12,6 +12,7 @@
 #ifndef __ARPEATER_AE_MANAGER_H_
 #define __ARPEATER_AE_MANAGER_H_
 
+#include <netinet/ether.h>
 #include <netinet/ip.h>
 #include <ae/config.h>
 
@@ -22,6 +23,11 @@ typedef struct
     /* This is the address these settings are for. */
     struct in_addr address;
     struct in_addr gateway;
+    
+    int num_mac_addresses;
+
+    /* This is an array of mac addresses to ignore. */
+    struct ether_addr *mac_addresses;
 } arpeater_ae_manager_settings_t;
 
 int arpeater_ae_manager_init( arpeater_ae_config_t* config );

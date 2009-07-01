@@ -13,6 +13,7 @@
 
 #include <sys/socket.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <asm/types.h>
 #include <linux/netlink.h>
@@ -175,7 +176,27 @@ int arpeater_ae_manager_get_ip_settings( struct in_addr* ip, arpeater_ae_manager
     int _critical_section() {
         arpeater_ae_config_network_t* network = NULL;
 
+        if ( settings->mac_addresses != NULL ) {
+            free( settings->mac_addresses );
+        }
+
+        settings->mac_addresses = NULL;
+        settings->num_mac_addresses = 0;
+
         bzero( settings, sizeof( arpeater_ae_manager_settings_t ));
+
+        /* Copy in the mac addresses */
+        int num_mac_addresses = _globals.config.num_mac_addresses;
+        if (( num_mac_addresses > 0 ) && ( num_mac_addresses < ARPEATER_AE_CONFIG_NUM_MAC_ADDRESSES )) {
+            if (( settings->mac_addresses = calloc( num_mac_addresses, sizeof ( struct ether_addr ))) 
+                == NULL ) {
+                return errlogmalloc();
+            }
+
+            memcpy( settings->mac_addresses, &_globals.config.mac_addresses, 
+                    num_mac_addresses * sizeof( struct ether_addr ));
+            settings->num_mac_addresses = num_mac_addresses;
+        }
 
         settings->address.s_addr = ip->s_addr;
         settings->is_passive = 1;
@@ -219,7 +240,7 @@ int arpeater_ae_manager_get_ip_settings( struct in_addr* ip, arpeater_ae_manager
             return 0;
         }
 
-        settings->gateway.s_addr = _globals.gateway.s_addr;
+        settings->gateway.s_addr = _globals.gateway.s_addr;        
 
         return 0;
     }

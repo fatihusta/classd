@@ -14,13 +14,16 @@
 
 #include <pthread.h>
 #include <netinet/in.h>
+#include <net/ethernet.h>
 #include <net/if.h>
 
 #include <json/json.h>
 
-#define ARPEATER_AE_CONFIG_MIN_TIMEOUT   100
-#define ARPEATER_AE_CONFIG_MIN_RATE      100
-#define ARPEATER_AE_CONFIG_NUM_NETWORKS  256
+#define ARPEATER_AE_CONFIG_MIN_TIMEOUT        100
+#define ARPEATER_AE_CONFIG_MIN_RATE           100
+#define ARPEATER_AE_CONFIG_NUM_NETWORKS       256
+#define ARPEATER_AE_CONFIG_NUM_MAC_ADDRESSES   64
+
 
 typedef struct
 {
@@ -69,6 +72,12 @@ typedef struct
 
     /* Array of all of the configured networks */
     arpeater_ae_config_network_t networks[ARPEATER_AE_CONFIG_NUM_NETWORKS];
+    
+    /* The number of MAC addresses to not filter */
+    int num_mac_addresses;
+
+    /* Array of all of the MAC addresses to not filter */
+    struct ether_addr mac_addresses[ARPEATER_AE_CONFIG_NUM_MAC_ADDRESSES];
 } arpeater_ae_config_t;
 
 arpeater_ae_config_t* arpeater_ae_config_malloc( void );

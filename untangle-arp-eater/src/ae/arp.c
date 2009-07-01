@@ -65,6 +65,8 @@ static int   _arp_lookup ( struct ether_addr *dest, in_addr_t ip );
 static int   _arp_table_lookup ( struct ether_addr *dest, in_addr_t ip );
 static int   _host_handler_start ( in_addr_t addr );
 
+static int   _host_handler_ignore_mac_address( host_handler_t* host);
+
 static int HOST_HANDLER_DELAY = 10000; /* usec */
 static int HOST_HANDLER_SLEEP = 3; /* sec */
 
@@ -353,6 +355,42 @@ static int _host_handler_is_timedout (host_handler_t* host)
 }
 
 /**
+ * Check if this host should be ignored due to its MAC address.
+ * returns: 1 if yes, 0 if no.
+ */
+static int   _host_handler_ignore_mac_address( host_handler_t* host)
+{
+    int c = 0;
+    arpeater_ae_manager_settings_t* settings = &host->settings;
+
+    /* NO MAC Addresses to ignore, nothing to do */
+    if ( settings->mac_addresses == NULL ) {
+        return 0;
+    }
+
+    if ( settings->num_mac_addresses <= 0 ) {
+        return 0;
+    }
+
+    if ( settings->num_mac_addresses > ARPEATER_AE_CONFIG_NUM_MAC_ADDRESSES ) {
+        errlog( ERR_WARNING, "Invalid number of MAC addresses to test [%d], ignoring.",
+                settings->num_mac_addresses );
+        return 0;
+    }
+
+    /* Iterate all of the MAC addresses and check each one */
+    for ( c = 0 ; c < settings->num_mac_addresses ; c++ ) {
+        if ( memcmp( &host->host_mac, &settings->mac_addresses[c], sizeof( host->host_mac )) == 0 ) {
+            debug( 9, "The MAC address %s should be ignored\n", ether_ntoa( &host->host_mac ));
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+
+/**
  * Send the spoof arps
  */
 static int _host_handler_send_arps (host_handler_t* host)
@@ -462,7 +500,8 @@ static void* _host_handler_thread (void* arg)
          * Message received
          */
         if (ret) {
-            int was_enabled; 
+            int was_enabled;
+            int ignore_mac_address;
 
             switch (ret) {
 
@@ -472,10 +511,17 @@ static void* _host_handler_thread (void* arg)
                 
                 was_enabled = settings->is_enabled;
                 if ( arpeater_ae_manager_get_ip_settings( &host->addr, settings ) < 0)
-                    err = errlog(ERR_CRITICAL, "arpeater_ae_manager_get_ip_settings");
+                    err = errlog(ERR_CRITICAL, "arpeater_ae_manager_get_ip_settingsn\n");
 
                 if ( _host_handler_reset_timer( host ) < 0 )
-                    err = errlog(ERR_CRITICAL, "_host_handler_reset_timer");
+                    err = errlog(ERR_CRITICAL, "_host_handler_reset_timer\n");
+                
+                ignore_mac_address = _host_handler_ignore_mac_address( host );
+                if ( ignore_mac_address < 0 ) {
+                    err = errlog(ERR_CRITICAL,"_host_handler_ignore_mac_address\n");
+                } else if ( ignore_mac_address > 0 ) {
+                    settings->is_enabled = 0;
+                }
 
                 /* if was enabled but not is not, send undo arps */
                 if (was_enabled && !settings->is_enabled) {
@@ -488,6 +534,14 @@ static void* _host_handler_thread (void* arg)
                     
                     if ( _arp_lookup( &host->gateway_mac, settings->gateway.s_addr ) < 0 ) 
                         err = errlog(ERR_CRITICAL, "Failed to lookup MAC of gateway (%s) (%s)\n",unet_inet_ntoa(settings->gateway.s_addr),errstr);
+
+                    /* Check again after fetching the new mac address */
+                    ignore_mac_address = _host_handler_ignore_mac_address( host );
+                    if ( ignore_mac_address < 0 ) {
+                        err = errlog(ERR_CRITICAL,"_host_handler_ignore_mac_address\n");
+                    } else if ( ignore_mac_address > 0 ) {
+                        settings->is_enabled = 0;
+                    }
                 }
 
                 if (err) {
@@ -512,7 +566,7 @@ static void* _host_handler_thread (void* arg)
                 if (settings->is_enabled) {
                     debug( 3, "HOST: Host handler config: (host %s) (host_mac: %s) (gateway %s) ",
                           unet_next_inet_ntoa(host->addr.s_addr), 
-                          ether_ntoa(&host->host_mac),
+                           ether_ntoa(&host->host_mac),
                           unet_next_inet_ntoa(settings->gateway.s_addr));
                     debug_nodate( 3, "(gateway_mac %s) (enabled %i)\n",
                                  ether_ntoa(&host->gateway_mac),
@@ -545,9 +599,9 @@ static void* _host_handler_thread (void* arg)
         } /* if (ret) */
 
         /**
-         * If timed out then exit
+         * If timed out
          */
-        if ( _host_handler_is_timedout( host ) ) {
+        if ( _host_handler_is_timedout( host )) {
             debug( 3, "HOST: Host handler (%s) time out.\n", unet_next_inet_ntoa(host->addr.s_addr));
             go = 0;
             settings->is_enabled = 0;
@@ -574,6 +628,11 @@ static void* _host_handler_thread (void* arg)
     /* sleep for lingering host references */
     sleep(2);
     
+    if ( host->settings.mac_addresses != NULL ) {
+        free( host->settings.mac_addresses );
+    }
+    host->settings.mac_addresses = NULL;
+    host->settings.num_mac_addresses = 0;
     free (host);
     
     pthread_exit(NULL);
@@ -596,7 +655,7 @@ static int _host_handler_start ( in_addr_t addr )
             break;
         }
         
-        if (! (newhost = malloc(sizeof( host_handler_t))) ) {
+        if (! (newhost = calloc(1, sizeof( host_handler_t))) ) {
             perrlog("malloc");
             break;
         }
@@ -613,7 +672,10 @@ static int _host_handler_start ( in_addr_t addr )
             ret = perrlog("mailbox_init");
             free(newhost);
             break;
-        }   
+        }
+        
+        newhost->settings.num_mac_addresses = 0;
+        newhost->settings.mac_addresses = NULL;
         
         if ( pthread_create( &newhost->thread, &uthread_attr.other.medium, _host_handler_thread, (void*)newhost ) != 0 ) {
             ret = perrlog("pthread_create");

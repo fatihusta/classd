@@ -131,7 +131,6 @@ void* uthread_tls_get( pthread_key_t tls_key, size_t size, int(*init)(void *buf,
             pthread_setspecific( tls_key, NULL );
             return errlog_null( ERR_CRITICAL, "init: size %d\n", size );
         }
-
     }
 
     return buf;

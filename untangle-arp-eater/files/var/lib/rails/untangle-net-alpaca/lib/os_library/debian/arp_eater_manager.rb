@@ -93,7 +93,16 @@ class OSLibrary::Debian::ArpEaterManager < OSLibrary::ArpEaterManager
       :gateway => gateway, :interface => interface,
       :enabled => settings.enabled, :broadcast => ( settings.enabled && settings.broadcast )
     }
-    
+
+    if ( settings.attributes.include?( "mac_addresses" ))
+      mac_addresses = settings.mac_addresses
+      mac_addresses = "" if mac_addresses.nil?
+      mac_addresses = mac_addresses.strip
+      unless (  mac_addresses.empty? )
+        settings_json[:mac_addresses] = mac_addresses.split { |m| m.strip }
+      end
+    end
+
     settings_json[:networks] = []
 
     networks.each do |network|

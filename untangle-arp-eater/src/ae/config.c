@@ -13,6 +13,7 @@
 #include <stddef.h>
 
 #include <sys/socket.h>
+#include <netinet/ether.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
@@ -30,11 +31,20 @@ static int _verify_config( arpeater_ae_config_t* config );
 static int _to_c_networks( struct json_object* json_object, json_serializer_field_t* field, void* c_data );
 static int _to_json_networks( struct json_object* json_object, json_serializer_field_t* field,
                               void* c_data );
+
+static int _to_c_mac_addresses( struct json_object* json_object, json_serializer_field_t* field, 
+                                void* c_data );
+
+static int _to_json_mac_addresses( struct json_object* json_object, json_serializer_field_t* field,
+                                   void* c_data );
+
 static struct
 {
     json_serializer_string_t interface_string;
     arpeater_ae_config_t default_config;
     arpeater_ae_config_network_t default_network_config;
+
+    struct ether_addr ether_addr_null;
 } _globals = {
     .interface_string = { 
         .offset = offsetof( arpeater_ae_config_t, interface ),
@@ -48,7 +58,8 @@ static struct
         .rate_ms = 0,
         .is_enabled = 0,
         .is_broadcast_enabled = 0,
-        .num_networks = 0
+        .num_networks = 0,
+        .num_mac_addresses = 0
     },
 
     .default_network_config = {
@@ -60,62 +71,75 @@ static struct
         .is_enabled = 0,
         .is_spoof_enabled = 1,
         .is_passive = 1
+    },
+
+    .ether_addr_null = {
+        .ether_addr_octet = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }
     }
 };
 
-static json_serializer_t _config_serializer = {
+static json_serializer_t _config_serializer =
+{
     .name = "config",
-    .fields = {{
-        .name = "interface",
-        .fetch_arg = 1,
-        .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
-        .to_c = json_serializer_to_c_string,
-        .to_json = json_serializer_to_json_string,
-        .arg = &_globals.interface_string
-    },{
-        .name = "gateway",
-        .fetch_arg = 1,
-        .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
-        .to_c = json_serializer_to_c_in_addr,
-        .to_json = json_serializer_to_json_in_addr,
-        .arg = (void*)offsetof( arpeater_ae_config_t, gateway )
-    },{
-        .name = "timeout",
-        .fetch_arg = 1,
-        .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
-        .to_c = json_serializer_to_c_int,
-        .to_json = json_serializer_to_json_int,
-        .arg = (void*)offsetof( arpeater_ae_config_t, timeout_ms )        
-    },{
-        .name = "rate",
-        .fetch_arg = 1,
-        .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
-        .to_c = json_serializer_to_c_int,
-        .to_json = json_serializer_to_json_int,
-        .arg = (void*)offsetof( arpeater_ae_config_t, rate_ms )
-        
-    },{
-        .name = "enabled",
-        .fetch_arg = 1,
-        .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
-        .to_c = json_serializer_to_c_boolean,
-        .to_json = json_serializer_to_json_boolean,
-        .arg = (void*)offsetof( arpeater_ae_config_t, is_enabled )        
-    },{
-        .name = "broadcast",
-        .fetch_arg = 1,
-        .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
-        .to_c = json_serializer_to_c_boolean,
-        .to_json = json_serializer_to_json_boolean,
-        .arg = (void*)offsetof( arpeater_ae_config_t, is_broadcast_enabled )
-    },{
-        .name = "networks",
-        .fetch_arg = 1,
-        .if_empty = JSON_SERIALIZER_FIELD_EMPTY_ERROR,
-        .to_c = _to_c_networks,
-        .to_json = _to_json_networks,
-        .arg = (void*)offsetof( arpeater_ae_config_t, is_enabled )
-    }, JSON_SERIALIZER_FIELD_TERM}
+    .fields = {
+        {
+            .name = "interface",
+            .fetch_arg = 1,
+            .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
+            .to_c = json_serializer_to_c_string,
+            .to_json = json_serializer_to_json_string,
+            .arg = &_globals.interface_string
+        },{
+            .name = "gateway",
+            .fetch_arg = 1,
+            .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
+            .to_c = json_serializer_to_c_in_addr,
+            .to_json = json_serializer_to_json_in_addr,
+            .arg = (void*)offsetof( arpeater_ae_config_t, gateway )
+        },{
+            .name = "timeout",
+            .fetch_arg = 1,
+            .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
+            .to_c = json_serializer_to_c_int,
+            .to_json = json_serializer_to_json_int,
+            .arg = (void*)offsetof( arpeater_ae_config_t, timeout_ms )        
+        },{
+            .name = "rate",
+            .fetch_arg = 1,
+            .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
+            .to_c = json_serializer_to_c_int,
+            .to_json = json_serializer_to_json_int,
+            .arg = (void*)offsetof( arpeater_ae_config_t, rate_ms )
+        },{
+            .name = "enabled",
+            .fetch_arg = 1,
+            .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
+            .to_c = json_serializer_to_c_boolean,
+            .to_json = json_serializer_to_json_boolean,
+            .arg = (void*)offsetof( arpeater_ae_config_t, is_enabled )        
+        },{
+            .name = "broadcast",
+            .fetch_arg = 1,
+            .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
+            .to_c = json_serializer_to_c_boolean,
+            .to_json = json_serializer_to_json_boolean,
+            .arg = (void*)offsetof( arpeater_ae_config_t, is_broadcast_enabled )
+        },{
+            .name = "networks",
+            .fetch_arg = 1,
+            .if_empty = JSON_SERIALIZER_FIELD_EMPTY_ERROR,
+            .to_c = _to_c_networks,
+            .to_json = _to_json_networks,
+            .arg = NULL
+        },{
+            .name = "mac_addresses",
+            .fetch_arg = 1,
+            .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
+            .to_c = _to_c_mac_addresses,
+            .to_json = _to_json_mac_addresses,
+            .arg = NULL
+        }, 
+        JSON_SERIALIZER_FIELD_TERM}
 };
 
 static json_serializer_t _network_serializer = {
@@ -360,7 +384,7 @@ static int _to_c_networks( struct json_object* json_object, json_serializer_fiel
     }
     
     config->num_networks = length;
-    
+
     return 0;
 }
 
@@ -406,6 +430,120 @@ static int _to_json_networks( struct json_object* json_object, json_serializer_f
     if ( _critical_section() < 0 ) {
         json_object_put( networks_json );
         if ( network_json != NULL ) json_object_put( network_json );
+        return errlog( ERR_CRITICAL, "_critical_section\n" );
+    }
+    return 0;
+}
+
+
+static int _to_c_mac_addresses( struct json_object* json_object, json_serializer_field_t* field,
+                                void* c_data )
+{
+    if ( json_object == NULL ) return errlogargs();
+    if ( field == NULL ) return errlogargs();
+    if ( c_data == NULL ) return errlogargs();
+    if ( field->fetch_arg == 0 ) return errlog( ERR_CRITICAL, "field->fetch_arg must be set\n" );
+
+    arpeater_ae_config_t* config = (arpeater_ae_config_t*)c_data;
+
+    if ( json_object_is_type( json_object, json_type_array ) == 0 ) {
+        debug( 9, "The field %s is not an array.\n", field->name );
+        if ( field->if_empty == JSON_SERIALIZER_FIELD_EMPTY_IGNORE ) return 0;
+        return -1;
+    }
+    
+    int length = 0;
+    if (( length = json_object_array_length( json_object )) < 0 ) {
+        return errlog( ERR_CRITICAL, "json_object_array_length\n" );
+    }
+
+    if ( length > ARPEATER_AE_CONFIG_NUM_MAC_ADDRESSES ) {
+        errlog( ERR_WARNING, "Too many mac_addresses %d, limiting to %d\n", length, 
+                ARPEATER_AE_CONFIG_NUM_MAC_ADDRESSES );
+        length = ARPEATER_AE_CONFIG_NUM_MAC_ADDRESSES;
+    }
+
+    config->num_mac_addresses = 0;
+    int c = 0;
+    struct json_object* mac_address_json = NULL;
+    
+    bzero( &config->mac_addresses, sizeof( config->mac_addresses ));
+
+    int num_addresses = 0;
+
+    struct ether_addr ether_addr;
+
+    for ( c = 0 ; c < length ; c++ ) {
+        if (( mac_address_json = json_object_array_get_idx( json_object, c )) == NULL ) {
+            return errlog( ERR_CRITICAL, "json_object_array_get_idx\n" );
+        }
+
+        if ( json_object_is_type( mac_address_json, json_type_string ) == 0 ) {
+            debug( 9, "The field %s is not a string.\n", field->name );
+            continue;
+        }
+
+        
+        char* c_string = NULL;
+        if (( c_string = json_object_get_string( mac_address_json )) == NULL ) {
+            return errlog( ERR_CRITICAL, "json_object_get_string\n" );
+        }
+
+        ether_aton_r( c_string, &ether_addr );
+        
+        if ( memcmp( &ether_addr, &_globals.ether_addr_null, sizeof( ether_addr )) == 0 ) {
+            debug( 9, "Invalid ethernet address at index %d\n", c );
+            continue;
+        }
+
+        memcpy( &config->mac_addresses[num_addresses], &ether_addr, sizeof( ether_addr ));
+
+        num_addresses++;
+    }
+    
+    config->num_mac_addresses = num_addresses;
+
+    return 0;
+}
+
+static int _to_json_mac_addresses( struct json_object* json_object, json_serializer_field_t* field,
+                                   void* c_data )
+{
+    if ( json_object == NULL ) return errlogargs();
+    if ( field == NULL ) return errlogargs();
+    if ( c_data == NULL ) return errlogargs();
+    
+    arpeater_ae_config_t* config = (arpeater_ae_config_t*)c_data;
+    
+    if ( config->num_mac_addresses < 0 || config->num_mac_addresses > ARPEATER_AE_CONFIG_NUM_MAC_ADDRESSES ) {
+        return errlogargs();
+    }
+
+    struct json_object* mac_addresses_json = NULL;
+    if (( mac_addresses_json = json_object_new_array()) == NULL ) {
+        return errlog( ERR_CRITICAL, "json_object_new_array\n" );
+    }
+    
+    int _critical_section() {
+        int c = 0;
+
+        /* Buffer for putting the MAC address string */
+        char buffer[20];
+        for ( c = 0 ; c < config->num_mac_addresses ; c++ ) {
+            ether_ntoa_r( &config->mac_addresses[c], buffer );
+            
+            if ( json_object_utils_array_add_string( mac_addresses_json, buffer ) < 0 ) {
+                return errlog( ERR_CRITICAL, "json_object_utils_array_add_string\n" );
+            }            
+        }
+
+        json_object_object_add( json_object, field->name, mac_addresses_json );
+        
+        return 0;
+    }
+
+    if ( _critical_section() < 0 ) {
+        json_object_put( mac_addresses_json );
         return errlog( ERR_CRITICAL, "_critical_section\n" );
     }
     return 0;
