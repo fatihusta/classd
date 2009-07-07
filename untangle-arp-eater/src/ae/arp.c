@@ -69,6 +69,7 @@ static int   _host_handler_ignore_mac_address( host_handler_t* host);
 
 static int HOST_HANDLER_DELAY = 10000; /* usec */
 static int HOST_HANDLER_SLEEP = 3; /* sec */
+static int HOST_HANDLER_TIMEOUT = 10 * 60; /* sec */
 
 int arp_init ( void )
 {
@@ -316,7 +317,7 @@ static int _host_handler_reset_timer (host_handler_t* host)
     if (clock_gettime( CLOCK_MONOTONIC, &host->timeout) < 0)
         return perrlog( "clock_gettime");
     
-    host->timeout.tv_sec += 60 * 60; /* XXX 1 hour - should be variable */
+    host->timeout.tv_sec += HOST_HANDLER_TIMEOUT; 
     return 0;
 }
 
