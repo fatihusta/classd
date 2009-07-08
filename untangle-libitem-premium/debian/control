@@ -15,6 +15,7 @@ XB-Display-Name: Professional Package
 XB-Untangle-Type: lib_item
 XB-Is-Bundle: true
 XB-Untangle-Pkg-Type: lib_item
+XB-Untangle-Hide-On: u4w
 XB-Desc-Icon: R0lGODlhKgAqAPcAAAAAALKHAKurtltcVUpKSsLCO5RsADQ2TcbGxmttiHxdGrOt
  NcHFP4heAJKPTPz87zMzM6+LEmtra+XXmcrKVe/vw4t1MxYXIXd3VnJ0jZKUWM6u
  Ejo9V01Rclpce2hhX9PFIr29OpR6KUhLa9HR0sekDNTUdfLy/MebAJSUUpGTpoyM
@@ -311,6 +312,7 @@ XB-View-Position: 61
 XB-Display-Name: WAN Balancer
 XB-Untangle-Type: lib_item
 XB-Untangle-Pkg-Type: lib_item
+XB-Untangle-Hide-On: u4w
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
  AAALEgAACxIB0t1+/AAAABZ0RVh0Q3JlYXRpb24gVGltZQAwMi8yNi8wONgycscAAAAfdEVYdFNv
  ZnR3YXJlAE1hY3JvbWVkaWEgRmlyZXdvcmtzIDi1aNJ4AAAEEXRFWHRYTUw6Y29tLmFkb2JlLnht
@@ -493,6 +495,7 @@ XB-Display-Name: Remote Access Portal
 XB-Untangle-Type: lib_item
 XB-Is-Core: true
 XB-Untangle-Pkg-Type: lib_item
+XB-Untangle-Hide-On: u4w
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAIAAABKoV4MAAAABGdBTUEAANbY1E9YMgAAABl0
  RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAy9SURBVHjaxFjbb1xXvV5rr7X2
  da72jMexE8fNxSEBQlWgPRxaQaqiQwsvoAr1ASH60OdK/VMAgXjgAV4KCKQSSsU5oofLoUlL
@@ -800,6 +803,7 @@ XB-Display-Name: PC Remote
 XB-Untangle-Type: lib_item
 XB-Is-Core: true
 XB-Untangle-Pkg-Type: lib_item
+XB-Untangle-Hide-On: u4w
 XB-Desc-Icon: R0lGODlhKgAqAPcAAAsMGpmZmUpFPyUrasXOznZzbhgbQnWa1kpTpU2AxCMnLEdM
  fYqs4ebm5jI4abW1tSYxQVlxlTpAdBkZGa2trVtbW4OHpzxCk3eSxlhdg/f39yIo
  Y7W8zIObxoWFhS01gjMzM1FarEVLnEJCQr29vRwhUt7e3nN2kYKZy0lKXqeuyjpB
