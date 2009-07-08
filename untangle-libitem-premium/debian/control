@@ -734,7 +734,7 @@ Description: Untangle Policy Manager
 Package: untangle-libitem-support
 Section: premium/admin
 Architecture: all
-Depends: untangle-libitem-boxbackup
+Depends: untangle-libitem-boxbackup, untangle-node-support
 Provides: untangle-libitem-trial14-support
 XB-View-Position: 1015
 XB-Display-Name: Live Support
