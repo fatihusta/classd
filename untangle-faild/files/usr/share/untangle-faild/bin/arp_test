@@ -1,3 +1,12 @@
 #!/bin/dash
 
-sudo arping -S $FAILD_PRIMARY_ADDRESS -i $FAILD_OS_NAME  -c 1 $FAILD_GATEWAY > /dev/null 
+if [ "${FAILD_PRIMARY_ADDRESS}" = "0.0.0.0" ]; then
+    exit 1
+fi
+
+if [ "${FAILD_OS_NAME#ppp}" != "${FAILD_OS_NAME}" ]; then
+    ## If this is a PPP interface, it just needs to be online (you can't ARP a PPPoE interface.)
+    ifconfig ${FAILD_OS_NAME} > /dev/null
+else
+    sudo arping -S $FAILD_PRIMARY_ADDRESS -i $FAILD_OS_NAME  -c 1 $FAILD_GATEWAY > /dev/null 
+fi

@@ -152,8 +152,18 @@ static int _get_sysfs_attributes( faild_uplink_t* uplink )
         if ( sysfs_read_attribute( attribute ) < 0 ) return perrlog( "sysfs_read_attribute" );
 
         address_len = atoi( attribute->value );
-        if ( address_len != ETH_ALEN ) {
-            return errlog( ERR_CRITICAL, "Invalid MAC Address for '%s'\n", uplink->os_name );
+        switch ( address_len ) {
+        case ETH_ALEN:
+            break;
+
+        case 0:
+            /* This is pppoe */
+            debug( 5, "Ignoring MAC Address for a PPPoE interface.\n" );
+            bzero( &uplink->mac_address, sizeof( uplink->mac_address ));
+            return 0;
+
+        default:
+            return errlog( ERR_CRITICAL, "Invalid MAC Address for '%s'\n", uplink->os_name );                
         }
 
         sysfs_close_attribute( attribute );
@@ -190,8 +200,7 @@ static int _update_primary_address( faild_uplink_t* uplink )
     bzero( &uplink->primary_address, sizeof( uplink->primary_address ));
 
     if ( uplink->gateway.s_addr == INADDR_ANY ) {
-        debug( 4, "Unable to determine primary address, there is currently no gateway.\n" );
-        return 0;
+        debug( 4, "There is no gateway, using the first address on the interface.\n" );
     }
 
     struct {
@@ -244,7 +253,9 @@ static int _update_primary_address( faild_uplink_t* uplink )
             .s_addr = htonl( INADDR_BROADCAST << ( 32 - netmask ))
         };
         
-        if (( address.s_addr & mask.s_addr ) != ( uplink->gateway.s_addr & mask.s_addr )) {
+        /* Check if this address is routable to the gateway */
+        if (( uplink->gateway.s_addr != INADDR_ANY ) &&
+            (( address.s_addr & mask.s_addr ) != ( uplink->gateway.s_addr & mask.s_addr ))) {
             debug( 9, "The address %s is not routable to the gateway %s.\n", 
                    unet_inet_ntoa( address.s_addr ), unet_inet_ntoa( uplink->gateway.s_addr ));
             continue;
@@ -253,7 +264,6 @@ static int _update_primary_address( faild_uplink_t* uplink )
         debug( 9, "Found the address %s/%d for '%s'\n", unet_inet_ntoa( address.s_addr ), netmask,
                uplink->os_name );
 
-        /* Check if this address is routable to the gateway */
         memcpy( &uplink->primary_address, &address, sizeof( uplink->primary_address ));
         break;
     }
