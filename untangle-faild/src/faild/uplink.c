@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <asm/types.h>
+#include <libgen.h>
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
 #include <sys/types.h>
@@ -122,7 +123,8 @@ static int _get_sysfs_attributes( faild_uplink_t* uplink )
     struct sysfs_attribute* attribute = NULL;
 
     char path[SYSFS_PATH_MAX];
-
+    char link_path[SYSFS_PATH_MAX];
+    
     int ifindex;
 
     /* Length of the mac address, should always be 6 */
@@ -132,6 +134,17 @@ static int _get_sysfs_attributes( faild_uplink_t* uplink )
 
     int _critical_section()
     {
+        /* Check if this is a bridge. */
+        snprintf( path, sizeof( path ), SYSFS_CLASS_NET_DIR "/%s/brport/bridge", uplink->os_name );
+        /* This is a bridge */
+        if ( sysfs_path_is_link( path ) == 0 ) {
+            if ( sysfs_get_link( path, link_path, sizeof( link_path )) < 0 ) {
+                return perrlog( "sysfs_get_link" );
+            }
+
+            strncpy( uplink->os_name, basename( link_path ), sizeof( uplink->os_name ));
+        }
+
         snprintf( path, sizeof( path ), SYSFS_CLASS_NET_DIR "/%s/%s", uplink->os_name, SYSFS_ATTRIBUTE_INDEX );
         if (( attribute = sysfs_open_attribute( path )) == NULL ) return perrlog( "sysfs_open_attribute" );
         
@@ -141,8 +154,9 @@ static int _get_sysfs_attributes( faild_uplink_t* uplink )
         if ( ifindex < 0 ) {
             return errlog( ERR_CRITICAL, "Invalid interface index for '%s'\n", uplink->os_name );
         }
-
+                     
         sysfs_close_attribute( attribute );
+        attribute = NULL;
         
         snprintf( path, sizeof( path ), SYSFS_CLASS_NET_DIR "/%s/%s", uplink->os_name, 
                   SYSFS_ATTRIBUTE_ADDRESS_LEN );
@@ -167,6 +181,7 @@ static int _get_sysfs_attributes( faild_uplink_t* uplink )
         }
 
         sysfs_close_attribute( attribute );
+        attribute= NULL;
         
         snprintf( path, sizeof( path ), SYSFS_CLASS_NET_DIR "/%s/%s", uplink->os_name, 
                   SYSFS_ATTRIBUTE_ADDRESS );
@@ -448,6 +463,11 @@ static int _get_address_info( struct nlmsghdr* nlmsghdr, struct in_addr* address
 {
     bzero( address, sizeof( struct in_addr ));
 
+    struct in_addr local_address = 
+    {
+        .s_addr = INADDR_ANY
+    };
+
     struct ifaddrmsg* ifaddrmsg = NULL;
     struct rtattr* rtattr = NULL;
 
@@ -459,15 +479,24 @@ static int _get_address_info( struct nlmsghdr* nlmsghdr, struct in_addr* address
 
     for ( ; RTA_OK( rtattr, rt_length ) ; rtattr = RTA_NEXT( rtattr, rt_length )) {
         switch ( rtattr->rta_type ) {
+        case IFA_LOCAL:
+            memcpy( &local_address, RTA_DATA(rtattr), sizeof( local_address ));
+            debug( 7, "Found the local address '%s'\n", unet_inet_ntoa( local_address.s_addr ));
+            break;
+
         case IFA_ADDRESS:
             memcpy( address, RTA_DATA(rtattr), sizeof( *address ));
-            break;
+            continue;
 
         case IFA_LABEL:
             debug( 7, "Checking the interface '%s'\n", RTA_DATA(rtattr));
             break;            
 
         }
+    }
+
+    if ( local_address.s_addr != INADDR_ANY ) {
+        memcpy( address, &local_address, sizeof( *address ));
     }
 
     return 0;    
