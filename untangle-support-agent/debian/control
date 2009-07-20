@@ -3,7 +3,7 @@ Section: net
 Priority: optional
 Maintainer: Sebastien Delafond <seb@untangle.com>
 Uploaders: Untangle Buildbot <buildbot@untangle.com>
-Build-Depends: cdbs (>= 0.4.23-1.1), debhelper (>= 4.2.0), quilt, patchutils (>= 0.2.25), ruby (>= 1.8)
+Build-Depends: untangle-monit-config, cdbs (>= 0.4.23-1.1), debhelper (>= 4.2.0), quilt, patchutils (>= 0.2.25), ruby (>= 1.8)
 Build-Depends-Indep: xsltproc, docbook-xml, docbook-xsl
 Standards-Version: 3.8.0
 
@@ -12,7 +12,7 @@ Architecture: all
 Replaces: rbot, rbot-mv
 Conflicts: rbot, rbot-mv, ruby1.9
 Provides: rbot, rbot-mv
-Depends: ruby, libdb4.3-ruby1.8 | libdb4.2-ruby1.8, libopenssl-ruby1.8, untangle-libnet-ssh-ruby1.8 (>= 1.1.1) | libnet-ssh-ruby1.8 (>= 1.1.1), untangle-support-keyring, sudo, untangle-vm, untangle-openssh-server, adduser
+Depends: untangle-monit-config, ruby, libdb4.3-ruby1.8 | libdb4.2-ruby1.8, libopenssl-ruby1.8, untangle-libnet-ssh-ruby1.8 (>= 1.1.1) | libnet-ssh-ruby1.8 (>= 1.1.1), untangle-support-keyring, sudo, untangle-vm, untangle-openssh-server, adduser
 Description: IRC bot written in ruby
  Rbot is very extensible thanks to a well designed plugin
  scheme. It has native infobot-style keywords, fact database,

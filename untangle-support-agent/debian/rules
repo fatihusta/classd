@@ -31,7 +31,8 @@ install/untangle-support-agent::
 	chmod 755 $(PREFIX)/usr/share/rbot/plugins/extend_trial.sh
 	rm -fr $(PREFIX)/usr/share/rbot/contrib
 	cp -r home-rbot/.ssh home-rbot/.rbot $(PREFIX)/usr/share/untangle-support-agent/rbot-home/
-
+	cp -r files/etc $(PREFIX)/
+	
 binary-install/untangle-support-agent::
 	dh_installman $(MANPAGES)
 
