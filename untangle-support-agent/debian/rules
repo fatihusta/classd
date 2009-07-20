@@ -32,6 +32,7 @@ install/untangle-support-agent::
 	rm -fr $(PREFIX)/usr/share/rbot/contrib
 	cp -r home-rbot/.ssh home-rbot/.rbot $(PREFIX)/usr/share/untangle-support-agent/rbot-home/
 	cp -r files/etc $(PREFIX)/
+	find $(PREFIX) -name ".arch-ids" -o -name ".svn" -depth -exec rm -rf "{}" \;
 	
 binary-install/untangle-support-agent::
 	dh_installman $(MANPAGES)
