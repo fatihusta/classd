@@ -3,7 +3,7 @@ Section: net
 Priority: optional
 Maintainer: Sebastien Delafond <seb@untangle.com>
 Uploaders: Untangle Buildbot <buildbot@untangle.com>
-Build-Depends: untangle-monit-config, cdbs (>= 0.4.23-1.1), debhelper (>= 4.2.0), quilt, patchutils (>= 0.2.25), ruby (>= 1.8)
+Build-Depends: cdbs (>= 0.4.23-1.1), debhelper (>= 4.2.0), quilt, patchutils (>= 0.2.25), ruby (>= 1.8)
 Build-Depends-Indep: xsltproc, docbook-xml, docbook-xsl
 Standards-Version: 3.8.0
 
