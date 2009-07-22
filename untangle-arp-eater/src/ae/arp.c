@@ -155,6 +155,18 @@ int arp_refresh_config ( void )
     if ( (handler = ht_lookup( &host_handlers, (void*) 0xffffffff)) != NULL ) {
         debug( 2,"REFRESH: Killing broadcast thread\n");
         arp_host_handler_send_message(handler,_HANDLER_MESG_KILL_NOW);
+
+        /**
+         * Wait for broadcast thread to die
+         * XXX this is janky - use a broadcast thread semaphore
+         */
+        for (i=0;i<100;i++) {
+            if ( !ht_lookup( &host_handlers, (void*) 0xffffffff) )
+                break;
+            usleep(.1 * 1000000); /* .1 seconds */
+            if ( i == 99 )
+                errlog(ERR_WARNING,"REFRESH: Unabled to kill broadcast thread - continuing anyway\n");
+        }
     }
 
     /**
@@ -249,8 +261,10 @@ int arp_refresh_config ( void )
     /**
      * Donate a thread to start the broadcast arp spoofer. 
      */
-    if (config.is_broadcast_enabled)
+    if (config.is_broadcast_enabled) {
+        debug( 2,"REFRESH: Restarting broadcast thread\n");
         _host_handler_start( 0xffffffff );
+    }
 
     return 0;
 }
@@ -359,7 +373,7 @@ static int _host_handler_is_timedout (host_handler_t* host)
  * Check if this host should be ignored due to its MAC address.
  * returns: 1 if yes, 0 if no.
  */
-static int   _host_handler_ignore_mac_address( host_handler_t* host)
+static int _host_handler_ignore_mac_address ( host_handler_t* host)
 {
     int c = 0;
     arpeater_ae_manager_settings_t* settings = &host->settings;
@@ -389,7 +403,6 @@ static int   _host_handler_ignore_mac_address( host_handler_t* host)
 
     return 0;
 }
-
 
 /**
  * Send the spoof arps
@@ -550,8 +563,10 @@ static void* _host_handler_thread (void* arg)
                         /* broadcast thread doesn't exit on error, try again later */
                         sleep( 3 );
                         if ( mailbox_put(&host->mbox,(void*)_HANDLER_MESG_REFRESH_CONFIG) < 0 ) {
+                            perrlog("mailbox_put");
                             go = 0;
-                            return (void*)perrlog("mailbox_put");
+                            settings->is_enabled = 0;
+                            break;
                         }
                         settings->is_enabled = 0;
                         break;
@@ -581,13 +596,13 @@ static void* _host_handler_thread (void* arg)
                 break;
                 
             case _HANDLER_MESG_KILL:
-                debug( 3, "HOST: Host Handler (%s) Cleaning up\n", unet_inet_ntoa(host->addr.s_addr));
+                debug( 3, "HOST: Host Handler (%s) Kill signal received\n", unet_inet_ntoa(host->addr.s_addr));
                 if (settings->is_enabled) 
                     _host_handler_undo_arps(host);
                 /* fall through */
 
             case _HANDLER_MESG_KILL_NOW:
-                debug( 3, "HOST: Host Handler (%s) Exiting\n", unet_inet_ntoa(host->addr.s_addr));
+                debug( 3, "HOST: Host Handler (%s) Killing now\n", unet_inet_ntoa(host->addr.s_addr));
                 
                 go = 0;
                 settings->is_enabled = 0;
@@ -646,53 +661,44 @@ static void* _host_handler_thread (void* arg)
  */
 static int _host_handler_start ( in_addr_t addr )
 {
-    host_handler_t* newhost;
-    int ret = 0;
+    host_handler_t* newhost = NULL;
 
-    do {
-        if ( (newhost = (host_handler_t*) ht_lookup( &host_handlers, (void*) addr)) != NULL ) {
-            _host_handler_reset_timer( newhost ); /* just saw an ARP - reset timer of current */
-            ret = -1;
-            break;
-        }
+    if ( (newhost = (host_handler_t*) ht_lookup( &host_handlers, (void*) addr)) != NULL ) {
+        _host_handler_reset_timer( newhost ); /* just saw an ARP - reset timer of current */
+        return -1;
+    }
         
-        if (! (newhost = calloc(1, sizeof( host_handler_t))) ) {
-            perrlog("malloc");
-            break;
-        }
+    if (! (newhost = calloc(1, sizeof( host_handler_t))) ) {
+        return perrlog("malloc");
+    }
 
-        newhost->addr.s_addr = addr;
+    newhost->addr.s_addr = addr;
 
-        if ( clock_gettime( CLOCK_MONOTONIC, &newhost->starttime ) < 0 ) {
-            ret = perrlog("clock_gettime");
-            free(newhost);
-            break;
-        }   
+    if ( clock_gettime( CLOCK_MONOTONIC, &newhost->starttime ) < 0 ) {
+        free(newhost);
+        return perrlog("clock_gettime");
+    }   
 
-        if ( mailbox_init( &newhost->mbox ) < 0 ) {
-            ret = perrlog("mailbox_init");
-            free(newhost);
-            break;
-        }
+    if ( mailbox_init( &newhost->mbox ) < 0 ) {
+        free(newhost);
+        return perrlog("mailbox_init");
+    }
         
-        newhost->settings.num_mac_addresses = 0;
-        newhost->settings.mac_addresses = NULL;
+    newhost->settings.num_mac_addresses = 0;
+    newhost->settings.mac_addresses = NULL;
         
-        if ( pthread_create( &newhost->thread, &uthread_attr.other.medium, _host_handler_thread, (void*)newhost ) != 0 ) {
-            ret = perrlog("pthread_create");
-            free(newhost);
-            break;
-        }
-        
-        if ( ht_add ( &host_handlers, (void*)addr, (void*)newhost ) < 0 ) {
-            perrlog("ht_add");
-            free(newhost);
-            break;
-        }
+    if ( ht_add ( &host_handlers, (void*)addr, (void*)newhost ) < 0 ) {
+        errlog(ERR_CRITICAL,"ht_add failed. Failed to add host(%s)",unet_next_inet_ntoa(newhost->addr.s_addr));
+        free(newhost);
+        return -1;
+    }
 
-    } while (0);
-
-    return ret;
+    if ( pthread_create( &newhost->thread, &uthread_attr.other.medium, _host_handler_thread, (void*)newhost ) != 0 ) {
+        free(newhost);
+        return perrlog("pthread_create"); 
+    }
+    
+    return 0;
 }
 
 /**
