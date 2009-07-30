@@ -39,7 +39,7 @@ static int _init( splitd_splitter_instance_t* instance );
 
 /* Update the scores for the uplinks, called for each session */
 static int _update_scores( splitd_splitter_instance_t* instance, splitd_chain_t* chain,
-                           int* score, splitd_packet_t* packet );
+                           splitd_scores_t* scores, splitd_packet_t* packet );
 
 /* Cleanup this instance of a splitter */
 static int _destroy( splitd_splitter_instance_t* instance );
@@ -66,6 +66,8 @@ static int _init( splitd_splitter_instance_t* instance )
     if ( instance == NULL ) return errlogargs();
     if ( instance->config.params == NULL ) return errlogargs();
 
+    instance->ptr = NULL;
+
     _config_t* config = NULL;
     if (( config = calloc( 1, sizeof( _config_t ))) == NULL ) return errlogmalloc();
 
@@ -87,7 +89,7 @@ static int _init( splitd_splitter_instance_t* instance )
 
 /* Update the scores for the uplinks, called for each session */
 static int _update_scores( splitd_splitter_instance_t* instance, splitd_chain_t* chain,
-                           int* scores, splitd_packet_t* packet )
+                           splitd_scores_t* scores, splitd_packet_t* packet )
 {
     if ( instance == NULL ) return errlogargs();
     if ( chain == NULL ) return errlogargs();
@@ -103,8 +105,8 @@ static int _update_scores( splitd_splitter_instance_t* instance, splitd_chain_t*
     debug( 11, "Running online.update_scores\n" );
 
     for ( int c = 0 ; c < SPLITD_MAX_UPLINKS ; c++ ) {
-        if ( scores[c] <= 0 ) continue;
-        if ( config->is_online[c] != 1 ) scores[c] = -1000;
+        if ( scores->scores[c] <= 0 ) continue;
+        if ( config->is_online[c] != 1 ) scores->scores[c] = -1000;
     }
 
     return 0;

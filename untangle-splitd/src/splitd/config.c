@@ -166,6 +166,33 @@ splitd_config_t* splitd_config_create()
     return config;
 }
 
+int splitd_config_free( splitd_config_t* config )
+{
+    if ( config == NULL ) return errlogargs();
+    free( config );
+    return 0;
+}
+
+int splitd_config_destroy( splitd_config_t* config )
+{
+    if ( config == NULL ) return errlogargs();
+    for ( int c = 0 ; c < SPLITD_MAX_SPLITTERS ; c++ ) {
+        if ( splitd_splitter_config_destroy( &config->splitters[c] ) < 0 ) {
+            errlog( ERR_CRITICAL, "splitd_splitter_config_destroy\n" );
+        }
+    }
+    
+    return 0;
+}
+
+int splitd_config_raze( splitd_config_t* config )
+{
+    splitd_config_destroy( config );
+    splitd_config_free( config );
+
+    return 0;
+}
+
 int splitd_config_load_json( splitd_config_t* config, struct json_object* json_config )
 {
     if ( config == NULL ) return errlogargs();

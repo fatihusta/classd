@@ -30,5 +30,17 @@
         "params" : {
             "scores" : [ 500, 50, 120 ]
         }
+    },{
+        "splitter_name" : "router",
+        "params" : {
+            "routes" : [{
+                "network" : "192.168.2.99",
+                "netmask" : 32,
+                "uplinkID" : -1
+            },{
+                "network" : "1.2.3.4",
+                "uplinkID" : 3
+            }]
+        }
     }]
 }

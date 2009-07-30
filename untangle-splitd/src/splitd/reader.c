@@ -39,8 +39,15 @@
 #define UPDATE_IPTABLES_DEFAULT "/usr/share/untangle-splitd/bin/update_iptables"
 #define UPDATE_IPTABLES_ENV     "SPLITD_UPDATE_IPTABLES"
 
+#ifdef _POSTROUTING_QUEUE_
+#warning "POSTROUTING QUEUE code is not complete.  Need to finish update_iptables and actually queue packets."
+#endif
+
 enum {
     _event_code_nfqueue,
+#ifdef _POSTROUTING_QUEUE_
+    _event_code_post_nfqueue,
+#endif
     _event_code_mailbox
 } _event_code;
 
@@ -95,6 +102,10 @@ static int _send_message( splitd_reader_t* reader, struct _message *message );
 
 static int _run_update_iptables( void );
 
+/* Utility to recreate the queue, now that there are two, this makes it easier. */
+static int _update_nfqueue( splitd_nfqueue_t* nfqueue, u_int16_t queue_num, struct epoll_event* epoll_event,
+                            int epoll_fd );
+
 /**
  * Allocate memory to store a reader structure.
  */
@@ -110,16 +121,27 @@ splitd_reader_t* splitd_reader_malloc( void )
 /**
  * @param bucket_size Size of the memory block to store the requested reader
  */
+#ifdef _POSTROUTING_QUEUE_
+int splitd_reader_init( splitd_reader_t* reader, u_int16_t queue_num, u_int16_t post_queue_num )
+#else
 int splitd_reader_init( splitd_reader_t* reader, u_int16_t queue_num )
-                        
+#endif                        
 {
     if ( reader == NULL ) return errlogargs();
 
     if ( queue_num == 0 ) return errlogargs();
+
+#ifdef _POSTROUTING_QUEUE_
+    if ( post_queue_num == 0 ) return errlogargs();
+#endif
     
     bzero( reader, sizeof( splitd_reader_t ));
 
     reader->queue_num = queue_num;
+
+#ifdef _POSTROUTING_QUEUE_
+    reader->post_queue_num = post_queue_num;
+#endif
 
     if ( pthread_mutex_init( &reader->mutex, NULL ) < 0 ) return perrlog( "pthread_mutex_init" );
     
@@ -133,7 +155,11 @@ int splitd_reader_init( splitd_reader_t* reader, u_int16_t queue_num )
 /**
  * @param bucket_size Size of the memory block to store the requested reader
  */
+#ifdef _POSTROUTING_QUEUE_
+splitd_reader_t* splitd_reader_create( u_int16_t queue_num, u_int16_t post_queue_num )
+#else
 splitd_reader_t* splitd_reader_create( u_int16_t queue_num )
+#endif
 {
     splitd_reader_t* reader = NULL;
         
@@ -141,7 +167,12 @@ splitd_reader_t* splitd_reader_create( u_int16_t queue_num )
         return errlog_null( ERR_CRITICAL, "splitd_reader_malloc\n" );
     }
 
-    if ( splitd_reader_init( reader, queue_num ) < 0 ) {
+#ifdef _POSTROUTING_QUEUE_
+    if ( splitd_reader_init( reader, queue_num, post_queue_num ) < 0 )
+#else
+    if ( splitd_reader_init( reader, queue_num ) < 0 )
+#endif
+    {
         splitd_reader_raze( reader );
         return errlog_null( ERR_CRITICAL, "splitd_reader_init\n" );
     }
@@ -168,12 +199,18 @@ void splitd_reader_destroy( splitd_reader_t* reader )
     if ( reader->nfqueue.nfq_fd > 0 ) {
         splitd_nfqueue_destroy( &reader->nfqueue );
     }
+
+#ifdef _POSTROUTING_QUEUE_
+    if ( reader->post_nfqueue.nfq_fd > 0 ) {
+        splitd_nfqueue_destroy( &reader->post_nfqueue );
+    }
+#endif
     
     if ( mailbox_destroy( &reader->mailbox ) < 0 ) {
         errlog( ERR_CRITICAL, "mailbox_destroy\n" );
     }
 
-    if ( reader->chain != NULL ) splitd_chain_destroy( reader->chain );
+    if ( reader->chain != NULL ) splitd_chain_raze( reader->chain );
 
     bzero( reader, sizeof( splitd_reader_t ));
 }
@@ -411,18 +448,25 @@ static int _handle_packet( splitd_reader_t* reader, splitd_packet_t* packet  )
         debug( 11, "READER: Handling a session for the client %s[%d]\n", 
                unet_next_inet_ntoa( client_ip.s_addr ), protocol );
 
-        if ( splitd_chain_mark_session( reader->chain, packet ) < 0 ) {
+        int mark_response = splitd_chain_mark_session( reader->chain, packet );
+        if ( mark_response < 0 ) {
             return errlog( ERR_CRITICAL, "splitd_chain_mark_session\n" );
         }
         
-        return 0;
+        return mark_response;
     }
 
     int ret = _critical_section();
 
-    if ( splitd_nfqueue_set_verdict_mark( packet, NF_ACCEPT, 1, packet->nfmark ) < 0 ) {
-        ret = errlog( ERR_CRITICAL, "splitd_nfqueue_set_verdict\n" );
-    }    
+    if ( ret == _SPLITD_CHAIN_MARK_DROP ) {
+        if ( splitd_nfqueue_set_verdict( packet, NF_DROP ) < 0 ) {
+            ret = errlog( ERR_CRITICAL, "splitd_nfqueue_set_verdict\n" );
+        }
+    } else {
+        if ( splitd_nfqueue_set_verdict_mark( packet, NF_ACCEPT, 1, packet->nfmark ) < 0 ) {
+            ret = errlog( ERR_CRITICAL, "splitd_nfqueue_set_verdict\n" );
+        }
+    }
     
     if ( ret < 0 ) return errlog( ERR_CRITICAL, "_critical_section\n" );
     return ret;
@@ -448,13 +492,14 @@ static int _handle_mailbox( splitd_reader_t* reader, int epoll_fd )
             }
             
             if ( _handle_message_chain( chain ) < 0 ) {
-                splitd_chain_destroy( chain );
+                splitd_chain_raze( chain );
                 return errlog( ERR_CRITICAL, "_handle_message_chain\n" );
             }
             
             /* If necessary destroy the current chain */
             if ( reader->chain != NULL ) {
-                splitd_chain_destroy( reader->chain );
+                splitd_chain_raze( reader->chain );
+                reader->chain = NULL;
             }
             
             /* Update the reader to use the new chain */
@@ -527,47 +572,30 @@ static int _handle_message_chain( splitd_chain_t* chain )
 
 static int _handle_message_enable( splitd_reader_t* reader, int epoll_fd )
 {
-    splitd_nfqueue_t* nfqueue = &reader->nfqueue;
-
     if ( reader->queue_num == 0 ) return errlogargs();
 
-    /* Check if the queue is running on the right queue number */
-    if ( nfqueue->queue_num == reader->queue_num ) {
-        debug( 9, "Queue is already running on queue %d\n", reader->queue_num );
-        return 0;
-    }
+#ifdef _POSTROUTING_QUEUE_
+    if ( reader->post_queue_num == 0 ) return errlogargs();
+#endif
 
     struct epoll_event epoll_event = {
         .events = EPOLLIN|EPOLLPRI|EPOLLERR|EPOLLHUP,
         .data.u32 = _event_code_nfqueue
     };
 
-    /* Destroy the queue if it exists (it is bound to the incorrect queue number) */
-    int fd = reader->nfqueue.nfq_fd;
-    if ( fd > 0 ) {
-        debug( 9, "Destroying queue, bound to incorrect queue number (%d,%d).\n", reader->queue_num, 
-               nfqueue->queue_num );
-
-        if ( epoll_ctl( epoll_fd, EPOLL_CTL_DEL, fd, &epoll_event ) < 0 ) {
-            return errlog( ERR_CRITICAL, "epoll_ctl\n" );
-        }
-
-        splitd_nfqueue_destroy( &reader->nfqueue );
+    if ( _update_nfqueue( &reader->nfqueue, reader->queue_num, &epoll_event, epoll_fd ) < 0 ) {
+        return errlog( ERR_CRITICAL, "_update_nfqueue\n" );
     }
-    
-    /* Enable the queue */
-    if ( splitd_nfqueue_init( &reader->nfqueue, reader->queue_num,
-                              NFQNL_COPY_PACKET | NFQNL_COPY_UNTANGLE_MODE, 0xFFFF ) < 0 ) {
-        return errlog( ERR_CRITICAL, "splitd_nfqueue_init\n" );
-    }
-    
-    /* Add the queue to epoll */    
-    if (( fd = splitd_nfqueue_get_fd( &reader->nfqueue )) < 0 ) {
-        return errlog( ERR_CRITICAL, "splitd_nfqueue_get_fd\n" );
-    }
-    
-    if ( epoll_ctl( epoll_fd, EPOLL_CTL_ADD, fd, &epoll_event ) < 0 ) return perrlog( "epoll_ctl" );
 
+#ifdef _POSTROUTING_QUEUE_
+    epoll_event.data.u32 = _event_code_post_nfqueue;
+
+    if ( _update_nfqueue( &reader->post_nfqueue, reader->post_queue_num, &epoll_event, epoll_fd ) < 0 ) {
+        return errlog( ERR_CRITICAL, "_update_nfqueue\n" );
+    }
+#endif
+
+    
     if ( _run_update_iptables() < 0 ) {
         return errlog( ERR_CRITICAL, "_run_update_iptables\n" );
     }
@@ -601,6 +629,10 @@ static int _handle_message_disable( splitd_reader_t* reader, int epoll_fd )
            nfqueue->queue_num );
 
     splitd_nfqueue_destroy( &reader->nfqueue );
+
+#ifdef _POSTROUTING_QUEUE_
+    splitd_nfqueue_destroy( &reader->post_nfqueue );
+#endif
 
     if ( _run_update_iptables() < 0 ) {
         return errlog( ERR_CRITICAL, "_run_update_iptables\n" );
@@ -639,5 +671,43 @@ static int _run_update_iptables( void )
         return errlog( ERR_CRITICAL, "splitd_libs_system\n" );
     }
 
+    return 0;
+}
+
+static int _update_nfqueue( splitd_nfqueue_t* nfqueue, u_int16_t queue_num, struct epoll_event *epoll_event,
+                            int epoll_fd )
+{
+    if ( nfqueue->queue_num == queue_num ) {
+        debug( 9, "The QUEUE %d is already bound to the correct queue", queue_num );
+        return 0;
+    }
+
+    int fd = nfqueue->nfq_fd;
+    if ( fd > 0 ) {
+        debug( 9, "Destroying queue, bound to incorrect queue number (%d,%d).\n", queue_num, 
+               nfqueue->queue_num );
+        
+        if ( epoll_ctl( epoll_fd, EPOLL_CTL_DEL, fd, epoll_event ) < 0 ) {
+            return errlog( ERR_CRITICAL, "epoll_ctl\n" );
+        }
+        
+        splitd_nfqueue_destroy( nfqueue );
+    }
+    
+    /* Enable the queue */
+    if ( splitd_nfqueue_init( nfqueue, queue_num,
+                              NFQNL_COPY_PACKET | NFQNL_COPY_UNTANGLE_MODE, 0xFFFF ) < 0 ) {
+        return errlog( ERR_CRITICAL, "splitd_nfqueue_init\n" );
+    }
+    
+    /* Add the queue to epoll */    
+    if (( fd = splitd_nfqueue_get_fd( nfqueue )) < 0 ) {
+        return errlog( ERR_CRITICAL, "splitd_nfqueue_get_fd\n" );
+    }
+        
+    if ( epoll_ctl( epoll_fd, EPOLL_CTL_ADD, fd, epoll_event ) < 0 ) {
+        return perrlog( "epoll_ctl" );
+    }
+        
     return 0;
 }

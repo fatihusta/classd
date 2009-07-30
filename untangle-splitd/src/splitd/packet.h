@@ -73,7 +73,10 @@ typedef struct
     struct splitd_nfqueue* nfqueue;
 
     /* This is the interface the packet came in on. */
-    char if_name[IF_NAMESIZE];
+    char iif_name[IF_NAMESIZE];
+    
+    /* This is the interface the packet went out on, may not be set. */
+    char oif_name[IF_NAMESIZE];
 
     /* The original and reply tuples. */
     struct {

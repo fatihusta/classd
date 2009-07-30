@@ -45,6 +45,7 @@
 
 /* Shield is 46 */
 #define DEFAULT_QUEUE_NUM 3004
+#define DEFAULT_POST_QUEUE_NUM 3005
 
 static struct
 {
@@ -56,6 +57,9 @@ static struct
     int port;
     int debug_level;
     int queue_num;
+#ifdef _POSTROUTING_QUEUE_
+    int post_queue_num;
+#endif
     splitd_reader_t reader;
     int daemonize;
     json_server_t json_server;
@@ -67,6 +71,9 @@ static struct
     .config_file = NULL,
     .port = DEFAULT_BIND_PORT,
     .queue_num = DEFAULT_QUEUE_NUM,
+#ifdef _POSTROUTING_QUEUE_
+    .post_queue_num = DEFAULT_POST_QUEUE_NUM,
+#endif
     .daemonize = 0,
     .std_err_filename = NULL,
     .std_err = -1,
@@ -211,6 +218,14 @@ static int _parse_args( int argc, char** argv )
             _globals.queue_num = atoi( optarg );
             break;
 
+        case 'x':
+#ifdef _POSTROUTING_QUEUE_
+            _globals.post_queue_num = atoi( optarg );
+#else
+            fprintf( stderr, "POSTROUTING QUEUE is disabled.\n");
+#endif
+            break;    
+
         case 't':
             len = strnlen( optarg, FILENAME_MAX );
             if (( _globals.lib_dir = calloc( 1, len )) == NULL ) {
@@ -248,6 +263,11 @@ static int _usage( char *name )
     fprintf( stderr, "\t-l <debug-level>: Debugging level.\n" );
     fprintf( stderr, "\t-t <lib-dir>: Directory containing all of the test libraries.\n" );
     fprintf( stderr, "\t-q <queue-number>: Queue number to use for queueing packets.\n" );
+#ifdef _POSTROUTING_QUEUE_
+    fprintf( stderr, "\t-x <post-queue-number>: Queue number to use for queueing packets in POSTROUTING.\n" );
+#else
+    fprintf( stderr, "\t-x <post-queue-number>: POSTROUTING queue is disabled.\n" );
+#endif
     fprintf( stderr, "\t-h: Halp (show this message)\n" );
     return -1;
 }
@@ -292,9 +312,15 @@ static int _init( int argc, char** argv )
         return errlog( ERR_CRITICAL, "splitd_nfqueue_global_init\n" );
     }
 
+#ifdef _POSTROUTING_QUEUE_
+    if ( splitd_reader_init( &_globals.reader, _globals.queue_num, _globals.post_queue_num ) < 0 ) {
+        return errlog( ERR_CRITICAL, "splitd_reader_init\n" );
+    }
+#else
     if ( splitd_reader_init( &_globals.reader, _globals.queue_num ) < 0 ) {
         return errlog( ERR_CRITICAL, "splitd_reader_init\n" );
     }
+#endif
 
     pthread_t thread;
     if ( pthread_create( &thread, &uthread_attr.other.medium, splitd_reader_donate, &_globals.reader )) {
@@ -338,6 +364,7 @@ static int _init( int argc, char** argv )
     }
 
     if ( config_file_json != NULL ) json_object_put( config_file_json );
+    if ( splitd_config_destroy( &config ) < 0 ) errlog( ERR_CRITICAL, "splitd_config_destroy\n" );
 
     _globals.daemon = MHD_start_daemon( MHD_USE_THREAD_PER_CONNECTION | MHD_USE_DEBUG,
                                         _globals.port, NULL, NULL, _globals.json_server.handler, 

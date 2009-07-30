@@ -119,10 +119,21 @@ typedef struct
     splitd_splitter_instance_t splitters[SPLITD_MAX_SPLITTERS];
 } splitd_chain_t;
 
+typedef struct
+{
+    int scores[SPLITD_MAX_UPLINKS];
+    u_char stop_processing;
+
+    /* Set to 1 to drop the packet (uplink chosen is not called.) */
+    // Currently not supported.
+    // u_char drop_packet;
+} splitd_scores_t;
+
 typedef int (*splitd_splitter_class_init_f)( splitd_splitter_instance_t* instance );
 typedef int (*splitd_splitter_class_update_scores_f)( splitd_splitter_instance_t* instance, 
                                                       splitd_chain_t* chain,
-                                                      int* score, splitd_packet_t* packet );
+                                                      splitd_scores_t* scores,
+                                                      splitd_packet_t* packet );
 typedef int (*splitd_splitter_class_destroy_f)( splitd_splitter_instance_t* instance );
 typedef int (*splitd_splitter_class_uplink_chosen_f)( splitd_splitter_instance_t* instance, 
                                                    splitd_chain_t* chain,
@@ -174,6 +185,10 @@ typedef int (*splitd_splitter_lib_prototype_t)( splitd_splitter_lib_t* lib );
 splitd_config_t* splitd_config_malloc( void );
 int splitd_config_init( splitd_config_t* config );
 splitd_config_t* splitd_config_create( void );
+
+int splitd_config_free( splitd_config_t* config );
+int splitd_config_destroy( splitd_config_t* config );
+int splitd_config_raze( splitd_config_t* config );
 
 /* Load a configuration */
 int splitd_config_load_json( splitd_config_t* config, struct json_object* json_config );

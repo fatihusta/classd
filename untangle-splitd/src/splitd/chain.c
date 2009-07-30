@@ -21,7 +21,7 @@
 #define _MARK_SHIFT  9
 #define _MARK_MASK   0xE00
 
-static char* _print_scores( char* scores_str, int scores_str_len, int* scores );
+static char* _print_scores( char* scores_str, int scores_str_len, splitd_scores_t* scores );
 
 /**
  * Allocate memory to store a chain structure.
@@ -73,26 +73,27 @@ splitd_chain_t* splitd_chain_create( splitd_config_t* config )
 /* Add a splitter, a copy is made.  so the original memory should be
  * freed.  Chains shouldn't be modified once they have been completed,
  * so there is no delete function. */
-int splitd_chain_add( splitd_chain_t* chain, splitd_splitter_instance_t* instance )
+int splitd_chain_add( splitd_chain_t* chain, splitd_splitter_config_t* splitter_config, 
+                      splitd_splitter_class_t* splitter_class )
 {
     if ( chain == NULL ) return errlogargs();
-    if ( instance == NULL ) return errlogargs();
+    if ( splitter_config == NULL ) return errlogargs();
+    if ( splitter_class == NULL ) return errlogargs();
+    
 
     if ( chain->num_splitters < 0 ) return errlogargs();
-    if ( instance->splitter_class == NULL ) return errlogargs();
-
     if ( chain->num_splitters >= SPLITD_MAX_SPLITTERS ) {
         return errlog( ERR_WARNING, "Chain is already full, unable to add another instance.\n" );
     }
 
     debug( 9, "Adding '%s' splitter class instance to chain at %d.\n", 
-           instance->splitter_class->name, chain->num_splitters );
+           splitter_config->splitter_name, chain->num_splitters );
     splitd_splitter_instance_t* dest = &chain->splitters[chain->num_splitters++];
-    if ( splitd_splitter_instance_init( dest, &instance->config ) < 0 ) {
+    if ( splitd_splitter_instance_init( dest, splitter_config ) < 0 ) {
         return errlog( ERR_CRITICAL, "splitd_splitter_instance_init\n" );
     }
 
-    dest->splitter_class = instance->splitter_class;
+    dest->splitter_class = splitter_class;
     
     return 0;
 }
@@ -108,7 +109,7 @@ int splitd_chain_mark_session( splitd_chain_t* chain, splitd_packet_t* packet )
     if ( chain->num_splitters < 0 ) return errlogargs();
     if ( chain->num_splitters > SPLITD_MAX_SPLITTERS ) return errlogargs();
 
-    int scores[SPLITD_MAX_UPLINKS];
+    splitd_scores_t scores;
     char scores_str[SPLITD_MAX_UPLINKS*8];
     int scores_str_len = sizeof( scores_str );
     
@@ -116,9 +117,11 @@ int splitd_chain_mark_session( splitd_chain_t* chain, splitd_packet_t* packet )
         /* Give all of the interfaces that are not mapped a -2000
          * (never use, and a 1 to all of the interfaces that are
          * mapped. */
-        scores[c] = ( chain->config.uplink_map[c] == NULL ) ? -2000 : 1;
+        scores.scores[c] = ( chain->config.uplink_map[c] == NULL ) ? -2000 : 1;
     }
 
+    scores.stop_processing = 0;
+    
     debug( 11, "Running packet through %d splitters\n", chain->num_splitters );
     for ( int c = 0 ; c < chain->num_splitters ; c++ ) {
         splitd_splitter_instance_t* instance = &chain->splitters[c];
@@ -134,18 +137,31 @@ int splitd_chain_mark_session( splitd_chain_t* chain, splitd_packet_t* packet )
             continue;
         }
 
-        if ( update_scores( instance, chain, scores, packet ) < 0 ) {
+        if ( update_scores( instance, chain, &scores, packet ) < 0 ) {
             return errlog( ERR_CRITICAL, "%s->update_scores\n", splitter_class->name );
         }
 
-        debug( 11, "Packet[%d] scores are (%s)\n", c, _print_scores( scores_str, scores_str_len, scores ));
+        if ( debug_get_mylevel() >= 11 ) {
+            debug( 11, "CHAIN[%d] scores are (%s)\n", c, 
+                   _print_scores( scores_str, scores_str_len, &scores ));
+        }
+        
+        if ( scores.stop_processing ) {
+            debug( 11, "CHAIN[%d] stopped processing\n", c );
+            break;
+        }
+
+        /* This is currently not supported */
+/*         if ( scores.drop_packet ) { */
+/*             return _SPLITD_CHAIN_MARK_DROP; */
+/*         } */
     }
 
     /* Now mark it for one of the interfaces */
     int total = 0;
     for ( int c = 0 ; c < SPLITD_MAX_UPLINKS ; c++ ) {
-        if ( scores[c] < 0 ) continue;
-        total += scores[c];
+        if ( scores.scores[c] < 0 ) continue;
+        total += scores.scores[c];
     }
 
     packet->nfmark &= ~_MARK_MASK;
@@ -160,8 +176,8 @@ int splitd_chain_mark_session( splitd_chain_t* chain, splitd_packet_t* packet )
     total = 0;
     int uplink = 0;
     for ( int c = 0 ; c < SPLITD_MAX_UPLINKS ; c++ ) {
-        if ( scores[c] <= 0 ) continue;
-        total += scores[c];
+        if ( scores.scores[c] <= 0 ) continue;
+        total += scores.scores[c];
         if ( ticket <= total ) {
             uplink = c;
             packet->has_nfmark = 1;
@@ -172,7 +188,7 @@ int splitd_chain_mark_session( splitd_chain_t* chain, splitd_packet_t* packet )
         }
     }
 
-    debug( 11, "Running packet through %d splitters\n", chain->num_splitters );
+    debug( 11, "Calling uplink chosen for %d splitters\n", chain->num_splitters );
     for ( int c = 0 ; c < chain->num_splitters ; c++ ) {
         splitd_splitter_instance_t* instance = &chain->splitters[c];
         splitd_splitter_class_t* splitter_class = instance->splitter_class;
@@ -190,8 +206,6 @@ int splitd_chain_mark_session( splitd_chain_t* chain, splitd_packet_t* packet )
         if ( uplink_chosen( instance, chain, uplink, packet ) < 0 ) {
             return errlog( ERR_CRITICAL, "%s->uplink_chosen\n", splitter_class->name );
         }
-
-        debug( 11, "Packet[%d] scores are (%s)\n", c, _print_scores( scores_str, scores_str_len, scores ));
     }
 
     
@@ -224,6 +238,8 @@ void splitd_chain_destroy( splitd_chain_t* chain )
         }
     }
 
+    if ( splitd_config_destroy( &chain->config ) < 0 ) errlog( ERR_CRITICAL, "splitd_config_destroy\n" );
+
     bzero( chain, sizeof( splitd_chain_t ));
 }
 
@@ -237,14 +253,14 @@ void splitd_chain_free( splitd_chain_t* chain )
     free( chain );
 }
 
-static char* _print_scores( char* scores_str, int scores_str_len, int* scores )
+static char* _print_scores( char* scores_str, int scores_str_len, splitd_scores_t* scores )
 {
     int c = 0;
     char num_str[7];
     bzero( scores_str, scores_str_len );
     for ( c = 0 ; c < SPLITD_MAX_UPLINKS ; c++ ) {
         const char* format = ( c == 0 ) ? "%d" : ",%d";
-        snprintf( num_str, sizeof( num_str ), format, scores[c] );
+        snprintf( num_str, sizeof( num_str ), format, scores->scores[c] );
         strncat( scores_str, num_str, scores_str_len );
     }
 

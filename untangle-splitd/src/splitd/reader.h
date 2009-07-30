@@ -19,9 +19,13 @@
 #include "splitd/chain.h"
 #include "splitd/nfqueue.h"
 
+// Use this to enable this idea of having the packets queued twice, once
+// before routing and once after routing.
+// #define _POSTROUTING_QUEUE_
+
 typedef struct
 {
-    /* This is the queue to read from */
+    /* This PREROUTING queue to read from */
     splitd_nfqueue_t nfqueue;
 
     /* Mailbox used to send shutdown messages and new chains */
@@ -30,8 +34,16 @@ typedef struct
     /* The thread that is running this reader. */
     volatile pthread_t thread;
 
-    /* The queue that the NFQUEUE should use */
+    /* The prerouting queue that the NFQUEUE should use */
     u_int16_t queue_num;
+
+#ifdef _POSTROUTING_QUEUE_
+    /* This POSTROUTING queue to read from */
+    splitd_nfqueue_t post_nfqueue;
+
+    /* the postrouting queue that the NFQUEUE should use */
+    u_int16_t post_queue_num;
+#endif // _POSTROUTING_QUEUE_
 
     /* The chain that determines how to allocate the packets. */
     splitd_chain_t* chain;
@@ -48,12 +60,20 @@ splitd_reader_t* splitd_reader_malloc( void );
 /**
  * @param nfqueue The queue to read from.
  */
+#ifdef _POSTROUTING_QUEUE_
+int splitd_reader_init( splitd_reader_t* reader, u_int16_t queue_num, u_int16_t post_queue_num );
+#else
 int splitd_reader_init( splitd_reader_t* reader, u_int16_t queue_num );
+#endif
 
 /**
  * @param nfqueue The queue to read from.
  */
+#ifdef _POSTROUTING_QUEUE_
+splitd_reader_t* splitd_reader_create( u_int16_t queue_num, u_int16_t post_queue_num );
+#else
 splitd_reader_t* splitd_reader_create( u_int16_t queue_num );
+#endif
 
 void splitd_reader_raze( splitd_reader_t* reader );
 void splitd_reader_destroy( splitd_reader_t* reader );

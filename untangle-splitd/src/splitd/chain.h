@@ -17,6 +17,9 @@
 #include "splitd.h"
 #include "splitd/nfqueue.h"
 
+// Drop the pack
+#define _SPLITD_CHAIN_MARK_DROP 0xDEAD
+
 /**
  * Allocate memory to store a chain structure.
  */
@@ -32,10 +35,9 @@ int splitd_chain_init( splitd_chain_t* chain, splitd_config_t* config );
  */
 splitd_chain_t* splitd_chain_create( splitd_config_t* config );
 
-/* Add a splitter, a copy is made.  so the original memory should be
- * freed.  Chains shouldn't be modified once they have been completed,
- * so there is no delete function. */
-int splitd_chain_add( splitd_chain_t* chain, splitd_splitter_instance_t* instance );
+/* Add a splitter, a copy of the config is made, so do not worry about that memory */
+int splitd_chain_add( splitd_chain_t* chain, splitd_splitter_config_t* config,
+                      splitd_splitter_class_t* splitter_class);
 
 /* Run through all of the splitters and indicate which session the
  * chain should be marked on */

@@ -51,7 +51,8 @@ splitd_binary=splitd
 
 ## Base Uplink Library
 library_source=src/split_libs/base/lib.c src/split_libs/base/online.c \
-	src/split_libs/base/basic.c src/split_libs/base/cacher.c 
+	src/split_libs/base/basic.c src/split_libs/base/cacher.c \
+	src/split_libs/base/router.c 
 library_objects=$(patsubst %.c,${object_dir}/%.o, ${library_source})
 library_binary=${library_dir}/base.so
 

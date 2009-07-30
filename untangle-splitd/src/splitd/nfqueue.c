@@ -160,8 +160,7 @@ splitd_nfqueue_t* splitd_nfqueue_malloc( void )
     return nfqueue;
 }
 
-int splitd_nfqueue_init( splitd_nfqueue_t* nfqueue, u_int16_t queue_num, 
-                               u_int8_t copy_mode, int copy_size )
+int splitd_nfqueue_init( splitd_nfqueue_t* nfqueue, u_int16_t queue_num, u_int8_t copy_mode, int copy_size )
 {
     int _critical_section() {
         bzero( nfqueue, sizeof( splitd_nfqueue_t ));
@@ -469,12 +468,23 @@ static int _nf_callback( struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
 
     /* Load the name of the interface */
     if ( dev != 0 ) {
-        if ( if_indextoname( dev, packet->if_name ) == NULL ) {
+        if ( if_indextoname( dev, packet->iif_name ) == NULL ) {
             errlog( ERR_WARNING, "if_indextoname (%s)\n", errstr );
-            strncpy( packet->if_name, "unknown", sizeof( packet->if_name ));
+            strncpy( packet->iif_name, "unknown", sizeof( packet->iif_name ));
         }
     } else {
-        strncpy( packet->if_name, "unknown", sizeof( packet->if_name ));
+        strncpy( packet->iif_name, "unknown", sizeof( packet->iif_name ));
+    }
+
+    dev = nfq_get_physoutdev( nfa );
+    if ( dev == 0 ) dev = nfq_get_outdev( nfa );
+    if ( dev != 0 ) {
+        if ( if_indextoname( dev, packet->oif_name ) == NULL ) {
+            errlog( ERR_WARNING, "if_indextoname (%s)\n", errstr );
+            strncpy( packet->oif_name, "unknown", sizeof( packet->oif_name ));
+        }
+    } else {
+        strncpy( packet->oif_name, "unknown", sizeof( packet->oif_name ));
     }
         
     /* Try to get the conntrack information */

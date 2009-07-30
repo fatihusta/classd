@@ -92,9 +92,7 @@ int splitd_manager_set_config( splitd_config_t* config )
     splitd_splitter_config_init(sconfig,"cacher",params);
     config->splitters_length = config->splitters_length+1;
 #endif
-    
-    splitd_splitter_instance_t* splitter_instance = NULL;
-    
+        
     splitd_chain_t* chain = NULL;
     
     int _critical_section() {
@@ -105,6 +103,10 @@ int splitd_manager_set_config( splitd_config_t* config )
         if ( config->is_enabled == 0 ) {
             if ( splitd_reader_disable( _globals.reader ) < 0 ) {
                 return errlog( ERR_CRITICAL, "splitd_reader_disable\n" );
+            }
+
+            if ( splitd_config_destroy( &_globals.config ) < 0 ) {
+                errlog( ERR_CRITICAL, "splitd_config_destroy\n" );
             }
 
             if ( splitd_config_copy( &_globals.config, config ) < 0 ) {
@@ -165,21 +167,13 @@ int splitd_manager_set_config( splitd_config_t* config )
             }
             
             if ( _validate_splitter_config( splitter_config ) < 0 ) {
-                errlog( ERR_WARNING, "Invalid test configuration\n" );
+                errlog( ERR_WARNING, "_validate_splitter_config: Invalid splitter configuration\n" );
                 continue;
             }
             
-            if (( splitter_instance = splitd_splitter_instance_create( splitter_config )) == NULL ) {
-                return errlog( ERR_CRITICAL, "splitd_splitter_instance_create\n" );
-            }
-
-            splitter_instance->splitter_class = splitter_class;
-
-            if ( splitd_chain_add( chain, splitter_instance ) < 0 ) {
+            if ( splitd_chain_add( chain, splitter_config, splitter_class ) < 0 ) {
                 return errlog( ERR_CRITICAL, "splitd_chain_add\n" );
             }
-
-            splitter_instance = NULL;
         }
 
         /* Send the chain to the reader. */
@@ -188,6 +182,10 @@ int splitd_manager_set_config( splitd_config_t* config )
         }
 
         chain = NULL;
+
+        if ( splitd_config_destroy( &_globals.config ) < 0 ) {
+            errlog( ERR_CRITICAL, "splitd_config_destroy\n" );
+        }
                 
         if ( splitd_config_copy( &_globals.config, config ) < 0 ) {
             return errlog( ERR_CRITICAL, "splitd_config_copy\n" );
@@ -200,13 +198,7 @@ int splitd_manager_set_config( splitd_config_t* config )
     int ret = _critical_section();
     if ( pthread_mutex_unlock( &_globals.mutex ) != 0 ) return perrlog( "pthread_mutex_unlock" );
 
-    if (( splitter_instance != NULL ) && ( splitd_splitter_instance_raze( splitter_instance ) < 0 )) {
-        errlog( ERR_CRITICAL, "splitd_uplink_splitter_instance_raze\n" );
-    }
-
-    if ( chain != NULL ) {
-        splitd_chain_raze( chain );
-    }
+    if ( chain != NULL ) splitd_chain_raze( chain );
     
     if ( ret < 0 ) return errlog( ERR_CRITICAL, "_critical_section\n" );
     

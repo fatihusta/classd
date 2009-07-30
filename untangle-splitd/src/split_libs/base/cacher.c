@@ -82,7 +82,7 @@ static int _init( splitd_splitter_instance_t* instance );
 
 /* Update the scores for the uplinks, called for each session */
 static int _update_scores( splitd_splitter_instance_t* instance, splitd_chain_t* chain,
-                           int* score, splitd_packet_t* packet );
+                           splitd_scores_t* scores, splitd_packet_t* packet );
 
 /* This event is called after a UPLINK is chosen for a given packet/session */
 static int _uplink_chosen( splitd_splitter_instance_t* instance, splitd_chain_t* chain,
@@ -125,10 +125,12 @@ static int _init( splitd_splitter_instance_t* instance )
 {
     if ( instance == NULL ) return errlogargs();
 
+    instance->ptr = NULL;
+
     debug( 9, "Running cacher.init.\n" );
     
     _config_t* config = NULL;
-    if (( config = calloc( 1, sizeof( _config_t ))) < 0 ) {
+    if (( config = calloc( 1, sizeof( _config_t ))) == 0 ) {
         return errlogmalloc();
     }
 
@@ -181,7 +183,7 @@ static int _init( splitd_splitter_instance_t* instance )
 
 /* Update the scores for the uplinks, called for each session */
 static int _update_scores( splitd_splitter_instance_t* instance, splitd_chain_t* chain,
-                           int* scores, splitd_packet_t* packet )
+                           splitd_scores_t* scores, splitd_packet_t* packet )
 {
     if ( instance == NULL ) return errlogargs();
     if ( chain == NULL ) return errlogargs();
@@ -190,14 +192,16 @@ static int _update_scores( splitd_splitter_instance_t* instance, splitd_chain_t*
     if ( instance->ptr == NULL ) return errlogargs();
     if ( packet->ip_header == NULL) return errlogargs();
 
-    debug( 11, "Running cacher update_scores\n" );
-    debug( 11, "Pre-Cache  Scores: [");
-    for ( int c = 0 ; c < SPLITD_MAX_UPLINKS ; c++ ) {
-        if (c != 0) debug_nodate(11 ,",");
-        debug_nodate(11 ,"%i",scores[c]);
+    if ( debug_get_mylevel() >= 11 ) {
+        debug( 11, "Running cacher update_scores\n" );
+        debug( 11, "Pre-Cache  Scores: [");
+        for ( int c = 0 ; c < SPLITD_MAX_UPLINKS ; c++ ) {
+            if (c != 0) debug_nodate(11 ,",");
+            debug_nodate(11 ,"%i",scores->scores[c]);
+        }
+        debug_nodate( 11,"]\n");
     }
-    debug_nodate( 11,"]\n");
-
+        
     _cache_key_t key;
     _config_t* config = (_config_t*)instance->ptr;
     ht_t* cache = &config->cache_table;
@@ -216,17 +220,18 @@ static int _update_scores( splitd_splitter_instance_t* instance, splitd_chain_t*
 
         for ( int c = 0 ; c < SPLITD_MAX_UPLINKS ; c++ ) {
             if (c != uplink)
-                scores[c] = -1000;
+                scores->scores[c] = -1000;
         }
     }
         
-    debug( 11, "Post-Cache Scores: [");
-    for ( int c = 0 ; c < SPLITD_MAX_UPLINKS ; c++ ) {
-        if (c != 0) debug_nodate(11 ,",");
-        debug_nodate(11 ,"%i",scores[c]);
+    if ( debug_get_mylevel() >= 11 ) {
+        debug( 11, "Post-Cache Scores: [");
+        for ( int c = 0 ; c < SPLITD_MAX_UPLINKS ; c++ ) {
+            if (c != 0) debug_nodate(11 ,",");
+            debug_nodate(11 ,"%i",scores->scores[c]);
+        }
+        debug_nodate( 11,"]\n");
     }
-    debug_nodate( 11,"]\n");
-    
 
     return 0;
 }

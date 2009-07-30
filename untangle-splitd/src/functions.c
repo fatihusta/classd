@@ -192,6 +192,8 @@ static struct json_object *_set_config( struct json_object* request )
             return 0;
         }
         
+        if ( splitd_config_destroy( &config ) < 0 ) errlog( ERR_CRITICAL, "splitd_config_destroy\n" );
+  
         if ( splitd_manager_get_config( &config ) < 0 ) {
             errlog( ERR_CRITICAL, "splitd_manager_get_config\n" );
             strncpy( message, "Unable to get config for reserialization.", message_size );
@@ -221,7 +223,11 @@ static struct json_object *_set_config( struct json_object* request )
 
     char response_message[128] = "An unexpected error occurred.";
 
-    if ( _critical_section( response_message, sizeof( response_message )) < 0 ) {
+    int ret = _critical_section( response_message, sizeof( response_message ));
+
+    if ( splitd_config_destroy( &config ) < 0 ) errlog( ERR_CRITICAL, "splitd_config_destroy\n" );
+                                 
+    if ( ret < 0 ) {
         json_object_put( new_config_json );
         return errlog_null( ERR_CRITICAL, "_critical_section\n" );
     }
