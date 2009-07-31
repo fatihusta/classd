@@ -12,8 +12,12 @@
 /* $Id: unet.c 22141 2009-02-25 19:59:14Z amread $ */
 #include "mvutil/unet.h"
 
+#include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
+
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -80,6 +84,14 @@ static __inline__ int _unet_blocking_modify( int fd, int if_blocking )
 static unet_tls_t* _tls_get ( void );
 static int         _tls_init( void* buf, size_t size );
 
+
+/* this is definitely not where this belongs */
+static char* _trim( char* buf );
+
+
+static int _add_range( char* next_matcher, char* divider, struct unet_ip_matcher* ip_matcher );
+static int _add_subnet( char* next_matcher, char* divider, struct unet_ip_matcher* ip_matcher );
+
 int     unet_init        ( void )
 {
     if ( pthread_key_create( &_unet.tls_key, uthread_tls_free ) < 0 ) {
@@ -120,7 +132,7 @@ int     unet_startlisten_local (u_short listenport)
     memset(&listen_addr,0,sizeof(listen_addr));
     listen_addr.sin_port = htons(listenport);
     listen_addr.sin_family = AF_INET;
-    if (inet_aton("127.0.0.1", &listen_addr.sin_addr)<0)
+    if (inet_pton(AF_INET, "127.0.0.1", &listen_addr)<0)
         return -1;
 
     return _unet_startlisten(&listen_addr);
@@ -160,8 +172,8 @@ int     unet_startlisten_on_portrange(  int count, u_short* base_port, int* sock
     };
 
     if ( ip != NULL ) {
-        if ( inet_aton( ip, &bind_addr ) < 0 ) {
-            return errlog( ERR_CRITICAL, "Unable to convert ip '%s' (inet_aton)", ip );
+        if ( inet_pton( AF_INET, ip, &bind_addr ) < 0 ) {
+            return errlog( ERR_CRITICAL, "Unable to convert ip '%s' (inet_pton)", ip );
         }
     }
 
@@ -648,5 +660,396 @@ int unet_sockaddr_in_init( struct sockaddr_in* sockaddr, in_addr_t host, u_short
     return 0;
 }
 
+unet_ip_matchers_t* unet_ip_matchers_malloc( void )
+{
+    unet_ip_matchers_t* ip_matchers = NULL;
+    if (( ip_matchers = calloc( 1, sizeof( unet_ip_matchers_t ))) == NULL ) {
+        return errlogmalloc_null();
+    }
+
+    return ip_matchers;
+}
+
+int unet_ip_matchers_init( unet_ip_matchers_t* ip_matchers, char* matcher_string )
+{
+    if ( matcher_string == NULL ) return errlogargs();
+    if ( ip_matchers == NULL ) return errlogargs();
+
+    int string_len = 0;
+    int num_matchers = 0;
+    char *matcher_string_copy = NULL;
+
+    if ( ip_matchers->matchers != NULL ) {
+        errlog( ERR_WARNING, "Ignoring existing non-null matchers\n" );
+        ip_matchers->matchers = NULL;
+    }
+    int _critical_section()
+    {
+        if (( string_len = strnlen( matcher_string, UNET_IP_MATCHERS_MAX_LEN )) < 0 ) {
+            return errlog( ERR_CRITICAL, "Matcher string is longer than %d.\n", UNET_IP_MATCHERS_MAX_LEN );
+        }
+        
+        /* Given a string that long, the largest number of matches is length/10,
+         * that would be 1.2.3.1,1.2.3.2,.. */
+        num_matchers = string_len / 8 + 1;
+        
+        if (( ip_matchers->matchers = calloc( num_matchers, sizeof( struct unet_ip_matcher ))) == NULL ) {
+            return errlogmalloc();
+        }
+        
+        ip_matchers->num_matchers = 0;
+        
+        /* Now it is time to parse the matcher string. */
+        char* saveptr = NULL;
+        if (( matcher_string_copy = strndup( matcher_string, string_len )) == NULL ) {
+            if ( errno == ENOMEM ) {
+                return errlogmalloc();
+            } else {
+                return perrlog( "strndup" );
+            }
+        }
+
+        char* matcher_string_ptr = matcher_string_copy;
+        int c = 0;
+        struct unet_ip_matcher* ip_matcher = NULL;
+        char *next_matcher;
+        struct in_addr address;
+
+        while (( next_matcher = strtok_r( matcher_string_ptr, ",", &saveptr )) != NULL ) {
+            matcher_string_ptr = NULL;
+
+            if ( ip_matchers->num_matchers >= num_matchers ) {
+                return errlog( ERR_CRITICAL, "too many matchers: '%s'\n", matcher_string );
+            }
+
+            ip_matcher = &ip_matchers->matchers[ip_matchers->num_matchers++];
+
+            ip_matcher->type = UNET_IP_MATCHERS_UNKNOWN;
+            
+            next_matcher = _trim( next_matcher );
+            if ( next_matcher[0] == '\0' ) {
+                return errlog( ERR_CRITICAL, "Invalid matcher string '%s'\n", matcher_string );
+            }
+
+            if (( strcasecmp( next_matcher, "any" ) == 0 ) ||
+                ( strcasecmp( next_matcher, "*" ) == 0 )) {
+                ip_matcher->type = UNET_IP_MATCHERS_ANY;
+                continue;
+            }
+
+            for ( c = 0 ; next_matcher[c] != '\0' ; c++ ) {
+                if (( next_matcher[c] == '-' ) && 
+                    ( _add_range( next_matcher, &next_matcher[c], ip_matcher ) < 0 )) {
+                    return errlog( ERR_CRITICAL, "_add_range\n" );
+                }
+
+                if (( next_matcher[c] == '/' ) && 
+                    ( _add_subnet( next_matcher, &next_matcher[c], ip_matcher ) < 0 )) {
+                    return errlog( ERR_CRITICAL, "_add_subnet\n" );
+                }
+            }
+
+            if ( ip_matcher->type != UNET_IP_MATCHERS_UNKNOWN ) {
+                continue;
+            }
+            
+            /* Must be an individual address */
+            if ( inet_pton( AF_INET, next_matcher, &address ) == 0 ) {
+                return errlog( ERR_CRITICAL, "inet_pton[%s]\n", next_matcher );
+            }
+            
+            ip_matcher->type = UNET_IP_MATCHERS_SINGLE;
+            ip_matcher->data.address = address.s_addr;
+        }
+        
+        return 0;
+    }
+    
+    int ret = _critical_section();
+    if ( matcher_string_copy != NULL ) {
+        free( matcher_string_copy );
+    }
+
+    if ( ret < 0 ) {
+        if ( ip_matchers->matchers != NULL ) {
+            free( ip_matchers->matchers );
+        }
+        ip_matchers->matchers = NULL;
+        return errlog( ERR_CRITICAL, "_critical_section\n" );
+    }
+
+    return 0;
+}
+
+unet_ip_matchers_t* unet_ip_matchers_create( char* matcher_string )
+{
+    unet_ip_matchers_t* ip_matchers = NULL;
+    
+    if (( ip_matchers = unet_ip_matchers_malloc()) == NULL ) {
+        return errlog_null( ERR_CRITICAL, "unet_ip_matchers_malloc\n" );
+    }
+
+    if ( unet_ip_matchers_init( ip_matchers, matcher_string ) < 0 ) {
+        free( ip_matchers );
+        return errlog_null( ERR_CRITICAL, "unet_ip_matchers_init\n" );
+    }
+
+    return ip_matchers;
+}
 
 
+int unet_ip_matchers_is_match( unet_ip_matchers_t* ip_matchers, in_addr_t address, int* is_match )
+{
+    if ( ip_matchers == NULL ) {
+        return errlogargs();
+    }
+
+    if ( is_match == NULL ) {
+        return errlogargs();
+    }
+
+    if ( ip_matchers->num_matchers < 0 ) {
+        return errlogargs();
+    }
+
+    *is_match = 0;
+
+    if ( ip_matchers->num_matchers == 0 ) {
+        return 0;
+    }
+
+    int c = 0;
+    struct unet_ip_matcher* ip_matcher = NULL;
+    for ( c = 0 ; c < ip_matchers->num_matchers ; c++ ) {
+        ip_matcher = &ip_matchers->matchers[c];
+        switch ( ip_matcher->type ) {
+        case UNET_IP_MATCHERS_ANY:
+            *is_match = 1;
+            break;
+            
+        case UNET_IP_MATCHERS_SINGLE:
+            if ( ip_matcher->data.address == address ) {
+                *is_match = 1;
+            }
+            break;
+
+        case UNET_IP_MATCHERS_RANGE: {
+            in_addr_t h = ntohl( address );
+            if (( ip_matcher->data.range.start <= h ) && ( h <= ip_matcher->data.range.end )) {
+                *is_match = 1;
+            }
+            break;
+        }
+
+        case UNET_IP_MATCHERS_SUBNET:
+            if ( ip_matcher->data.subnet.network == (address & ip_matcher->data.subnet.netmask)) {
+                *is_match = 1;
+            }
+            break;
+            
+        default:
+            return errlog( ERR_CRITICAL, "Invalid IP Matcher type: %d\n", ip_matcher->type );
+        }
+        
+        /* First match is okay */
+        if ( *is_match != 0 ) break;
+    }
+    
+    return 0;
+}
+
+int unet_ip_matchers_to_string( unet_ip_matchers_t* ip_matchers, char* buffer, int buffer_len )
+{
+    if ( ip_matchers == NULL ) {
+        return errlogargs();
+    }
+
+    if ( ip_matchers->num_matchers < 0 ) {
+        return errlogargs();
+    }
+
+    if ( buffer == NULL ) {
+        return errlogargs();
+    }
+
+    if ( buffer_len <= 8 ) {
+        return errlogargs();
+    }
+
+    int len = 0;
+    int c = 0;
+    char comma[] = ",";
+    char *comma_str = "";
+    for ( c = 0 ; c < ip_matchers->num_matchers ; c++ ) {
+        struct unet_ip_matcher* ip_matcher = &ip_matchers->matchers[c];
+        len = 0;
+        switch ( ip_matcher->type ) {
+        case UNET_IP_MATCHERS_ANY:
+            len = snprintf( buffer, buffer_len, "%sany", comma_str );
+            break;
+            
+        case UNET_IP_MATCHERS_SINGLE:
+            len = snprintf( buffer, buffer_len, "%s%s", comma_str, 
+                            unet_next_inet_ntoa( ip_matcher->data.address ));
+            break;
+
+        case UNET_IP_MATCHERS_RANGE:
+            len = snprintf( buffer, buffer_len, "%s%s-%s", comma_str, 
+                            unet_next_inet_ntoa( htonl( ip_matcher->data.range.start )),
+                            unet_next_inet_ntoa( htonl( ip_matcher->data.range.end )));
+            break;
+            
+
+        case UNET_IP_MATCHERS_SUBNET:
+            len = snprintf( buffer, buffer_len, "%s%s/%s", comma_str, 
+                            unet_next_inet_ntoa( htonl( ip_matcher->data.range.start )),
+                            unet_next_inet_ntoa( htonl( ip_matcher->data.range.end )));
+            break;
+            
+        default:
+            errlog( ERR_WARNING, "Ignoring unknown matcher: %d\n", ip_matcher->type );
+        }
+        
+        /* some badness somewheres */
+        if ( len < 0 ) {
+            break;
+        }
+        /* something was appended, start printing commas */
+        if ( len != 0 ) {
+            comma_str = comma;
+        }
+        buffer_len -= len;
+        if ( buffer_len <= 0 ) {
+            break;
+        }
+        buffer+=len;
+
+        
+    }
+
+    return 0;
+}
+
+
+
+int unet_ip_matchers_raze( unet_ip_matchers_t* ip_matchers )
+{
+    if ( ip_matchers == NULL ) return errlogargs();
+
+    if ( unet_ip_matchers_destroy( ip_matchers ) < 0 ) errlog( ERR_CRITICAL, "unet_ip_matchers_destroy\n" );
+    if ( unet_ip_matchers_free( ip_matchers ) < 0 ) errlog( ERR_CRITICAL, "unet_ip_matchers_destroy\n" );
+    
+    return 0;
+}
+
+int unet_ip_matchers_destroy( unet_ip_matchers_t* ip_matchers )
+{
+    if ( ip_matchers == NULL ) return errlogargs();
+    if ( ip_matchers->matchers != NULL ) {
+        free( ip_matchers->matchers );
+    }
+    ip_matchers->matchers = NULL;
+    return 0;
+}
+
+int unet_ip_matchers_free( unet_ip_matchers_t* ip_matchers )
+{
+    if ( ip_matchers == NULL ) return errlogargs();
+    free( ip_matchers );
+    return 0;
+}
+
+static char* _trim( char* buffer )
+{
+    int c=0;
+    for ( c = 0 ; isspace(buffer[c]) ;c++ ) {}
+    buffer = &buffer[c];
+    if (( c = strnlen( buffer, UNET_IP_MATCHERS_MAX_LEN )) < 0 ) {
+        return errlog_null( ERR_CRITICAL, "individual matcher string is longer than %d.\n", 
+                            UNET_IP_MATCHERS_MAX_LEN );
+    }
+
+    for ( c-- ; ( c >=0 ) && isspace(buffer[c]) ; c-- ) {
+        buffer[c] = '\0';
+    }
+    
+    return buffer;
+}
+
+static int _add_range( char* next_matcher, char* divider, struct unet_ip_matcher* ip_matcher )
+{
+    divider[0] = '\0';
+    divider++;
+
+    if (( next_matcher = _trim( next_matcher )) == NULL ) {
+        return errlog( ERR_CRITICAL, "_trim\n" );
+    }
+    
+    if (( divider = _trim( divider )) == NULL ) {
+        return errlog( ERR_CRITICAL, "_trim\n" );
+    }
+    
+    struct in_addr address;
+
+    if ( inet_pton( AF_INET, next_matcher, &address ) == 0 ) {
+        return errlog( ERR_CRITICAL, "inet_pton[%s]\n", next_matcher );
+    }
+    ip_matcher->data.range.start = ntohl( address.s_addr );
+
+    if ( inet_pton( AF_INET, divider, &address ) == 0 ) {
+        return errlog( ERR_CRITICAL, "inet_pton[%s]\n", divider );
+    }
+    ip_matcher->data.range.end = ntohl( address.s_addr );
+    if ( ip_matcher->data.range.end < ip_matcher->data.range.start ) {
+        ip_matcher->data.range.end = ip_matcher->data.range.start;
+        ip_matcher->data.range.start = ntohl( address.s_addr );
+    }
+
+    ip_matcher->type = UNET_IP_MATCHERS_RANGE;
+
+    return 0;
+}
+
+static int _add_subnet( char* next_matcher, char* divider, struct unet_ip_matcher* ip_matcher )
+{
+    divider[0] = '\0';
+    divider++;
+
+    if (( next_matcher = _trim( next_matcher )) == NULL ) {
+        return errlog( ERR_CRITICAL, "_trim\n" );
+    }
+    
+    if (( divider = _trim( divider )) == NULL ) {
+        return errlog( ERR_CRITICAL, "_trim\n" );
+    }
+    
+    struct in_addr address;
+
+    if ( inet_pton( AF_INET, next_matcher, &address ) == 0 ) {
+        return errlog( ERR_CRITICAL, "inet_pton[%s]\n", next_matcher );
+    }
+    ip_matcher->data.subnet.network = address.s_addr;
+
+    if ( divider[0] == '\0' ) {
+        return errlog( ERR_CRITICAL, "empty divider\n" );
+    }
+
+    char *endptr = NULL;
+    int netmask = strtol( divider, &endptr, 10 );
+    if ( endptr != NULL && endptr[0] == '\0' && netmask >= 0 && netmask <= 32 ) {
+        if ( netmask == 0 ) {
+            ip_matcher->data.subnet.netmask = 0;
+        } else {
+            ip_matcher->data.subnet.netmask = htonl( 0xFFFFFFFF << ( 32 - netmask ));
+        }
+    } else {
+        if ( inet_pton( AF_INET, divider, &address ) == 0 ) {
+            return errlog( ERR_CRITICAL, "inet_pton[%s]\n", divider );
+        }
+        ip_matcher->data.subnet.netmask = address.s_addr;
+    }
+    ip_matcher->data.subnet.network &= ip_matcher->data.subnet.netmask;    
+    ip_matcher->type = UNET_IP_MATCHERS_SUBNET;
+
+    return 0;
+}

@@ -11,6 +11,7 @@
 
 #include <stdarg.h>
 
+#include <stdlib.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -302,7 +303,7 @@ int json_serializer_to_c_in_addr( struct json_object* json_object, json_serializ
         return errlog( ERR_CRITICAL, "json_object_get_string\n" );
     }
 
-    debug( 10, "Converting the string %s for %s\n", ip_string, field->name );
+    debug( 10, "Converting the string '%s' for %s\n", ip_string, field->name );
 
     if ( inet_aton( ip_string, address ) == 0 ) {
         return errlog( ERR_WARNING, "Invalid IP Address string %s\n", ip_string );
@@ -583,6 +584,75 @@ int json_serializer_to_json_json( struct json_object* json_object, json_serializ
     return 0;
 }
 
+int json_serializer_to_c_ip_matchers( struct json_object* json_object, json_serializer_field_t* field, 
+                                      void* c_data )
+{
+    if ( json_object == NULL ) return errlogargs();
+    if ( field == NULL ) return errlogargs();
+    if ( c_data == NULL ) return errlogargs();
+    if ( field->fetch_arg == 0 ) return errlog( ERR_CRITICAL, "field->fetch_arg must be set\n" );
+    int offset = *((int*)(&field->arg));
+    if ( offset < 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", offset );
+
+    unet_ip_matchers_t* matchers = (unet_ip_matchers_t*)&((char*)c_data)[offset];
+
+    if ( json_object_is_type( json_object, json_type_string ) == 0 ) {
+        debug( 10, "The field %s is not a string.\n", field->name );
+        if ( field->if_empty == JSON_SERIALIZER_FIELD_EMPTY_IGNORE ) return 0;
+        return -1;
+    }
+
+    char *matcher_string = NULL;
+    if (( matcher_string = json_object_get_string( json_object )) == NULL ) {
+        return errlog( ERR_CRITICAL, "json_object_get_string\n" );
+    }
+
+    debug( 10, "Converting the string '%s' for %s\n", matcher_string, field->name );
+
+    if ( unet_ip_matchers_init( matchers, matcher_string ) < 0 ) {
+        matchers->num_matchers = 0;
+        debug( 10, "Invalid IP Matcher '%s'\n", matcher_string );
+        if ( field->if_empty == JSON_SERIALIZER_FIELD_EMPTY_IGNORE ) return 0;
+        return -1;
+    }
+    
+    return 0;
+}
+
+int json_serializer_to_json_ip_matchers( struct json_object* json_object, json_serializer_field_t* field, 
+                                           void* c_data )
+{
+    if ( json_object == NULL ) return errlogargs();
+    if ( field == NULL ) return errlogargs();
+    if ( c_data == NULL ) return errlogargs();
+    int offset = *((int*)(&field->arg));
+    if ( offset < 0 ) return errlog( ERR_CRITICAL, "Invalid offset %d\n", offset );
+
+    unet_ip_matchers_t* ip_matchers = (unet_ip_matchers_t*)&((char*)c_data)[offset];
+    
+    char* matcher_string = NULL;
+    if (( matcher_string = calloc( 1, UNET_IP_MATCHERS_MAX_LEN )) == NULL ) {
+        return errlogmalloc();
+    }
+    
+    if ( unet_ip_matchers_to_string( ip_matchers, matcher_string, UNET_IP_MATCHERS_MAX_LEN ) < 0 ) {
+        free( matcher_string );
+        matcher_string = NULL;
+        return errlog( ERR_CRITICAL, "unet_ip_matcher_to_string\n" );
+    }
+    
+    if ( json_object_utils_add_string( json_object, field->name,matcher_string ) < 0 ) {
+        free( matcher_string );
+        matcher_string = NULL;
+        return errlog( ERR_CRITICAL, "json_object_utils_add_int\n" );
+    }
+    
+    free( matcher_string );
+    matcher_string = NULL;
+
+    return 0;
+}
+
 static int _is_terminator( json_serializer_field_t* field )
 {
     if ( field == NULL ) return 1;
@@ -612,3 +682,4 @@ static int _validate_field( json_serializer_field_t* field )
 
     return 0;
 }
+

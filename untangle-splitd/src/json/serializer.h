@@ -109,6 +109,12 @@ int json_serializer_to_c_in_addr( struct json_object* json_object, json_serializ
 int json_serializer_to_json_in_addr( struct json_object* json_object, json_serializer_field_t* field, 
                                      void* c_data );
 
+int json_serializer_to_c_ip_matchers( struct json_object* json_object, json_serializer_field_t* field, 
+                                      void* c_data );
+
+int json_serializer_to_json_ip_matchers( struct json_object* json_object, json_serializer_field_t* field, 
+                                         void* c_data );
+
 int json_serializer_to_c_array( struct json_object* json_object, json_serializer_field_t* field, 
                                 void* c_data );
 

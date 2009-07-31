@@ -64,6 +64,13 @@ test_source=src/json/server.c src/json/object_utils.c \
 test_objects=$(patsubst %.c,${object_dir}/%.o, ${test_source})
 test_binary=config
 
+## Remove main
+matcher_test_source=$(subst src/functions.c, , $(subst src/main.c, , ${splitd_source})) test/matcher.c 
+
+matcher_test_objects=$(patsubst %.c,${object_dir}/%.o, ${matcher_test_source})
+matcher_test_binary=test_matcher
+
+
 default: ${object_dir} mvutil_includes ${splitd_binary}
 
 ${splitd_binary}: ${splitd_objects} ${mvutil_source} ${library_binary}
@@ -106,7 +113,12 @@ clean:
 install:
 	@echo "Installing"
 
-${test_binary}: ${test_objects} ${mvutil_source}
+${test_binary}: mvutil_includes ${test_objects} ${mvutil_source}
 	@echo "==> gcc ${test_objects} -> $@"
 	@${CC} ${CFLAGS} ${LIBS_FLAGS} ${test_objects} -o $@
+
+${matcher_test_binary}: mvutil_includes ${matcher_test_objects} ${mvutil_source}
+	@echo "==> gcc ${matcher_test_objects} -> $@"
+	@${CC} ${CFLAGS} ${LIBS_FLAGS} ${matcher_test_objects} -o $@
+
 

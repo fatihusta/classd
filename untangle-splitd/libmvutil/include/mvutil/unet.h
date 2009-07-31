@@ -18,6 +18,38 @@
 #include <arpa/inet.h>
 #include <poll.h>
 
+#define UNET_IP_MATCHERS_MAX_LEN  512
+
+struct unet_ip_matcher 
+{
+    enum 
+    {
+        UNET_IP_MATCHERS_SINGLE = 1,
+        UNET_IP_MATCHERS_RANGE,
+        UNET_IP_MATCHERS_SUBNET,
+        UNET_IP_MATCHERS_ANY,
+        UNET_IP_MATCHERS_UNKNOWN
+    } type;
+    union
+    {
+        in_addr_t address;
+        struct { 
+            in_addr_t start;
+            in_addr_t end;
+        } range;
+        struct {
+            in_addr_t network;
+            in_addr_t netmask;
+        } subnet;
+    } data;
+};
+
+typedef struct
+{
+    int num_matchers;
+    struct unet_ip_matcher *matchers;
+} unet_ip_matchers_t;
+
 /**
  * opens a TCP socket for listening on listenport on the local machine only
  * this socket will not be remotely visible
@@ -180,5 +212,15 @@ int unet_blocking_enable( int fd );
  */
 int unet_sockaddr_in_init( struct sockaddr_in* sockaddr, in_addr_t host, u_short port );
 
+unet_ip_matchers_t* unet_ip_matchers_malloc( void );
+int unet_ip_matchers_init( unet_ip_matchers_t* ip_matchers, char* matcher_string );
+unet_ip_matchers_t* unet_ip_matchers_create( char* matcher_string );
+
+int unet_ip_matchers_is_match( unet_ip_matchers_t* ip_matchers, in_addr_t address, int* is_match );
+int unet_ip_matchers_to_string( unet_ip_matchers_t* ip_matchers, char* buffer, int buffer_len );
+
+int unet_ip_matchers_raze( unet_ip_matchers_t* ip_matchers );
+int unet_ip_matchers_destroy( unet_ip_matchers_t* ip_matchers );
+int unet_ip_matchers_free( unet_ip_matchers_t* ip_matchers );
 
 #endif

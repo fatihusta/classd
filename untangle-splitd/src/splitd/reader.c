@@ -303,14 +303,14 @@ void *splitd_reader_donate( void* arg )
                 debug( 11, "READER: received a queue event\n" );
                 if ( splitd_nfqueue_read( &reader->nfqueue, packet ) < 0 ) {
                     errlog( ERR_CRITICAL, "splitd_nfqueue_read\n" );
-                    usleep( 10000 );
+                    usleep( 1000 );
                     break;
                 }
                 
                 /* This guarantees that the packet is razed. */
                 if ( _handle_packet( reader, packet ) < 0 ) {
                     errlog( ERR_CRITICAL, "_handle_packet\n" );
-                    usleep( 10000 );
+                    usleep( 1000 );
                     break;
                 }
                 break;
@@ -318,7 +318,7 @@ void *splitd_reader_donate( void* arg )
                 debug( 11, "READER : _event_code_mailbox\n" );
                 if ( _handle_mailbox( reader, epoll_fd ) < 0 ) {
                     errlog( ERR_CRITICAL, "_handle_mailbox\n" );
-                    usleep( 10000 );
+                    usleep( 1000 );
                     break;
                 }
             }
@@ -678,7 +678,7 @@ static int _update_nfqueue( splitd_nfqueue_t* nfqueue, u_int16_t queue_num, stru
                             int epoll_fd )
 {
     if ( nfqueue->queue_num == queue_num ) {
-        debug( 9, "The QUEUE %d is already bound to the correct queue", queue_num );
+        debug( 9, "The QUEUE %d is already bound to the correct queue\n", queue_num );
         return 0;
     }
 

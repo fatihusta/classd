@@ -25,11 +25,11 @@
 
 typedef struct
 {
-    /* Network address for this rule */
-    in_addr_t network;
+    /* non-zero if the rule is enabled. */
+    int is_enabled;
 
-    /* Netmask for this rule */
-    int netmask;
+    /* Network address for this rule */
+    unet_ip_matchers_t source_network;
 
     /* The uplink to send the traffic to, -1 to not force it out an
      * interface */
@@ -51,8 +51,12 @@ static int _route_array_get_size( void *c_array );
 
 static _route_t _default_route_value = 
 {
-    .network = 0xFFFFFFFF,
-    .netmask = 32,
+    .is_enabled = 0,
+
+    .source_network = {
+        .num_matchers = 0,
+        .matchers = NULL
+    },
     .uplink = -1,
     // .failover = 1
 };
@@ -60,19 +64,19 @@ static _route_t _default_route_value =
 static json_serializer_t _route_serializer = {
     .name = "route",
     .fields = {{
-            .name = "network",
-            .fetch_arg = 1,
-            .if_empty = JSON_SERIALIZER_FIELD_EMPTY_ERROR,
-            .to_c = json_serializer_to_c_in_addr,
-            .to_json = json_serializer_to_json_in_addr,
-            .arg = (void*)offsetof( _route_t, network )
-        },{
-            .name = "netmask",
+            .name = "enabled",
             .fetch_arg = 1,
             .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
-            .to_c = json_serializer_to_c_in_addr,
-            .to_json = json_serializer_to_json_in_addr,
-            .arg = (void*)offsetof( _route_t, netmask )
+            .to_c = json_serializer_to_c_boolean,
+            .to_json = json_serializer_to_json_boolean,
+            .arg = (void*)offsetof( _route_t, is_enabled )
+        },{
+            .name = "sourceNetwork",
+            .fetch_arg = 1,
+            .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
+            .to_c = json_serializer_to_c_ip_matchers,
+            .to_json = json_serializer_to_json_ip_matchers,
+            .arg = (void*)offsetof( _route_t, source_network )
         },{
             .name = "uplinkID",
             .fetch_arg = 1,
@@ -211,20 +215,28 @@ static int _update_scores( splitd_splitter_instance_t* instance, splitd_chain_t*
     int c = 0;
 
     in_addr_t address = packet->nat_info.original.src_address;
+    int is_match = 0;
+    _route_t *route = NULL;
     
     for ( c = 0 ; c < config->route_array_length ; c++ ) {
-        _route_t *route = &config->route_array[c];
-        /* Ignore invalid netmask */
-        if ( route->netmask < 0 || route->netmask > 32 ) {
+        route = &config->route_array[c];
+        is_match = 0;
+
+        if ( !route->is_enabled ) {
             continue;
         }
+        
         /* Ignore invalid routes */
         if ( route->uplink < 0 || route->uplink > SPLITD_MAX_UPLINKS ) {
             continue;
         }
-            
-        in_addr_t mask = ( 0xFFFFFFFF << ( 32 - route->netmask ));
-        if (( address & mask ) != ( route->network & mask )) {
+
+        if ( unet_ip_matchers_is_match( &route->source_network, address, &is_match ) < 0 ) {
+            errlog( ERR_WARNING, "unet_ip_matchers_is_match\n" );
+            continue;
+        }
+
+        if ( !is_match ) {
             continue;
         }
         
