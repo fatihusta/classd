@@ -46,7 +46,6 @@ static struct
     ht_t hosts;
     pthread_t sniff_thread; 
     pcap_t* handle;
-    in_addr_t gateway;
 } _globals ;
 
 struct arp_eth_payload
@@ -174,8 +173,6 @@ int arp_refresh_config ( void )
      */
     if ( arpeater_ae_manager_get_config(&config) < 0)
         return perrlog("arpeater_ae_manager_get_config");
-
-    _globals.gateway = config.gateway.s_addr;
     
     strncpy(_globals.interface,config.interface,IF_NAMESIZE);
     _globals.device.sll_family = AF_PACKET;
@@ -918,7 +915,7 @@ static void _arp_listener_handler ( u_char* args, const struct pcap_pkthdr* head
      * fix for bug #4814 - host pay attention to gateway arp requests
      * must force all host handlers to send immediately
      */
-    if (victim.s_addr == _globals.gateway) {
+    if (arpeater_ae_manager_is_gateway( victim.s_addr ) == 1) {
         debug ( 2, "SNIFF: Detected gateway ARP request - Forcing all ARP replies\n");
         arp_host_handler_send_message_all(_HANDLER_MESG_SEND_ARPS);
     }

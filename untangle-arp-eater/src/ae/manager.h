@@ -54,4 +54,9 @@ int arpeater_ae_manager_get_ip_settings( struct in_addr* ip, arpeater_ae_manager
  */
 int arpeater_ae_manager_reload_gateway( void );
 
+/**
+ * Return 1 if this IP address is one of the gateways.
+ */
+int arpeater_ae_manager_is_gateway( in_addr_t ip );
+
 #endif // #ifndef __ARPEATER_AE_MANAGER_H_

@@ -67,8 +67,6 @@ static struct
 static int _get_network( arpeater_ae_config_t* config , struct in_addr* ip, 
                          arpeater_ae_config_network_t** network );
 
-static int _is_gateway( struct in_addr* ip );
-
 static int _send_request( struct nlmsghdr* nl );
 static int _recv_request( char* recv_buffer, int recv_buffer_len );
 static int _get_route_info( struct nlmsghdr* nlmsghdr, struct in_addr* destination, 
@@ -202,7 +200,7 @@ int arpeater_ae_manager_get_ip_settings( struct in_addr* ip, arpeater_ae_manager
         settings->is_passive = 1;
         
         /* Check if it is any of the gateways */
-        if ( _is_gateway( ip ) == 1 ) {
+        if ( arpeater_ae_manager_is_gateway( ip->s_addr ) == 1 ) {
             settings->is_enabled = 0;
             return 0;
         }
@@ -333,6 +331,31 @@ int arpeater_ae_manager_reload_gateway( void )
     return 0;    
 }
 
+int arpeater_ae_manager_is_gateway( in_addr_t addr )
+{
+    struct in_addr* gateway = &_globals.config.gateway;
+    
+    if (( _is_automatic( gateway ) == 0 ) && ( addr == gateway->s_addr )) return 1;
+
+    gateway = &_globals.gateway;    
+    
+    if (( _is_automatic( gateway ) == 0 ) && ( addr == gateway->s_addr )) return 1;
+    
+    int c = 0;
+    arpeater_ae_config_network_t* network = NULL;
+
+    for ( c = 0 ; c < _globals.config.num_networks ; c++ ) {
+        network = &_globals.config.networks[c];
+        
+        if ( network->is_enabled == 0 )  continue;
+        
+        gateway = &network->gateway;
+        if (( _is_automatic( gateway ) == 0 ) && ( addr == gateway->s_addr )) return 1;
+    }
+
+    return 0;    
+}
+
 /* 
  * This function assumes that the any necessary locking has occurred for config.
  * 
@@ -386,33 +409,6 @@ static int _is_automatic( struct in_addr* address )
     /* May want to check the settings if it is a broadcast address on the known networks. */
 
     return 0;
-}
-
-static int _is_gateway( struct in_addr* address )
-{
-    in_addr_t addr = address->s_addr;
-    struct in_addr* gateway = &_globals.config.gateway;
-    
-    if (( _is_automatic( gateway ) == 0 ) && ( addr == gateway->s_addr )) return 1;
-
-    gateway = &_globals.gateway;    
-    
-    if (( _is_automatic( gateway ) == 0 ) && ( addr == gateway->s_addr )) return 1;
-    
-    int c = 0;
-    arpeater_ae_config_network_t* network = NULL;
-
-    for ( c = 0 ; c < _globals.config.num_networks ; c++ ) {
-        network = &_globals.config.networks[c];
-        
-        if ( network->is_enabled == 0 )  continue;
-        
-        gateway = &network->gateway;
-        if (( _is_automatic( gateway ) == 0 ) && ( addr == gateway->s_addr )) return 1;
-    }
-
-    return 0;
-    
 }
 
 static int _send_request( struct nlmsghdr* nl )
