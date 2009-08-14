@@ -164,7 +164,7 @@ int arp_refresh_config ( void )
                 break;
             usleep(.1 * 1000000); /* .1 seconds */
             if ( i == 99 )
-                errlog(ERR_WARNING,"REFRESH: Unabled to kill broadcast thread - continuing anyway\n");
+                errlog(ERR_FATAL,"REFRESH: Unabled to kill broadcast thread\n");
         }
     }
 
@@ -920,13 +920,12 @@ static void _arp_listener_handler ( u_char* args, const struct pcap_pkthdr* head
         arp_host_handler_send_message_all(_HANDLER_MESG_SEND_ARPS);
     }
     host = (host_handler_t*) ht_lookup( &host_handlers, (void*) victim.s_addr);
-    if (host) {
+    if ( host ) {
         debug ( 2, "SNIFF: Detected host    ARP request - Forcing ARP reply to gateway\n");
         arp_host_handler_send_message(host, _HANDLER_MESG_SEND_ARPS);
     }
 
-    
-    if ( ht_lookup( &host_handlers, (void*) victim.s_addr) == NULL ) {
+    if ( !host ) {
         debug( 3, "SNIFF: New host (%s) found.\n", unet_inet_ntoa(victim.s_addr));
 
         _host_handler_start( victim.s_addr );
