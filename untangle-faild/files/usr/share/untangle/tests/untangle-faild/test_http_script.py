@@ -26,7 +26,6 @@ class TestHttpScript(object):
     def check_is_valid( self, url, is_valid ):
         status = commands.getstatusoutput( "FAILD_PRIMARY_ADDRESS=0.0.0.0 FAILD_TIMEOUT_MS=1 %s '%s'" % ( self.http_script_path, url ))
         assert status[0] == is_valid
-(0, '')
     
 
 
