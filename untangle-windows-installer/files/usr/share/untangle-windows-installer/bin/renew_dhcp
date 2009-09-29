@@ -1,0 +1,22 @@
+#!/bin/dash
+
+test_status()
+{
+    local t_default_gateway
+    t_default_gateway=`ip route show table all | awk '/^default via/ { print $3; exit }'`
+    if [ -z "${t_default_gateway}" ]; then
+        echo "[`date`] Default Gateway is not set"
+        return 1
+    fi
+    
+    echo "[`date`] Checking if the gateway '${t_default_gateway}' is online"
+    
+    arping -c 3 ${t_default_gateway} >/dev/null && return 0
+    echo "[`date`] Unable to ping default gateway"
+    return 1
+}
+
+test_status && exit 0
+
+/etc/init.d/networking restart
+

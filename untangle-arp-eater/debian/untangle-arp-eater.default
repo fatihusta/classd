@@ -1,0 +1,6 @@
+
+## Uncomment to change the default configuration file.
+ARP_EATER_CONF_FILE=/etc/untangle-arp-eater.conf
+
+# The default debug level
+ARP_EATER_DEBUG_LEVEL=1

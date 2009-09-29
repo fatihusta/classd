@@ -1,0 +1,14 @@
+Source: untangle-virtualbox-additions
+Section: premium/admin
+Priority: optional
+Maintainer: Sebastien Delafond <seb@untangle.com>
+Uploaders: Untangle Buildbot <buildbot@untangle.com>
+Build-Depends: debhelper (>> 3.0.0)
+Standards-Version: 3.8.0
+
+Package: untangle-virtualbox-additions
+Architecture: all
+Depends: linux-image-2.6.26-1-untangle-686
+Description: The Untangle VirtualBox Guest Additions
+ VirtualBox guest additions prebuilt for the Untangle Kernel for 2.6.26-1.
+
