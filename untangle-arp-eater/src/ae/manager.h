@@ -28,6 +28,12 @@ typedef struct
 
     /* This is an array of mac addresses to ignore. */
     struct ether_addr *mac_addresses;
+
+    /* True to spoof the host. */
+    int is_spoof_host_enabled;
+
+    /* Use this to ignore the list of mac addresses that are to be ignored. */
+    int override_mac_address;
 } arpeater_ae_manager_settings_t;
 
 int arpeater_ae_manager_init( arpeater_ae_config_t* config );

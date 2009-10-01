@@ -18,8 +18,6 @@ require "logger"
 require "ipaddr"
 
 def add_host_ips( ip_addresses, mac_addresses )
-  num_active_hosts = 0
-
   ip_addresses = "" if ip_addresses.nil?
 
   ip_addresses = ip_addresses.split( "," ).map { |ip_address| ip_address.strip }
@@ -126,8 +124,10 @@ end
 HOST_IP_MARKER="[**** Host Machine ****]"
 
 ## Start of script
-$logger = Logger.new( $stderr )
-
-$nonce = get_nonce( "/etc/untangle-net-alpaca/nonce" )
-
-add_host_ips( ARGV[0], ARGV[1] )
+if ( __FILE__ == $0 )
+  $logger = Logger.new( $stderr )
+  
+  $nonce = get_nonce( "/etc/untangle-net-alpaca/nonce" )
+  
+  add_host_ips( ARGV[0], ARGV[1] )
+end

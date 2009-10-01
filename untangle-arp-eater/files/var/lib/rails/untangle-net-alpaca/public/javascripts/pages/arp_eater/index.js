@@ -39,7 +39,7 @@ Ung.Alpaca.Pages.ArpEater.Index = Ext.extend( Ung.Alpaca.PagePanel, {
 
         this.networksGrid = new Ung.Alpaca.EditorGridPanel({
             settings : this.settings,
-            recordFields : [ "enabled", "spoof", "passive", "network", "gateway", "description" ],
+            recordFields : [ "enabled", "spoof", "passive", "network", "gateway", "description", "is_spoof_host_enabled" ],
             selectable : true,
             sortable : false,
             hasReorder : true,

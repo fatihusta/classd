@@ -1,0 +1,32 @@
+#!/bin/dash
+
+get_network()
+{
+    local t_ip_address
+    local t_src
+    local t_network
+
+    t_ip_address=$1
+    
+    t_src=`ip route get ${t_ip_address} | awk '/(via|dummy0|utun)/ { next } ; /dev/ { sub( /.*src /, "" ) ; print }'`
+
+    if [ -z "${t_src}" ] ; then
+        return
+    fi
+
+    ip route show | awk "/src ${t_src}/ { print \$1 ; exit }"
+}
+
+IPTABLES=${IPTABLES:-/sbin/iptables}
+
+for t_address in $* ; do
+    echo "checking ${t_address}"
+    t_network=`get_network ${t_address}`
+
+    if [ -z "${t_network}" ]; then
+        continue
+    fi
+
+    ${IPTABLES} -t nat -A snat-rules -s ${t_address} -d ! ${t_network} -j MASQUERADE
+done
+

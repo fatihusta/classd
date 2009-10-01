@@ -83,9 +83,9 @@ def get_num_active_hosts()
       num_active_hosts = hosts.length
     end
   rescue Timeout::Error
-    $logger.warn( "Timeout while trying to talk to the alpaca" )
+    $logger.warn( "Timeout while trying to talk to the ARP Eater" )
   rescue
-    $logger.warn( "Unknown exception while talking to the alpaca\n#{$!}" )
+    $logger.warn( "Unknown exception while talking to the ARP Eater\n#{$!}" )
   end
 
   el = $root.add_element( "num-active-hosts" )

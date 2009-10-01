@@ -394,7 +394,7 @@ static int _host_handler_ignore_mac_address ( host_handler_t* host)
     for ( c = 0 ; c < settings->num_mac_addresses ; c++ ) {
         if ( memcmp( &host->host_mac, &settings->mac_addresses[c], sizeof( host->host_mac )) == 0 ) {
             debug( 9, "The MAC address %s should be ignored\n", ether_ntoa( &host->host_mac ));
-            return 1;
+            return !settings->override_mac_address;
         }
     }
 
@@ -418,7 +418,8 @@ static int _host_handler_send_arps (host_handler_t* host)
         if ( _arp_send( ARPOP_REPLY, NULL, settings->gateway.s_addr, NULL, (in_addr_t)0 ) < 0 )
             return perrlog("_arp_send");
     }
-    else {
+    else
+    {
         /**
          * send to victim that gateway is at my mac
          */
@@ -426,10 +427,16 @@ static int _host_handler_send_arps (host_handler_t* host)
             return perrlog("_arp_send");
                   
         /**
-         * send to gateway that victim is at my mac 
+         * send to gateway that victim is at my mac, if we are spoofing this host.
          */
-        if ( _arp_send( ARPOP_REPLY, NULL, settings->address.s_addr, host->gateway_mac.ether_addr_octet, settings->gateway.s_addr ) < 0 )
-            return perrlog("_arp_send");
+        if ( settings->is_spoof_host_enabled ) {
+            if ( _arp_send( ARPOP_REPLY, NULL, settings->address.s_addr, 
+                            host->gateway_mac.ether_addr_octet, settings->gateway.s_addr ) < 0 ) {
+                return perrlog("_arp_send");
+            }
+        } else {
+            debug( 9, "Not spoofing the host %s\n", unet_inet_ntoa(settings->address.s_addr));
+        }
     }
 
     return 0;

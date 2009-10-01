@@ -180,6 +180,8 @@ int arpeater_ae_manager_get_ip_settings( struct in_addr* ip, arpeater_ae_manager
 
         settings->mac_addresses = NULL;
         settings->num_mac_addresses = 0;
+        settings->is_spoof_host_enabled = 1;
+        settings->override_mac_address = 0;
 
         bzero( settings, sizeof( arpeater_ae_manager_settings_t ));
 
@@ -221,6 +223,10 @@ int arpeater_ae_manager_get_ip_settings( struct in_addr* ip, arpeater_ae_manager
 
         settings->is_enabled = 1;
         settings->is_passive = network->is_passive;
+        settings->is_spoof_host_enabled = network->is_spoof_host_enabled;
+        /* If this rule is enabled, and it is targetted at this IP, then it supersedes the
+         * list of mac addresses */
+        settings->override_mac_address = ( network->netmask.s_addr == INADDR_BROADCAST );
 
         if ( _is_automatic( &network->gateway ) == 0 ) {
             settings->gateway.s_addr = network->gateway.s_addr;

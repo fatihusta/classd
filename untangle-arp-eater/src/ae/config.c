@@ -70,7 +70,8 @@ static struct
         .rate_ms = 0,
         .is_enabled = 0,
         .is_spoof_enabled = 1,
-        .is_passive = 1
+        .is_passive = 1,
+        .is_spoof_host_enabled = 1
     },
 
     .ether_addr_null = {
@@ -200,6 +201,13 @@ static json_serializer_t _network_serializer = {
         .to_c = json_serializer_to_c_boolean,
         .to_json = json_serializer_to_json_boolean,
         .arg = (void*)offsetof( arpeater_ae_config_network_t, is_passive )
+    },{
+        .name = "spoof_host",
+        .fetch_arg = 1,
+        .if_empty = JSON_SERIALIZER_FIELD_EMPTY_IGNORE,
+        .to_c = json_serializer_to_c_boolean,
+        .to_json = json_serializer_to_json_boolean,
+        .arg = (void*)offsetof( arpeater_ae_config_network_t, is_spoof_host_enabled )
     }, JSON_SERIALIZER_FIELD_TERM}
 };
 

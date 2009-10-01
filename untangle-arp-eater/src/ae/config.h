@@ -45,6 +45,9 @@ typedef struct
     
     /* Set to true if this network is passive */
     int is_passive;
+
+    /* Set to true to lie to the gateway about the host */
+    int is_spoof_host_enabled;
 } arpeater_ae_config_network_t;
 
 typedef struct
