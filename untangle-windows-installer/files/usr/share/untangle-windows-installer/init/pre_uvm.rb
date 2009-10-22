@@ -269,7 +269,7 @@ Kernel.system( <<EOF )
 echo "[`date`] Recreating the database for Single NIC Mode."
 [ -f /etc/default/untangle-vm ] && . /etc/default/untangle-vm
 dropdb -U postgres uvm
-createuser -U postgres ${PG_CREATEUSER_OPTIONS} untangle 2>/dev/null
+createuser -U postgres -dSR untangle 2>/dev/null
 createdb -O postgres -U postgres uvm
 /usr/share/untangle/bin/update-schema settings uvm
 /usr/share/untangle/bin/update-schema events uvm
