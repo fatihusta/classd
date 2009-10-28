@@ -96,7 +96,7 @@ SQL
 
   dbh.do("INSERT INTO u_admin_settings (admin_settings_id) VALUES (#{admin_settings_id})")  
   
-  dbh.do("INSERT INTO u_user ( id, login, password, email, name, read_only, notes, send_alerts, admin_setting_id ) VALUES ( nextval('hibernate_sequence'),'admin','#{database_string}','[no email]', 'System Administrator',false, '[no description]',false, ? )", admin_settings_id )
+  dbh.do("INSERT INTO u_user ( id, login, password, email, name, write_access, reports_access, notes, send_alerts, admin_setting_id ) VALUES ( nextval('hibernate_sequence'),'admin','#{database_string}','[no email]', 'System Administrator',true, true, '[no description]',false, ? )", admin_settings_id )
 end
 
 def setup_registration( config, dbh )
