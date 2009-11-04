@@ -1,7 +1,10 @@
 class Alpaca::Components::ArpEaterComponent < Alpaca::Component
   def register_menu_items( menu_organizer, config_level )
-    if ( config_level >= AlpacaSettings::Level::Advanced ) 
-      menu_organizer.register_item( "/advanced/snic", menu_item( 1000, "Re-Router", :action => "index" ))
+    if ( config_level >= AlpacaSettings::Level::Advanced )
+      ## Only show the single NIC menu if there is just one NIC.
+      if ( Interface.count( :conditions => [ "os_name != ?", Interface::Unmapped ] ) == 1 )
+        menu_organizer.register_item( "/advanced/snic", menu_item( 1000, "Re-Router", :action => "index" ))
+      end
     end
   end
 
