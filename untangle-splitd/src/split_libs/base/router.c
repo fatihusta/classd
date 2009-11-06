@@ -155,8 +155,15 @@ static int _init( splitd_splitter_instance_t* instance )
             return errlog( ERR_CRITICAL, "json_object_utils_get_array\n" );
         }
     
+        /* Ignore settings that do not have the routes field specified. */
         if ( routes_json == NULL ) {
-            return errlog( ERR_WARNING, "Missing the field routes\n" );
+            errlog( ERR_WARNING, "Missing the field routes\n" );
+            if (( config = calloc( 1, sizeof( _config_t ) )) == NULL ) {
+                return errlogmalloc();
+            }
+
+            config->route_array_length = 0;
+            return 0;
         }
 
         int length = 0;
