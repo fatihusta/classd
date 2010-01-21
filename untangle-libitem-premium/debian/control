@@ -681,7 +681,7 @@ Architecture: all
 Depends: untangle-node-adconnector
 Provides: untangle-libitem-trial14-adconnector
 XB-View-Position: 1017
-XB-Display-Name: AD Connector
+XB-Display-Name: Directory Connector
 XB-Untangle-Type: lib_item
 XB-Is-Core: true
 XB-Untangle-Pkg-Type: lib_item
@@ -729,8 +729,8 @@ XB-Desc-Icon: R0lGODlhKgAqAPcAAB4SIWClzwA9mt6/VG08aFgyVI1miVCj2MXX6mFYjsZYAMzM
  CiANmLjylbCMJSwtAI9HDmAAQMjEvYqAjyIU4QQnUKQwh0nMYg5zD2CARw6YMYBv
  AIFu2VJlNIxJzWrKoQLoECUz89ASBljkm+CEyAOyOcoBBKEhA1mIOtdJkBic45G6
  aEhAAAA7
-Description: Untangle Active Directory (AD) Connector
- The Untangle Active Directory (AD) Connector.
+Description: Untangle Directory Connector
+ The Untangle Directory Connector.
 
 Package: untangle-libitem-policy
 Section: premium/admin
@@ -1524,8 +1524,8 @@ XB-Desc-Icon: R0lGODlhKgAqAPcAAB4SIWClzwA9mt6/VG08aFgyVI1miVCj2MXX6mFYjsZYAMzM
  CiANmLjylbCMJSwtAI9HDmAAQMjEvYqAjyIU4QQnUKQwh0nMYg5zD2CARw6YMYBv
  AIFu2VJlNIxJzWrKoQLoECUz89ASBljkm+CEyAOyOcoBBKEhA1mIOtdJkBic45G6
  aEhAAAA7
-Description: Untangle Active Directory (AD) Connector
- The Untangle Active Directory (AD) Connector.
+Description: Untangle Directory Connector
+ The Untangle Directory Connector.
 
 Package: untangle-libitem-trial14-policy
 Section: premium/admin
