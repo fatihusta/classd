@@ -1475,7 +1475,7 @@ Section: premium/admin
 Architecture: all
 Depends: untangle-node-adconnector
 XB-View-Position: 1017
-XB-Display-Name: AD Connector 14-Day Trial
+XB-Display-Name: Directory Connector 14-Day Trial
 XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-adconnector
 XB-Is-Core: true
