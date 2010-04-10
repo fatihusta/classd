@@ -18,7 +18,7 @@ echo "Downloading Package cache..."
 sleep 5
 apt-get update
 if [ ! $? -eq 0 ] ; then
-    echo "Downloading packages failed. Are you online?"
+    echo "ERROR: Downloading packages failed. Are you online?"
     exit 1
 fi
 
@@ -29,25 +29,24 @@ MYUID="`cat /usr/share/untangle/popid | head -c 19`"
 #VOUCHER="ALD1210-20100305A2GSF3OTP7F"
 VOUCHER=$1
 CUSTOMERID="5873"
-URL="http://staging-store.untangle.com/untangle_admin/oem/redeem-voucher.php?vc=$VOUCHER&uid=$MYUID&sid=$CUSTOMERID"
+URL="http://store.untangle.com/untangle_admin/oem/redeem-voucher.php?vc=$VOUCHER&uid=$MYUID&sid=$CUSTOMERID"
 
-echo "Redeeming Voucher... ($URL)"
+echo "Redeeming Voucher..."
 sleep 5
 OUTPUT="`curl $URL`"
 
 if [ ! $? -eq 0 ] ; then
     echo "ERROR: $OUTPUT"
     echo "ERROR: is the voucher valid? Call Untangle"
+    exit 1
 fi
-if [ ! $OUTPUT -eq "success" ] ; then
+if [ ! "$OUTPUT" = "success" ] ; then
     echo "ERROR: $OUTPUT"
     echo "ERROR: is the voucher valid? Call Untangle"
+    exit 1
 fi
 
-# in the meantime just hack it to download locally
-#sed -i 's/updates.untangle.com/mephisto./' /etc/apt/sources.list.d/untangle.list
-#apt-get update
-# wait 1 minute for ACL to take effect
+echo "Successfully redeemed Voucher"
 sleep 5
 
 #
@@ -86,7 +85,7 @@ echo "apt-get install --yes --force-yes $LIBITEMS"
 apt-get install --yes --force-yes $LIBITEMS
 
 if [ ! $? -eq 0 ] ; then
-    echo "Failed to download libitems successfully - call Untangle or email dmorris@untangle.com"
+    echo "ERROR: Failed to download libitems successfully - call Untangle or email dmorris@untangle.com"
     exit 1
 fi
 
@@ -100,7 +99,7 @@ for i in $RACK_NODES ; do
     echo "Installing $i" 
     TID="`ucli -p 'Default Rack' instantiate $i`"
     if [ ! $? -eq 0 ] ; then
-        echo "Failed to install libitems successfully - call Untangle or email dmorris@untangle.com"
+        echo "ERROR: Failed to install libitems successfully - call Untangle or email dmorris@untangle.com"
         exit 1
     fi    
     ucli start $TID &> /dev/null
@@ -111,7 +110,7 @@ for i in $SERVICE_NODES ; do
     echo "Installing $i" 
     TID="`ucli instantiate $i`"
     if [ ! $? -eq 0 ] ; then
-        echo "Failed to install libitems successfully - call Untangle or email dmorris@untangle.com"
+        echo "ERROR: Failed to install libitems successfully - call Untangle or email dmorris@untangle.com"
         exit 1
     fi    
     ucli start $TID &> /dev/null
