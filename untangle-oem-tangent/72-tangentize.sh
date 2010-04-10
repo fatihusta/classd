@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ ! $# -eq 1 ] ; then
+    echo "usage $0 <VOUCHER>"
+    exit 1
+fi
+
 #
 # create UID
 #
@@ -20,15 +25,30 @@ fi
 #
 # register UID with store
 #
-echo "XXX IMPLEMENT ME"
-echo "XXX IMPLEMENT ME"
-# in the meantime just hack it to download locally
-sed -i 's/updates.untangle.com/mephisto./' /etc/apt/sources.list.d/untangle.list
-apt-get update
-# wait 1 minute for ACL to take effect
-echo "XXX IMPLEMENT ME"
-echo "XXX IMPLEMENT ME"
+MYUID="`cat /usr/share/untangle/popid | head -c 19`"
+#VOUCHER="ALD1210-20100305A2GSF3OTP7F"
+VOUCHER=$1
+CUSTOMERID="5873"
+URL="http://staging-store.untangle.com/untangle_admin/oem/redeem-voucher.php?vc=$VOUCHER&uid=$MYUID&sid=$CUSTOMERID"
 
+echo "Redeeming Voucher... ($URL)"
+sleep 5
+OUTPUT="`curl $URL`"
+
+if [ ! $? -eq 0 ] ; then
+    echo "ERROR: $OUTPUT"
+    echo "ERROR: is the voucher valid? Call Untangle"
+fi
+if [ ! $OUTPUT -eq "success" ] ; then
+    echo "ERROR: $OUTPUT"
+    echo "ERROR: is the voucher valid? Call Untangle"
+fi
+
+# in the meantime just hack it to download locally
+#sed -i 's/updates.untangle.com/mephisto./' /etc/apt/sources.list.d/untangle.list
+#apt-get update
+# wait 1 minute for ACL to take effect
+sleep 5
 
 #
 # download apps
