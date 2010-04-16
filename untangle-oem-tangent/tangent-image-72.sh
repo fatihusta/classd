@@ -134,7 +134,9 @@ sed 'sX\(output.puts.l.split.*\)Xif ! \(/commtouch|superbundle|webfilter/ =~ l\)
 #
 if ! sudo grep -qE '^root:(\*|YKN4WuGxhHpIw|$1$3kRMklXp$W/hDwKvL8GFi5Vdo3jtKC\.|CHANGEME):' /etc/shadow ; then
     echo "Resetting root password"
-    sed -i "s/^root:.*:14708:/root:CHANGEME:14708:/" /etc/shadow
+    perl -pe "s/^root:.*?:/root:CHANGEME:/" /etc/shadow > /tmp/newshadow
+    cp -f /tmp/newshadow /etc/shadow
+    rm -f /tmp/newshadow
 fi
 
 #
