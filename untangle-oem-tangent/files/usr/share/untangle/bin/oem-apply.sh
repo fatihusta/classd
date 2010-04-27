@@ -21,4 +21,18 @@ fi
 splashy_config -s tangent
 update-initramfs -u
 
+# replace license files
+LIC_FILE=/usr/share/untangle/toolbox/untangle-node-license-impl/LicenseProfessional.txt
+if [ -f $LIC_FILE ] ; then
+    cat > $LIC_FILE <<EOF
+Contact Tangent for more details.
+EOF
+fi
+LIC_FILE=/usr/share/untangle/lib/untangle-libuvm-api/LicenseStandard.txt
+if [ -f $LIC_FILE ] ; then
+    cat > $LIC_FILE <<EOF
+Contact Tangent for more details.
+EOF
+fi
+
 exit 0
