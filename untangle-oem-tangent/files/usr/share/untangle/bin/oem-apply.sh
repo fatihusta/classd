@@ -16,6 +16,10 @@ if [ "`cat /etc/hostname`" -eq "untangle.example.com" ] ; then
     echo "webhawk.example.com" > /etc/hostname
     hostname "webhawk.example.com"
 fi
+if [ ! -f /etc/hostname ] ; then
+    echo "webhawk.example.com" > /etc/hostname
+    hostname "webhawk.example.com"
+fi
 
 # set bootsplash
 splashy_config -s tangent
