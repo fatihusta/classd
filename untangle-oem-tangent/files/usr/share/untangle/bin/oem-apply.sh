@@ -12,7 +12,7 @@ psql -U postgres uvm -c "update settings.u_mail_settings set from_address = 'web
 psql -U postgres uvm -c "update settings.u_address_settings set hostname = 'webhawk.example.com' where hostname = 'untangle.example.com'"
 
 # set default hostname if still default
-if [ "`cat /etc/hostname`" -eq "untangle.example.com" ] ; then
+if [ "`cat /etc/hostname`" == "untangle.example.com" ] ; then
     echo "webhawk.example.com" > /etc/hostname
     hostname "webhawk.example.com"
 fi
