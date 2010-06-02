@@ -132,12 +132,6 @@ for i in $SERVICE_NODES ; do
 done
 
 #
-# flush firefox cache
-#
-echo "Flushing firefox cache..."
-/bin/rm -rf /home/kiosk/.mozilla/firefox/`grep Path /home/kiosk/.mozilla/firefox/profiles.ini | cut -f 2 -d=`/Cache/*
-
-#
 # unset password
 #
 echo "Unsetting password..."

@@ -39,4 +39,7 @@ Contact Tangent for more details.
 EOF
 fi
 
+# flush firefox cache
+/bin/rm -rf /home/kiosk/.mozilla/firefox/`grep Path /home/kiosk/.mozilla/firefox/profiles.ini | cut -f 2 -d=`/Cache/*
+
 exit 0
