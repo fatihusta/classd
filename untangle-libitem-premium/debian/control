@@ -6,16 +6,112 @@ Uploaders: Untangle Buildbot <buildbot@untangle.com>
 Build-Depends: debhelper (>> 3.0.0)
 Standards-Version: 3.8.0
 
+Package: untangle-libitem-standard-package
+Section: premium/admin
+Architecture: all
+Depends: untangle-libitem-boxbackup, untangle-libitem-support, untangle-libitem-adconnector, untangle-libitem-policy, untangle-libitem-branding, untangle-libitem-faild, untangle-libitem-opensource-package, untangle-libitem-sitefilter
+XB-View-Position: 11
+XB-Display-Name: Standard Package
+XB-Untangle-Pkg-Type: lib_item
+XB-Desc-Icon: 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
+Description: Untangle Professional Package
+ The Untangle Professional Package Library Item.
+
+Package: untangle-libitem-premium-package
+Section: premium/admin
+Architecture: all
+Depends: untangle-libitem-kav, untangle-libitem-sitefilter, untangle-libitem-commtouch, untangle-libitem-faild, untangle-libitem-splitd, untangle-libitem-boxbackup, untangle-libitem-adconnector, untangle-libitem-policy, untangle-libitem-support, untangle-libitem-branding, untangle-libitem-shield, untangle-libitem-spyware, untangle-libitem-clam, untangle-libitem-protofilter, untangle-libitem-firewall, untangle-libitem-spamassassin, untangle-libitem-phish, untangle-libitem-openvpn, untangle-libitem-ips, untangle-libitem-reporting, untangle-libitem-adblocker, untangle-libitem-cpd
+Conflicts: untangle-libitem-superbundle-package
+Provides: untangle-libitem-superbundle-package
+Replaces: untangle-libitem-superbundle-package
+XB-View-Position: 12
+XB-Display-Name: Premium Package
+XB-Untangle-Pkg-Type: lib_item
+XB-Desc-Icon: R0lGODlhKgAqAPcAAAAAALKHAKurtltcVUpKSsLCO5RsADQ2TcbGxmttiHxdGrOt
+ NcHFP4heAJKPTPz87zMzM6+LEmtra+XXmcrKVe/vw4t1MxYXIXd3VnJ0jZKUWM6u
+ Ejo9V01Rclpce2hhX9PFIr29OpR6KUhLa9HR0sekDNTUdfLy/MebAJSUUpGTpoyM
+ jGhaRK2pO3h4eKeKDs/EF/Dw8JKSknx8U1JSUsOQAMu8GOvrr1dbaYuGT5tyAJmW
+ Q2Bif0FDYm5xi+bm8DAySQ8PD62uUENDQ21WL7q7TNjTLERHZU1Ra9zckMbGSmls
+ hr+tHaaFGouNonZ4kY2LS6+VE2ZmZlJUc8yrFsafCb6SAM/PZs7HK////zk7VGNj
+ aYKFm7S0vm9xYsa/L+PMeeHh5KesWIOCVD9CXvb21U5PZZx4ByIiInZoRZ6fVMK3
+ LZt/I7GaFtLMI+DjoHphKHJuUWRng+/vvSwuQtzNZreKAIaGhtbAOX6Bl8yWAMjI
+ UMmhB45oBl1gfNjYgtjVL1BTaQUFBcitIkpMXM++IbWzO3Jyc/PnxTw/W1VXdPj4
+ +KZ8AHp9X1ZZZmBbWL+/wcO9P8q2HoSMnL23NIJhE6qIFnFyWcioHFpac2NlgtDE
+ IzU4UPr674yOVnhpQ3J1YaSlU6GdQoOFXG1uW2RndXp8k7qPALGzUqCCIZSUSv//
+ +ePhptbW1vX1vMW3IqGCDNXOKsWVAbW9vcyZAMTEQsy4DdHKKzM0PY1jAEpJZc22
+ GczMXebmnraTEtDQaVtfZ8a2NdXJJpl1BruRB9bWe8mtDrWPDrOuObyHAPDw0cyi
+ B9zZL2RdVZScUlJQXqCcQVRRYnNrSqCiVLeaJS4wRbGKCsbKT/f3/omLoIuNWnV4
+ YGhrZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+ AAAAAAAAAAAAAAAAACH5BAAHAP8ALAAAAAAqACoAAAj/ABHgukCwoMGDCBMqJIhL
+ 4KyHECNKnEixYsSBs46MmOKBh5wlCUKKHEmyJMkMT0xxMTWL4CwyR5Ao8qMJpMmb
+ OH2gzKPCScsLsxIlijmFo4ejSJMqXaqUB48MTny6FKpxRIerWLNq3cq1g6IEk7j8
+ nMWBQ48RaNOqVRvoUotLa+OinSInD0uXWrSclYsWyYcxoihhwULJEV+1HXg8eTKW
+ E6e9bElBafHlluXLtygFOoy2g58MGRpzIoPW0SUHyLBgXn3ZEBLOHTz48CF6wA5D
+ qllfjsX71iZJG3ylspCmWbS1sWeLJuRA9y3evDftolJFlvXr1kswgQass2zaLh2T
+ /8YwGAv0WNI38EHBvn37Ers2nd/hKDl4oOLRfqAkrNAuY+u5J6AxhQgDHWsOlKJc
+ eKOlhUEhAKKA3XV8bFDIc72tZsQtC4yh4H2z5IcWJedt4p8x8G2CYSyrQVdIG8Mo
+ YJ9opI0wA2bQAfIKMcJs6BwI01FDRCUGwPEdjSMEUhlrRsCSDC27nBeLGzDYYswg
+ wSghBlrPsPDBgvg1SF4sRhhx3isG1KCHHhvwBgMMeIAxwR9K1BlKWjMyWGMgcUTB
+ RCFkMvOCHWtUseYyNtSBSBaMZlFGnWrgeaSeaenSQC4GnPFCGzqgUIsSmAyyBiuN
+ IrDCIT/cUIAzkoIZYoNomf/RRy605tJAAChEcs01DLyBDQl3SCEBAABssYoSGrQK
+ oohoWRMAIzoYYIB1kShRyy9ZQIIGAIdksW23e3iiLJJpHdOeFehaUW0BFTBKAwAu
+ ZCFIEGE8oMQo41KaVgQTUqsEL40SAMAdMkDQShYVFICvd64yO4Il/coSSSR/NDoE
+ vAg0WgwDjeQbZo1oNRHxxElYDMAKjSrDgBLbePwqyCOkMnIkxZh8xyJZPEDBp164
+ 7DAbI9fZSRYxoBGEFD90ckUBdXLjM6xoiRB0ASY80IUAJyBMAdN1SvE0zFL3W60S
+ BVDQiyu9LP1pnUp0x/CyUI9gQdB11lLA3WsrIcQoOCCXNunHan1CN9tsF6GB13HF
+ FhK5aT0CNHZjEz4NKK/xpXgCjKvl+HWR7903Z2h5sMQSma/1iAjERIKKNluAvpYi
+ mmgy1gEHDMVZGjls5jpyHvgxOxCccCAUGT0Ub/zxyCefvEZejVXN80DQfkBe1Fdv
+ /fXXC9VDTLM/f4BjnGAv/vjUJ0IGTC3hYtH67K/f0EALxS9/Qg0FBAA7
+Description: Untangle Professional Package
+ The Untangle Professional Package Library Item.
+
+
 Package: untangle-libitem-professional-package
 Section: premium/admin
 Architecture: all
 Depends: untangle-libitem-boxbackup, untangle-libitem-support, untangle-libitem-adconnector, untangle-libitem-policy, untangle-libitem-branding, untangle-libitem-faild, untangle-libitem-opensource-package
 XB-View-Position: 11
 XB-Display-Name: Professional Package
-XB-Untangle-Type: lib_item
-XB-Is-Bundle: true
 XB-Untangle-Pkg-Type: lib_item
-XB-Untangle-Hide-On: u4w
+XB-Untangle-Hide-On: iso
 XB-Desc-Icon: R0lGODlhKgAqAPcAAAAAALKHAKurtltcVUpKSsLCO5RsADQ2TcbGxmttiHxdGrOt
  NcHFP4heAJKPTPz87zMzM6+LEmtra+XXmcrKVe/vw4t1MxYXIXd3VnJ0jZKUWM6u
  Ejo9V01Rclpce2hhX9PFIr29OpR6KUhLa9HR0sekDNTUdfLy/MebAJSUUpGTpoyM
@@ -58,13 +154,11 @@ Description: Untangle Professional Package
 Package: untangle-libitem-superbundle-package
 Section: premium/admin
 Architecture: all
-Depends: untangle-libitem-kav, untangle-libitem-sitefilter, untangle-libitem-commtouch, untangle-libitem-faild, untangle-libitem-splitd, untangle-libitem-boxbackup, untangle-libitem-adconnector, untangle-libitem-policy, untangle-libitem-support, untangle-libitem-branding, untangle-libitem-shield, untangle-libitem-spyware, untangle-libitem-clam, untangle-libitem-protofilter, untangle-libitem-firewall, untangle-libitem-spamassassin, untangle-libitem-phish, untangle-libitem-openvpn, untangle-libitem-ips, untangle-libitem-reporting, untangle-libitem-adblocker, untangle-libitem-cpd
+Depends: untangle-libitem-kav, untangle-libitem-sitefilter, untangle-libitem-commtouch, untangle-libitem-faild, untangle-libitem-splitd, untangle-libitem-boxbackup, untangle-libitem-adconnector, untangle-libitem-policy, untangle-libitem-support, untangle-libitem-branding, untangle-libitem-shield, untangle-libitem-spyware, untangle-libitem-clam, untangle-libitem-protofilter, untangle-libitem-firewall, untangle-libitem-spamassassin, untangle-libitem-phish, untangle-libitem-openvpn, untangle-libitem-ips, untangle-libitem-reporting, untangle-libitem-adblocker, untangle-libitem-cpd, untangle-libitem-premium-package
 XB-View-Position: 12
 XB-Display-Name: Super Bundle
-XB-Untangle-Type: lib_item
-XB-Is-Bundle: true
 XB-Untangle-Pkg-Type: lib_item
-XB-Untangle-Hide-On: u4w
+XB-Untangle-Hide-On: iso
 XB-Desc-Icon: R0lGODlhKgAqAPcAAAAAAL6KALy9xo56Q3ZcK3Z8odHEIkhKanV4kVpchVdaczw+SO7usp17Ccei
  CFlaWsDEQjk6RKSkq5ucWSMkLtjY13p7fYteAMC8OIyNlPz828XJUKSJMiMjJGprheXclMzMZnx+
  a0hIScirIdbFIU9Sa2Rlc66vvpeZpn1/ZPDw8ubm5pmZmauTFnBmWL2dGlZZiszMzNrTf0NEYk9S
@@ -115,8 +209,6 @@ Provides: untangle-libitem-trial14-kav, untangle-libitem-hauri
 Replaces: untangle-libitem-hauri
 XB-View-Position: 60
 XB-Display-Name: Kaspersky Virus Blocker
-XB-Untangle-Type: lib_item
-XB-Is-Security: true
 XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAAAXNSR0IArs4c
  6QAAA7xJREFUWMPN2U1PG0ccBvBnZ8awpoCXJsQuq1ZJFtMkh+YQca1UCdrm
@@ -150,7 +242,6 @@ Architecture: all
 Depends: untangle-node-sitefilter
 XB-View-Position: 60
 XB-Display-Name: eSoft Web Filter
-XB-Untangle-Type: lib_item
 XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAMAAADyHTlpAAAAA3NCSVQICAjb4U/gAAABgFBMVEUI
  FyqQqbk5cp0pYZTD0+IjUYwZQXVfdZrj7PUROWyVrM5PYo1qhrimxNxTcaVAZasoVJMzY6MYRIE4
@@ -189,7 +280,6 @@ Architecture: all
 Depends: untangle-libitem-spamassassin, untangle-node-commtouch
 XB-View-Position: 60
 XB-Display-Name: Commtouch Spam Booster
-XB-Untangle-Type: lib_item
 XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
  AAAOdAAADnQBaySz1gAAAAx0RVh0RGVzY3JpcHRpb24AEwkhIwAAAAt0RVh0RGlzY2xhaW1lcgC3
@@ -282,7 +372,6 @@ Architecture: all
 Depends: untangle-node-faild
 XB-View-Position: 61
 XB-Display-Name: WAN Failover
-XB-Untangle-Type: lib_item
 XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
  AAALEgAACxIB0t1+/AAAABZ0RVh0Q3JlYXRpb24gVGltZQAwMi8yNi8wONgycscAAAAfdEVYdFNv
@@ -361,7 +450,6 @@ Architecture: all
 Depends: untangle-node-splitd, untangle-libitem-faild
 XB-View-Position: 61
 XB-Display-Name: WAN Balancer
-XB-Untangle-Type: lib_item
 XB-Untangle-Pkg-Type: lib_item
 XB-Untangle-Hide-On: u4w
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
@@ -455,8 +543,6 @@ Depends: untangle-node-boxbackup
 Provides: untangle-libitem-trial30-boxbackup, untangle-libitem-trial14-boxbackup
 XB-View-Position: 1021
 XB-Display-Name: Configuration Backup
-XB-Untangle-Type: lib_item
-XB-Is-Core: true
 XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABGdBTUEAANbY1E9YMgAAABl0
  RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAA81SURBVHjaxFlpeFRlln5v7Xul
@@ -543,8 +629,6 @@ Depends: untangle-node-portal
 Provides: untangle-libitem-trial30-portal, untangle-libitem-trial14-portal
 XB-View-Position: 1018
 XB-Display-Name: Remote Access Portal
-XB-Untangle-Type: lib_item
-XB-Is-Core: true
 XB-Untangle-Pkg-Type: lib_item
 XB-Untangle-Hide-On: u4w, iso
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAIAAABKoV4MAAAABGdBTUEAANbY1E9YMgAAABl0
@@ -613,68 +697,6 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAIAAABKoV4MAAAABGdBTUEAANbY1E9YMg
 Description: Untangle Remote Access Portal
  The Untangle Remote Access Portal Library Item.
 
-#Package: untangle-libitem-nas
-#Section: premium/admin
-#Architecture: all
-#Depends: untangle-node-nas
-#Provides: untangle-libitem-trial-nas
-#XB-View-Position: 1009
-#XB-Display-Name: Untangle NAS
-#XB-Untangle-Type: lib_item
-#XB-Is-Core: true
-#XB-Untangle-Pkg-Type: lib_item
-#XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAACXBIWXMAAAsTAAALEwEAmpwY
-# AAAABGdBTUEAALGOfPtRkwAAACBjSFJNAAB6JQAAgIMAAPn/AACA6QAAdTAAAOpgAAA6mAAA
-# F2+SX8VGAAAJu0lEQVR42syYeYxV9RXHP/dtM29W3rDMDFBgKsoigywKLggaRdkCQWmkYgtd
-# Eq1LaEkxUtTGtDZVYyPRpqlC25guWBuiBFJEHVFCEDoVZRiG2Yd5y7zlvnnbfXdf+scbR0ds
-# WWZSOMn949577vl97/md3/mecwTHcWatWLGiqbq6mkAgQElJCR6Ph8shbrcbn8+Hz+fD7XZj
-# WRZbtmzBcRxBqKysdPbu3YvP58Pr9eJ2uxEEgcslLpdr8HIcB8uymD17Np5MJoOqqmzevJna
-# 2loqKipwu93/d4CCIODxePD7/ZSVleHz+bBtm/Xr1wPgATBNk56eHnRdv+xAS0tLKS8vp6Sk
-# BEEQMAzjC6AA6XQaTdOoqKi4rDFaVlZGIBAY9KppmkOBAiiKgqZplwT0hllXs2bJAgJ+F5FQ
-# kN0NJ+iMZy7KhsfjQVEULMtC13X8fj+WZZ0LFMC2bXRdv6gFNm9YxUvbfgSWCbk4JMbwxMIS
-# Vu34gHfbLhysZVl4vV40TUPXddxuN47jFA7ZcLerqqKU5x+6B5QsqDnIJyHVi5AJ86u7J16y
-# XcdxBkF+rUcvVmZOqsaniiDbYKiQ7EaJtNPdr+FxCZT6XOR1e/hp60KUVt++kBN/34Hz8euc
-# 3LmV+xbPGnyXSKUh0QmhT6HrCPGOkxwP5mlNqAQzOqpR8Irb5WLLA6tof/tlnCM7OfzcJhbU
-# jb7w+D2fwro7FvLmb35WuJES1Ff72f3gzbi1HH89dpbWcD+nP/s3tX6bvqxBe1KlN6VjOQ5d
-# SQ1rYPue+eEatj+0ARwHclEWTSrm8MMzmftCI6fjyvA86na5eP77d0MuBnkR8v2QCkKsladv
-# rRzUW7PzFKfjClHJQMyb5DSLUMZgV2OiEMdlxTyx/jbQcqCkIB2B6BnCYpZN148Z/taPrfBT
-# VyRBrBXCTRA6gRk+RVcsjWrauAeotiOpsvGNLmwHxpV5sRyH147FkQdic9r4UbilBIjdBTvd
-# R2kOJjkVUygtcg9/6xNZGUUM47dyIImEMjqhjE5KsXAJUOQRkAdisDOp8cZnSZ64bTzPNkTI
-# atagHZ9bgFQvSCJSf4zTMZXOpEpKsQhl9OF71LIddhxsxswmaBNVTkUV2kWVuGSgWw6TA0VD
-# 9JtFk6vGlhJMD128ptwL/WcJhyM0hvK0xBUSeRPLdjjSkxuZU//kW808f6iPeM4gr1sYloPP
-# LTC6xMPG+UPja9GMb0BgIstn1Qx5ft+8WpR8nqhk0C9b2I5DsUfgUFeWj7pzI3PqLdth+zsh
-# fG6Bb1YVYTtQ5HFx/9zRbF1+LcVjJnC0Q2TOpCo233kNoPPShuuZMK6K1miOZbNqWFtfybN7
-# T/K3T5NYtgOCQDSrk1at4aUnn9fDo+tXsPKWOVj5FG/sb2BXQzNnEuqgzrZ/ykytm8zmO6ex
-# +dYJIKch1YFj25T5inlmeR14ikCXeeVgM0++Exq6hsfF9nsWsHr+ZBQpx97jbew4dPbigO7b
-# sY2lN88DU4NsjKXjTeaMtnnszZYhegdORVl33TjsVIjOpMoLH0ZpF1XuuqaCx5cKuItLQZfZ
-# 1ywO+c7v87DnqQ0su7G+kLLSYZbUWkwLCDz+rnhhQFcsnMHS+omgpAuUmItBOsxD88qo8lzF
-# g3t6kDSLmko/mxZfDaZGTrN4YHcnx4N5AA51ZYnILl7+9hwAHr5pHB/3SmRUiwmBEnZvXcui
-# edPAGaDdfBIp08+iKWVMDuTIXgjQxVePKVAiFP422UMiHiOlmNw6pZzYU3MRnXIm1Y4F2wIp
-# QUtcGQT5uew6Gubl++eCqbG4roLebXOIyw5Tr6qD0hLIRMAyIB0hGQvTllCJSBbjy71kcxcA
-# NBGNQOgEqDlSsk44YxDO6mimTcDvoTEk0ZcTuWt6lqmji5A1Ha/73B5rQsAPukw6rxPPGzTH
-# FLqSKitMkxkTA+A4KLJMd79Gm6gSTOtkdUgpJuA9P9CDzX2EFpSTyJskJIOkbCLpBRb63dE4
-# BwbqS7frLH/8Vh1rZgaYWOnju/PG8Pon4sA7gV+unQ2GSl63ePVYnBc/igLw0/1BnrpjPA8u
-# HEcoo3MmodLVr6EYNo7gojejU1TqPz/Qpj6Z7QdCrJtdRVa10MwCDf6hMTEkOVu2wwedOVbN
-# GIVLEPj9vVPYeEsdTQmDBXWjuWm8ByWTRDUdPgnLQ9b4xfsRopLJ6hmjiGT1AkgH3u/MIusu
-# ikov8NS//onIoa4s9TUlVBa7+bA7R/grVOf3utg4fwxJ2UQ3HWTdxQ1jPdxc40E304T7LDKq
-# hWE7bJw/hg86hx6R147FaQxK1FUVEckatIsqac2hrKzs4hJ+b1qn90tUuGzOJCaNGwW2TaXH
-# 4v7pHtzA6j+10xJXmD62mFfvrWN8hY+mqMxzh/pIyiYzq/3sWlfHwS1L+EdTCgQXWAYdwT4a
-# 2vo5EZGHNHeXzEw1o0p4++ffYcF1M8HSIRuFRCe5eJBH3uqhZaCWPJNQ+e3RGC+unMSzDQVO
-# B2gXVRZPq2HLhttZuqx6oK6NQ18Lfz7cwg/e7Ea3nOFz/c5HlrNgZl3hxlAg04cihuhN6zR0
-# DM0j3WmLCZVFxCVjyPPjQWkgsPWCDTmNlY1TX1PCfdeNHj7X+30els2qLRTNtg2ZCJlQO6dj
-# CknZRJSHAlp540yonsrqa3t55Ujfl8pFFTJ9hcLb1CDZTWtCpTetM31s8QgA9bpwZyNgKDhS
-# ko6kSnNMISYZeFwCxpe2bNkN09m66V7Qkjy9di4HWlN0iIXaQFI0ELuQdZOUbNKb1ulIqiTy
-# 5gU3fv8TaH9e571/nWZKlY+zKZ02USWU0bFsB9N2sAdwLqmvY8+vH8Nf5AUrx9jyIvZ/7xpu
-# fOU0KcXkZJ9EUyRPRjMJZwx60xqJfGEC8mlEHpl69OG3emgM5mmKFljEsBxU02HPqdRgcv/L
-# j1fit/MgpyAXw+oP4RIY7IdUw+Yn+87SEldpTSiDIDOqxeGRqkfbRZVH3z7L/ImlVPk9JPIG
-# jaE8mYFasr62lAmI0CeBLmPEuzkRkelNa1T5vzD/fkeWNlFlxjg/VX4PkazOsaCEZjojAxQg
-# KZsc/C+jmTKvgBHrRLcc4lIhcbeJKmLeJPGVwxZM6+e0KSPW159PTkVlmuMKkmbRm9bpSmqD
-# jV2HqI3cgHe4BtKqxdZ9QVriCq0JdRBkKKPzYVf2kmdOIz57AnivI8PHQYmKIjd+r4u0YpKU
-# zYu28/m48eumeSM2sZU0C0mzhm1HVVVisRiaplFeXv71g9wrRRzHIZVKkUqlBkfjLq5wOcej
-# +/fvv9Ix0wA4V/LlOA7/GQCfi3hGQX94NwAAAABJRU5ErkJggg==
-#Description: Untangle NAS
-# The Untangle Network Attached Storage Library Item.
-
 Package: untangle-libitem-adconnector
 Section: premium/admin
 Architecture: all
@@ -682,8 +704,6 @@ Depends: untangle-node-adconnector
 Provides: untangle-libitem-trial14-adconnector
 XB-View-Position: 1017
 XB-Display-Name: Directory Connector
-XB-Untangle-Type: lib_item
-XB-Is-Core: true
 XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: R0lGODlhKgAqAPcAAB4SIWClzwA9mt6/VG08aFgyVI1miVCj2MXX6mFYjsZYAMzM
  zDovORJ9u32q3Me9pnxPdo94mjxvlsGocF2HvHlbZsSvlEl/oxE/gvf18JXH2jBn
@@ -739,8 +759,6 @@ Depends: untangle-node-policy
 Provides: untangle-libitem-trial14-policy
 XB-View-Position: 1016
 XB-Display-Name: Policy Manager
-XB-Untangle-Type: lib_item
-XB-Is-Core: true
 XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: R0lGODlhKgAqAPcAAAAAAMVrB2SOABJEeV2KuFxlASAyU8WDa1I0Eoi2CI9XBfmW
  ADJkljtZdcCCJ5uhW2SKMQ4XJ3FgP7q6s4EWCN2FAFNtnn2mAPzJaK25xhNBdHth
@@ -789,8 +807,6 @@ Depends: untangle-libitem-boxbackup, untangle-node-support
 Provides: untangle-libitem-trial14-support
 XB-View-Position: 1015
 XB-Display-Name: Live Support
-XB-Untangle-Type: lib_item
-XB-Is-Core: true
 XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon:  R0lGODlhKgAqAPcAAB4PCJytc32ERl9oHru4u08cCK+tre7u54GHb2ITA4l5NFha
  ICArBnJ0R9XVzoWGfISQTKezhHNvP15VIYiGiVxjRUpSMDMzM3BsPJU9BrO+hURJ
@@ -851,10 +867,8 @@ Depends: untangle-node-pcremote
 Provides: untangle-libitem-trial14-pcremote
 XB-View-Position: 1010
 XB-Display-Name: PC Remote
-XB-Untangle-Type: lib_item
-XB-Is-Core: true
 XB-Untangle-Pkg-Type: lib_item
-XB-Untangle-Hide-On: u4w, iso
+XB-Untangle-Hide-On: iso
 XB-Desc-Icon: R0lGODlhKgAqAPcAAAsMGpmZmUpFPyUrasXOznZzbhgbQnWa1kpTpU2AxCMnLEdM
  fYqs4ebm5jI4abW1tSYxQVlxlTpAdBkZGa2trVtbW4OHpzxCk3eSxlhdg/f39yIo
  Y7W8zIObxoWFhS01gjMzM1FarEVLnEJCQr29vRwhUt7e3nN2kYKZy0lKXqeuyjpB
@@ -909,7 +923,6 @@ Architecture: all
 Depends: untangle-node-branding
 XB-View-Position: 1030
 XB-Display-Name: Branding Manager
-XB-Untangle-Type: lib_item
 XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAMAAADyHTlpAAAAA3NCSVQICAjb4U/gAAABgFBMVEUA
  AACHp7ZbrUFFhzCAAARBQ0Le3t5qk1t8fHwhOxh3t2HMzMwzAACLiYrxAgVYozru7u5Ob06Uznk5
@@ -955,9 +968,7 @@ Architecture: all
 Depends: untangle-libitem-trial14-boxbackup, untangle-libitem-trial14-support, untangle-libitem-trial14-adconnector, untangle-libitem-trial14-policy, untangle-libitem-trial14-faild, untangle-libitem-opensource-package
 XB-View-Position: 11
 XB-Display-Name: Professional Package 14-Day Trial
-XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-professional-package
-XB-Is-Bundle: true
 XB-Untangle-Pkg-Type: trial
 XB-Desc-Icon: R0lGODlhKgAqAPcAAAAAALKHAKurtltcVUpKSsLCO5RsADQ2TcbGxmttiHxdGrOt
  NcHFP4heAJKPTPz87zMzM6+LEmtra+XXmcrKVe/vw4t1MxYXIXd3VnJ0jZKUWM6u
@@ -1004,9 +1015,7 @@ Architecture: all
 Depends: untangle-libitem-trial14-kav, untangle-libitem-trial14-sitefilter, untangle-libitem-trial14-commtouch, untangle-libitem-trial14-faild, untangle-libitem-trial14-splitd, untangle-libitem-trial14-boxbackup, untangle-libitem-trial14-adconnector, untangle-libitem-trial14-policy, untangle-libitem-trial14-support, untangle-libitem-shield, untangle-libitem-spyware, untangle-libitem-clam, untangle-libitem-protofilter, untangle-libitem-firewall, untangle-libitem-spamassassin, untangle-libitem-phish, untangle-libitem-openvpn, untangle-libitem-ips, untangle-libitem-reporting, untangle-libitem-adblocker, untangle-libitem-cpd
 XB-View-Position: 12
 XB-Display-Name: Super Bundle 14-Day Trial
-XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-superbundle-package
-XB-Is-Bundle: true
 XB-Untangle-Pkg-Type: trial
 XB-Desc-Icon: R0lGODlhKgAqAPcAAAAAAL6KALy9xo56Q3ZcK3Z8odHEIkhKanV4kVpchVdaczw+SO7usp17Ccei
  CFlaWsDEQjk6RKSkq5ucWSMkLtjY13p7fYteAMC8OIyNlPz828XJUKSJMiMjJGprheXclMzMZnx+
@@ -1066,9 +1075,7 @@ Architecture: all
 Depends: untangle-node-kav
 XB-View-Position: 60
 XB-Display-Name: Kaspersky Virus Blocker 14-Day Trial
-XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-kav
-XB-Is-Security: true
 XB-Untangle-Pkg-Type: trial
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAAAXNSR0IArs4c
  6QAAA7xJREFUWMPN2U1PG0ccBvBnZ8awpoCXJsQuq1ZJFtMkh+YQca1UCdrm
@@ -1102,7 +1109,6 @@ Architecture: all
 Depends: untangle-node-sitefilter
 XB-View-Position: 60
 XB-Display-Name: eSoft Web Filter
-XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-sitefilter
 XB-Untangle-Pkg-Type: trial
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAMAAADyHTlpAAAAA3NCSVQICAjb4U/gAAABgFBMVEUI
@@ -1142,7 +1148,6 @@ Architecture: all
 Depends: untangle-node-commtouch
 XB-View-Position: 60
 XB-Display-Name: Commtouch Spam Booster
-XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-commtouch
 XB-Untangle-Pkg-Type: trial
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
@@ -1243,11 +1248,9 @@ Architecture: all
 Depends: untangle-node-portal
 XB-View-Position: 1018
 XB-Display-Name: Remote Access Portal 14-Day Trial
-XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-portal
-XB-Is-Security: true
 XB-Untangle-Pkg-Type: trial
-XB-Untangle-Hide-On: u4w, iso
+XB-Untangle-Hide-On: iso
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAIAAABKoV4MAAAABGdBTUEAANbY1E9YMgAAABl0
  RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAy9SURBVHjaxFjbb1xXvV5rr7X2
  da72jMexE8fNxSEBQlWgPRxaQaqiQwsvoAr1ASH60OdK/VMAgXjgAV4KCKQSSsU5oofLoUlL
@@ -1314,67 +1317,6 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAIAAABKoV4MAAAABGdBTUEAANbY1E9YMg
 Description: Untangle Remote Access Portal 14-Day Trial
  The Untangle Remote Access Portal 14-Day Trial Library Item.
 
-#Package: untangle-libitem-trial-nas
-#Section: premium/admin
-#Architecture: all
-#Depends: untangle-node-nas
-#XB-View-Position: 1018
-#XB-Display-Name: Untangle NAS Limited Trial
-#XB-Untangle-Type: trial
-#XB-Untangle-Full-Version: untangle-libitem-nas
-#XB-Untangle-Pkg-Type: trial
-#XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAACXBIWXMAAAsTAAALEwEAmpwY
-# AAAABGdBTUEAALGOfPtRkwAAACBjSFJNAAB6JQAAgIMAAPn/AACA6QAAdTAAAOpgAAA6mAAA
-# F2+SX8VGAAAJu0lEQVR42syYeYxV9RXHP/dtM29W3rDMDFBgKsoigywKLggaRdkCQWmkYgtd
-# Eq1LaEkxUtTGtDZVYyPRpqlC25guWBuiBFJEHVFCEDoVZRiG2Yd5y7zlvnnbfXdf+scbR0ds
-# WWZSOMn949577vl97/md3/mecwTHcWatWLGiqbq6mkAgQElJCR6Ph8shbrcbn8+Hz+fD7XZj
-# WRZbtmzBcRxBqKysdPbu3YvP58Pr9eJ2uxEEgcslLpdr8HIcB8uymD17Np5MJoOqqmzevJna
-# 2loqKipwu93/d4CCIODxePD7/ZSVleHz+bBtm/Xr1wPgATBNk56eHnRdv+xAS0tLKS8vp6Sk
-# BEEQMAzjC6AA6XQaTdOoqKi4rDFaVlZGIBAY9KppmkOBAiiKgqZplwT0hllXs2bJAgJ+F5FQ
-# kN0NJ+iMZy7KhsfjQVEULMtC13X8fj+WZZ0LFMC2bXRdv6gFNm9YxUvbfgSWCbk4JMbwxMIS
-# Vu34gHfbLhysZVl4vV40TUPXddxuN47jFA7ZcLerqqKU5x+6B5QsqDnIJyHVi5AJ86u7J16y
-# XcdxBkF+rUcvVmZOqsaniiDbYKiQ7EaJtNPdr+FxCZT6XOR1e/hp60KUVt++kBN/34Hz8euc
-# 3LmV+xbPGnyXSKUh0QmhT6HrCPGOkxwP5mlNqAQzOqpR8Irb5WLLA6tof/tlnCM7OfzcJhbU
-# jb7w+D2fwro7FvLmb35WuJES1Ff72f3gzbi1HH89dpbWcD+nP/s3tX6bvqxBe1KlN6VjOQ5d
-# SQ1rYPue+eEatj+0ARwHclEWTSrm8MMzmftCI6fjyvA86na5eP77d0MuBnkR8v2QCkKsladv
-# rRzUW7PzFKfjClHJQMyb5DSLUMZgV2OiEMdlxTyx/jbQcqCkIB2B6BnCYpZN148Z/taPrfBT
-# VyRBrBXCTRA6gRk+RVcsjWrauAeotiOpsvGNLmwHxpV5sRyH147FkQdic9r4UbilBIjdBTvd
-# R2kOJjkVUygtcg9/6xNZGUUM47dyIImEMjqhjE5KsXAJUOQRkAdisDOp8cZnSZ64bTzPNkTI
-# atagHZ9bgFQvSCJSf4zTMZXOpEpKsQhl9OF71LIddhxsxswmaBNVTkUV2kWVuGSgWw6TA0VD
-# 9JtFk6vGlhJMD128ptwL/WcJhyM0hvK0xBUSeRPLdjjSkxuZU//kW808f6iPeM4gr1sYloPP
-# LTC6xMPG+UPja9GMb0BgIstn1Qx5ft+8WpR8nqhk0C9b2I5DsUfgUFeWj7pzI3PqLdth+zsh
-# fG6Bb1YVYTtQ5HFx/9zRbF1+LcVjJnC0Q2TOpCo233kNoPPShuuZMK6K1miOZbNqWFtfybN7
-# T/K3T5NYtgOCQDSrk1at4aUnn9fDo+tXsPKWOVj5FG/sb2BXQzNnEuqgzrZ/ykytm8zmO6ex
-# +dYJIKch1YFj25T5inlmeR14ikCXeeVgM0++Exq6hsfF9nsWsHr+ZBQpx97jbew4dPbigO7b
-# sY2lN88DU4NsjKXjTeaMtnnszZYhegdORVl33TjsVIjOpMoLH0ZpF1XuuqaCx5cKuItLQZfZ
-# 1ywO+c7v87DnqQ0su7G+kLLSYZbUWkwLCDz+rnhhQFcsnMHS+omgpAuUmItBOsxD88qo8lzF
-# g3t6kDSLmko/mxZfDaZGTrN4YHcnx4N5AA51ZYnILl7+9hwAHr5pHB/3SmRUiwmBEnZvXcui
-# edPAGaDdfBIp08+iKWVMDuTIXgjQxVePKVAiFP422UMiHiOlmNw6pZzYU3MRnXIm1Y4F2wIp
-# QUtcGQT5uew6Gubl++eCqbG4roLebXOIyw5Tr6qD0hLIRMAyIB0hGQvTllCJSBbjy71kcxcA
-# NBGNQOgEqDlSsk44YxDO6mimTcDvoTEk0ZcTuWt6lqmji5A1Ha/73B5rQsAPukw6rxPPGzTH
-# FLqSKitMkxkTA+A4KLJMd79Gm6gSTOtkdUgpJuA9P9CDzX2EFpSTyJskJIOkbCLpBRb63dE4
-# BwbqS7frLH/8Vh1rZgaYWOnju/PG8Pon4sA7gV+unQ2GSl63ePVYnBc/igLw0/1BnrpjPA8u
-# HEcoo3MmodLVr6EYNo7gojejU1TqPz/Qpj6Z7QdCrJtdRVa10MwCDf6hMTEkOVu2wwedOVbN
-# GIVLEPj9vVPYeEsdTQmDBXWjuWm8ByWTRDUdPgnLQ9b4xfsRopLJ6hmjiGT1AkgH3u/MIusu
-# ikov8NS//onIoa4s9TUlVBa7+bA7R/grVOf3utg4fwxJ2UQ3HWTdxQ1jPdxc40E304T7LDKq
-# hWE7bJw/hg86hx6R147FaQxK1FUVEckatIsqac2hrKzs4hJ+b1qn90tUuGzOJCaNGwW2TaXH
-# 4v7pHtzA6j+10xJXmD62mFfvrWN8hY+mqMxzh/pIyiYzq/3sWlfHwS1L+EdTCgQXWAYdwT4a
-# 2vo5EZGHNHeXzEw1o0p4++ffYcF1M8HSIRuFRCe5eJBH3uqhZaCWPJNQ+e3RGC+unMSzDQVO
-# B2gXVRZPq2HLhttZuqx6oK6NQ18Lfz7cwg/e7Ea3nOFz/c5HlrNgZl3hxlAg04cihuhN6zR0
-# DM0j3WmLCZVFxCVjyPPjQWkgsPWCDTmNlY1TX1PCfdeNHj7X+30els2qLRTNtg2ZCJlQO6dj
-# CknZRJSHAlp540yonsrqa3t55Ujfl8pFFTJ9hcLb1CDZTWtCpTetM31s8QgA9bpwZyNgKDhS
-# ko6kSnNMISYZeFwCxpe2bNkN09m66V7Qkjy9di4HWlN0iIXaQFI0ELuQdZOUbNKb1ulIqiTy
-# 5gU3fv8TaH9e571/nWZKlY+zKZ02USWU0bFsB9N2sAdwLqmvY8+vH8Nf5AUrx9jyIvZ/7xpu
-# fOU0KcXkZJ9EUyRPRjMJZwx60xqJfGEC8mlEHpl69OG3emgM5mmKFljEsBxU02HPqdRgcv/L
-# j1fit/MgpyAXw+oP4RIY7IdUw+Yn+87SEldpTSiDIDOqxeGRqkfbRZVH3z7L/ImlVPk9JPIG
-# jaE8mYFasr62lAmI0CeBLmPEuzkRkelNa1T5vzD/fkeWNlFlxjg/VX4PkazOsaCEZjojAxQg
-# KZsc/C+jmTKvgBHrRLcc4lIhcbeJKmLeJPGVwxZM6+e0KSPW159PTkVlmuMKkmbRm9bpSmqD
-# jV2HqI3cgHe4BtKqxdZ9QVriCq0JdRBkKKPzYVf2kmdOIz57AnivI8PHQYmKIjd+r4u0YpKU
-# zYu28/m48eumeSM2sZU0C0mzhm1HVVVisRiaplFeXv71g9wrRRzHIZVKkUqlBkfjLq5wOcej
-# +/fvv9Ix0wA4V/LlOA7/GQCfi3hGQX94NwAAAABJRU5ErkJggg==
-#Description: NAS Space Limited Trial
-# The Untangle Network Attached Storage Space Limited Trial Library Item.
-
 Package: untangle-libitem-trial30-boxbackup
 Section: premium/admin
 Architecture: all
@@ -1388,9 +1330,7 @@ Architecture: all
 Depends: untangle-node-boxbackup
 XB-View-Position: 1021
 XB-Display-Name: Configuration Backup 14-Day Trial
-XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-boxbackup
-XB-Is-Core: true
 XB-Untangle-Pkg-Type: trial
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABGdBTUEAANbY1E9YMgAAABl0
  RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAA81SURBVHjaxFlpeFRlln5v7Xul
@@ -1476,9 +1416,7 @@ Architecture: all
 Depends: untangle-node-adconnector
 XB-View-Position: 1017
 XB-Display-Name: Directory Connector 14-Day Trial
-XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-adconnector
-XB-Is-Core: true
 XB-Untangle-Pkg-Type: trial
 XB-Desc-Icon: R0lGODlhKgAqAPcAAB4SIWClzwA9mt6/VG08aFgyVI1miVCj2MXX6mFYjsZYAMzM
  zDovORJ9u32q3Me9pnxPdo94mjxvlsGocF2HvHlbZsSvlEl/oxE/gvf18JXH2jBn
@@ -1533,9 +1471,7 @@ Architecture: all
 Depends: untangle-node-policy
 XB-View-Position: 1016
 XB-Display-Name: Policy Manager 14-Day Trial
-XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-policy
-XB-Is-Core: true
 XB-Untangle-Pkg-Type: trial
 XB-Desc-Icon: R0lGODlhKgAqAPcAAAAAAMVrB2SOABJEeV2KuFxlASAyU8WDa1I0Eoi2CI9XBfmW
  ADJkljtZdcCCJ5uhW2SKMQ4XJ3FgP7q6s4EWCN2FAFNtnn2mAPzJaK25xhNBdHth
@@ -1583,9 +1519,7 @@ Architecture: all
 Depends: untangle-libitem-trial14-boxbackup
 XB-View-Position: 1015
 XB-Display-Name: Live Support 14-Day Trial
-XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-support
-XB-Is-Core: true
 XB-Untangle-Pkg-Type: trial
 XB-Desc-Icon:  R0lGODlhKgAqAPcAAB4PCJytc32ERl9oHru4u08cCK+tre7u54GHb2ITA4l5NFha
  ICArBnJ0R9XVzoWGfISQTKezhHNvP15VIYiGiVxjRUpSMDMzM3BsPJU9BrO+hURJ
@@ -1645,11 +1579,9 @@ Architecture: all
 Depends: untangle-node-pcremote
 XB-View-Position: 1010
 XB-Display-Name: PC Remote 14 Day Trial
-XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-pcremote
-XB-Is-Core: true
 XB-Untangle-Pkg-Type: trial
-XB-Untangle-Hide-On: u4w, iso
+XB-Untangle-Hide-On: iso
 XB-Desc-Icon: R0lGODlhKgAqAPcAAAsMGpmZmUpFPyUrasXOznZzbhgbQnWa1kpTpU2AxCMnLEdM
  fYqs4ebm5jI4abW1tSYxQVlxlTpAdBkZGa2trVtbW4OHpzxCk3eSxlhdg/f39yIo
  Y7W8zIObxoWFhS01gjMzM1FarEVLnEJCQr29vRwhUt7e3nN2kYKZy0lKXqeuyjpB
@@ -1704,7 +1636,6 @@ Architecture: all
 Depends: untangle-node-splitd, untangle-libitem-trial14-faild
 XB-View-Position: 1016
 XB-Display-Name: WAN Balancer 14-Day Trial
-XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-splitd
 XB-Untangle-Pkg-Type: trial
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
@@ -1797,7 +1728,6 @@ Architecture: all
 Depends: untangle-node-faild
 XB-View-Position: 1016
 XB-Display-Name: WAN Failover 14-Day Trial
-XB-Untangle-Type: trial
 XB-Untangle-Full-Version: untangle-libitem-faild
 XB-Untangle-Pkg-Type: trial
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
@@ -1877,8 +1807,6 @@ Section: internal/devel
 Depends: untangle-node-test
 XB-View-Position: 2002
 XB-Display-Name: Test
-XB-Untangle-Type: lib_item
-XB-Is-Core: true
 XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAACXBIWXMAAAsTAAALEwEAmpwY
  AAAABGdBTUEAALGOfPtRkwAAACBjSFJNAAB6JQAAgIMAAPn/AACA6QAAdTAAAOpgAAA6mAAA
@@ -1980,58 +1908,3 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAACXBIWXMAAAsTAAALEw
 Description: Untangle Test
  The Untangle Test Library Item.
 
-Package: untangle-libitem-update-service
-Section: internal/devel
-Architecture: all
-XB-View-Position: 1015
-XB-Display-Name: Premium Signature Service
-XB-Untangle-Type: lib_item
-XB-Is-Core: true
-XB-Untangle-Pkg-Type: lib_item
-XB-Desc-Icon: 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
- dEz8dwB61CseZ7un6gAAAABJRU5ErkJggg==
-Description: Untangle Premium Signature Service
- The Untangle Premium Signature Service Item.
