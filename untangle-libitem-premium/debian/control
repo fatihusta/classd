@@ -17,7 +17,7 @@ XB-Desc-Icon: R0lGODlhKgAqAPcAAAAAAL6KALy9xo56Q3ZcK3Z8odHEIkhKanV4kVpchVdaczw+SO
  CFlaWsDEQjk6RKSkq5ucWSMkLtjY13p7fYteAMC8OIyNlPz828XJUKSJMiMjJGprheXclMzMZnx+
  a0hIScirIdbFIU9Sa2Rlc66vvpeZpn1/ZPDw8ubm5pmZmauTFnBmWL2dGlZZiszMzNrTf0NEYk9S
  eYx1OM/S3hISEURHZNOxE9TNKoWGk8fCNGxyjIh9XausU8e0LUxQaYCBh3JycywtNnZnUMvLQzxA
- WTo7U42RpOHhn6uoRcyZAI5pAaiprmZmmal+AFRUW7a3vefnndjVJ1RZc4Z8TkVJdMqvCvHx042M=
+ WTo7U42RpOHhn6uoRcyZAI5pAaiprmZmmal+AFRUW7a3vefnndjVJ1RZc4Z8TkVJdMqvCvHx042M
  a2VphHFygnN1bF1he////9nTI4dzRWZmZn2Alc/KIfPz9by3P5GQY1BVhIuNpJt3B2psdLmhMjMz
  M6WjU8XFSsTFzsnK06yQEcWcAEhMc0RHWjpCUujotjIzPp2er0tRc8WUAIOFnc6/IXZ6nYqKjY6Q
  Y4yOnWhrjq6zvEpKYjs9YbqnG/b23mJji+TPZMzMM8u8EJmZmd/f7UFDWqSmtYCCaq6ttGJkhNvV
@@ -51,8 +51,8 @@ XB-Desc-Icon: R0lGODlhKgAqAPcAAAAAAL6KALy9xo56Q3ZcK3Z8odHEIkhKanV4kVpchVdaczw+SO
  wQSWvIIoXdnKQlpOAlHIxB/mMQ8wHuGZ0JyBNAtBTWla85ozwIE2t8lNPXjhHLzIRAZKMY9SIOGc
  6EynOtEJzXa6E5o4KAE4kyGEDPzhDxnIpz73yTrPDATinwANBAsGStCCsiAXLOAFC5KRiYY6tKHJ
  SAYFJkoBZBDhohf1hkY3GoGOenQBIF2GSHnhhIAAADs=
-Description: Untangle Professional Package
- The Untangle Professional Package Library Item.
+Description: Untangle Standard Package
+ The Untangle Stardard Package Library Item.
 
 Package: untangle-libitem-premium-package
 Section: premium/admin
@@ -100,8 +100,8 @@ XB-Desc-Icon: R0lGODlhKgAqAPcAAAAAALKHAKurtltcVUpKSsLCO5RsADQ2TcbGxmttiHxdGrOt
  FhK5aT0CNHZjEz4NKK/xpXgCjKvl+HWR7903Z2h5sMQSma/1iAjERIKKNluAvpYi
  mmgy1gEHDMVZGjls5jpyHvgxOxCccCAUGT0Ub/zxyCefvEZejVXN80DQfkBe1Fdv
  /fXXC9VDTLM/f4BjnGAv/vjUJ0IGTC3hYtH67K/f0EALxS9/Qg0FBAA7
-Description: Untangle Professional Package
- The Untangle Professional Package Library Item.
+Description: Untangle Premium Package
+ The Untangle Premium Package Library Item.
 
 
 Package: untangle-libitem-professional-package
