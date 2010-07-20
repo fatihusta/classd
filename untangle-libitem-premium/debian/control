@@ -9,7 +9,7 @@ Standards-Version: 3.8.0
 Package: untangle-libitem-standard-package
 Section: premium/admin
 Architecture: all
-Depends: untangle-libitem-boxbackup, untangle-libitem-support, untangle-libitem-adconnector, untangle-libitem-policy, untangle-libitem-branding, untangle-libitem-faild, untangle-libitem-opensource-package, untangle-libitem-sitefilter
+Depends: untangle-libitem-boxbackup, untangle-libitem-support, untangle-libitem-adconnector, untangle-libitem-policy, untangle-libitem-branding, untangle-libitem-opensource-package, untangle-libitem-sitefilter
 XB-View-Position: 11
 XB-Display-Name: Standard Package
 XB-Untangle-Pkg-Type: lib_item
@@ -966,7 +966,7 @@ Description: Untangle Professional Package 30-day trial
 Package: untangle-libitem-trial14-standard-package
 Section: premium/admin
 Architecture: all
-Depends: untangle-libitem-trial14-boxbackup, untangle-libitem-trial14-support, untangle-libitem-trial14-adconnector, untangle-libitem-trial14-policy, untangle-libitem-trial14-faild, untangle-libitem-lite-package, untangle-libitem-trial14-sitefilter
+Depends: untangle-libitem-trial14-boxbackup, untangle-libitem-trial14-support, untangle-libitem-trial14-adconnector, untangle-libitem-trial14-policy, untangle-libitem-lite-package, untangle-libitem-trial14-sitefilter
 XB-View-Position: 11
 XB-Display-Name: Standard Package 14-Day Trial
 XB-Untangle-Full-Version: untangle-libitem-standard-package
