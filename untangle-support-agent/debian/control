@@ -13,11 +13,5 @@ Replaces: rbot, rbot-mv
 Conflicts: rbot, rbot-mv, ruby1.9
 Provides: rbot, rbot-mv
 Depends: untangle-monit-config, ruby, libdb4.3-ruby1.8 | libdb4.2-ruby1.8, libopenssl-ruby1.8, untangle-libnet-ssh-ruby1.8 (>= 1.1.1) | libnet-ssh-ruby1.8 (>= 1.1.1), untangle-support-keyring, sudo, untangle-vm, untangle-openssh-server, adduser
-Description: IRC bot written in ruby
- Rbot is very extensible thanks to a well designed plugin
- scheme. It has native infobot-style keywords, fact database,
- access levels and multi-language support.
- .
- It comes with several classical plugins, like DNS queries,
- Babelfish translation, Google searching, Karma, Weather,
- quotes, slashdot news, and many more.
+Description: Untangle Support Agent
+ The Untangle Support Agent allows the server to talk to Support Server	    
