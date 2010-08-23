@@ -65,7 +65,6 @@ sleep 5
 #untangle-libitem-cpd
 #untangle-libitem-firewall
 #untangle-libitem-ips
-#untangle-libitem-opensource-package
 #untangle-libitem-openvpn
 #untangle-libitem-phish
 #untangle-libitem-protofilter
@@ -84,7 +83,7 @@ sleep 5
 #untangle-libitem-splitd
 #untangle-libitem-support
 
-LIBITEMS="untangle-libitem-adblocker untangle-libitem-clam untangle-libitem-cpd untangle-libitem-firewall untangle-libitem-ips untangle-libitem-opensource-package untangle-libitem-openvpn untangle-libitem-phish untangle-libitem-protofilter untangle-libitem-reporting untangle-libitem-shield untangle-libitem-spamassassin untangle-libitem-spyware untangle-libitem-webfilter untangle-libitem-adconnector untangle-libitem-boxbackup untangle-libitem-branding untangle-libitem-faild untangle-libitem-policy untangle-libitem-professional-package untangle-libitem-sitefilter untangle-libitem-support"
+LIBITEMS="untangle-libitem-adblocker untangle-libitem-clam untangle-libitem-cpd untangle-libitem-firewall untangle-libitem-ips untangle-libitem-openvpn untangle-libitem-phish untangle-libitem-protofilter untangle-libitem-reporting untangle-libitem-shield untangle-libitem-spamassassin untangle-libitem-spyware untangle-libitem-adconnector untangle-libitem-boxbackup untangle-libitem-branding untangle-libitem-faild untangle-libitem-policy untangle-libitem-professional-package untangle-libitem-sitefilter untangle-libitem-support"
 RACK_NODES="untangle-node-clam untangle-node-firewall untangle-node-ips untangle-node-phish untangle-node-protofilter untangle-node-spamassassin untangle-node-spyware untangle-node-kav untangle-node-sitefilter"
 SERVICE_NODES="untangle-node-openvpn untangle-node-reporting untangle-node-adconnector untangle-node-boxbackup untangle-node-faild untangle-node-policy untangle-node-support untangle-node-shield"
 
@@ -102,17 +101,6 @@ fi
 echo "apt-get install --yes --force-yes untangle-oem-tangent"
 apt-get install --yes --force-yes untangle-oem-tangent
 
-#
-# fix for bug 7829
-#
-cat > /etc/untangle/oem/oem.php <<EOF
-<?php
-
-$oem_name="WebHawk";
-$oem_url="http://w3hawk.com";
-
-?>
-EOF
 
 # restart so untangle-vm sees new nodes (ucli register doesn't work pre-registration)
 /etc/init.d/untangle-vm restart
@@ -141,12 +129,6 @@ for i in $SERVICE_NODES ; do
     ucli start $TID &> /dev/null
     # ignore return code (some aren't supposed to start)
 done
-
-#
-# flush firefox cache
-#
-echo "Flushing firefox cache..."
-/bin/rm -rf /home/kiosk/.mozilla/firefox/`grep Path /home/kiosk/.mozilla/firefox/profiles.ini | cut -f 2 -d=`/Cache/*
 
 #
 # unset password

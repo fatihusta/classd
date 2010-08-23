@@ -65,7 +65,7 @@ sleep 5
 #untangle-libitem-cpd
 #untangle-libitem-firewall
 #untangle-libitem-ips
-#untangle-libitem-opensource-package
+#untangle-libitem-lite-package
 #untangle-libitem-openvpn
 #untangle-libitem-phish
 #untangle-libitem-protofilter
@@ -84,7 +84,7 @@ sleep 5
 #untangle-libitem-splitd
 #untangle-libitem-support
 
-LIBITEMS="untangle-libitem-adblocker untangle-libitem-clam untangle-libitem-cpd untangle-libitem-firewall untangle-libitem-ips untangle-libitem-opensource-package untangle-libitem-openvpn untangle-libitem-phish untangle-libitem-protofilter untangle-libitem-reporting untangle-libitem-shield untangle-libitem-spamassassin untangle-libitem-spyware untangle-libitem-webfilter untangle-libitem-adconnector untangle-libitem-boxbackup untangle-libitem-branding untangle-libitem-faild untangle-libitem-policy untangle-libitem-professional-package untangle-libitem-sitefilter untangle-libitem-support"
+LIBITEMS="untangle-libitem-adblocker untangle-libitem-clam untangle-libitem-cpd untangle-libitem-firewall untangle-libitem-ips untangle-libitem-lite-package untangle-libitem-openvpn untangle-libitem-phish untangle-libitem-protofilter untangle-libitem-reporting untangle-libitem-shield untangle-libitem-spamassassin untangle-libitem-spyware untangle-libitem-webfilter untangle-libitem-adconnector untangle-libitem-boxbackup untangle-libitem-branding untangle-libitem-faild untangle-libitem-policy untangle-libitem-professional-package untangle-libitem-sitefilter untangle-libitem-support"
 RACK_NODES="untangle-node-clam untangle-node-firewall untangle-node-ips untangle-node-phish untangle-node-protofilter untangle-node-spamassassin untangle-node-spyware untangle-node-kav untangle-node-sitefilter"
 SERVICE_NODES="untangle-node-openvpn untangle-node-reporting untangle-node-adconnector untangle-node-boxbackup untangle-node-faild untangle-node-policy untangle-node-support untangle-node-shield"
 
