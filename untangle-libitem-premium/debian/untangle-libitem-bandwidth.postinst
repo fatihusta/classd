@@ -1,5 +1,22 @@
 #! /bin/bash
 
+START=`date "+%s"`000
+END="1346426423338"
+FILE=/usr/share/untangle/conf/licenses/untangle-node-bandwidth.ulf
+
+mkdir -p /usr/share/untangle/conf/licenses/
+
+if [ ! -f $FILE ] ; then
+    echo "com.untangle.uvm.license.identifier=untangle-node-bandwidth" >> $FILE
+    echo "com.untangle.uvm.license.type=Subscription" >> $FILE
+    echo "com.untangle.uvm.license.mackage=untangle-node-bandwidth" >> $FILE
+    echo "com.untangle.uvm.license.start=$START" >> $FILE
+    echo "com.untangle.uvm.license.end=$END" >> $FILE
+    echo "com.untangle.uvm.license.key=b84d73f0d969a349d2e624c3bfe03773" >> $FILE
+    echo "com.untangle.uvm.license.keyVersion=31" >> $FILE
+fi
+
 /usr/bin/ucli -t 30 reloadLicenses > /dev/null 2>&1
+
 true
 
