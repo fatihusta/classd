@@ -10,7 +10,7 @@ if [ ! -f $FILE ] ; then
     echo "com.untangle.uvm.license.identifier=untangle-node-bandwidth" >> $FILE
     echo "com.untangle.uvm.license.type=14 Day Trial" >> $FILE
     echo "com.untangle.uvm.license.mackage=untangle-node-bandwidth" >> $FILE
-    echo "com.untangle.uvm.license.start=$S TART" >> $FILE
+    echo "com.untangle.uvm.license.start=$START" >> $FILE
     echo "com.untangle.uvm.license.end=$END" >> $FILE
     echo "com.untangle.uvm.license.key=b84d73f0d969a349d2e624c3bfe03773" >> $FILE
     echo "com.untangle.uvm.license.keyVersion=31" >> $FILE
