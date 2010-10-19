@@ -1,7 +1,7 @@
 #!/bin/bash
 
 START=`date "+%s"`000
-END=$((`date "+%s"` +  60*60*24*14))000
+END=$((`date "+%s"` +  60*60*24*15))000
 FILE=/usr/share/untangle/conf/licenses/untangle-node-bandwidth-trial.ulf
 
 mkdir -p /usr/share/untangle/conf/licenses/
