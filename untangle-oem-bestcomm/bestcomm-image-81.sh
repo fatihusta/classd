@@ -35,7 +35,7 @@ fi
 MYUID="`cat /usr/share/untangle/popid | head -c 19`"
 #VOUCHER="ALD1210-20100305A2GSF3OTP7F"
 VOUCHER=$1
-CUSTOMERID="5873"
+CUSTOMERID="8627"
 URL="http://store.untangle.com/untangle_admin/oem/redeem-voucher.php?vc=$VOUCHER&uid=$MYUID&sid=$CUSTOMERID"
 
 echo "Redeeming Voucher..."
