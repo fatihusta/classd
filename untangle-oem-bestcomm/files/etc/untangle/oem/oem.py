@@ -20,4 +20,4 @@ def oemName():
     return "Bestcomm"
 
 def oemUrl():
-    return "http://w3hawk.com"
+    return "http://mspx.bestcomm.net"

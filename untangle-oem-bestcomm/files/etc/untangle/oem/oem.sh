@@ -1,2 +1,2 @@
 OEM_NAME="Bestcomm"
-OEM_URL="http://w3hawk.com"
+OEM_URL="http://mspx.bestcomm.net"

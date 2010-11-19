@@ -1,6 +1,6 @@
 <?php
 
 $oem_name="Bestcomm";
-$oem_url="http://w3hawk.com";
+$oem_url="http://mspx.bestcomm.net";
 
 ?>
