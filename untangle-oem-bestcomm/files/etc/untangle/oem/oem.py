@@ -17,7 +17,7 @@
 # Dirk Morris <dmorris@untangle.com>
 
 def oemName():
-    return "Bestcomm"
+    return "MSPX"
 
 def oemUrl():
     return "http://mspx.bestcomm.net"
