@@ -1,6 +1,5 @@
 #!/bin/sh
 
-/usr/share/untangle/bin/xpd ukav-sub.ulg 0x7f6566b813072b22 8c208b728ec60b6815e508e3305631ea
 
 /usr/bin/ucli -t 30 reloadLicenses > /dev/null 2>&1
 true

@@ -1,7 +1,0 @@
-#!/bin/sh
-
-# FIXME XXX
-# /usr/share/untangle/bin/xpd urap-sub.ulg 0x7c1223b86eaf5d41 8cbc4e31dd28e3b964dab75ec8834a1d
-
-/usr/bin/ucli -t 30 reloadLicenses > /dev/null 2>&1
-true

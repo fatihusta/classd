@@ -1,6 +1,5 @@
 #!/bin/sh
 
-/usr/share/untangle/bin/xpd ufaild-sub.ulg 0x20cb40ae2fd46143 5c746fc135efc439f532f0d770f65272
 
 /usr/bin/ucli -t 30 reloadLicenses > /dev/null 2>&1
 true

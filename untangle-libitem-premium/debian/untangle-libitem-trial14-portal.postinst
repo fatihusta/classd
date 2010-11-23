@@ -1,6 +1,5 @@
 #!/bin/sh
 
-/usr/share/untangle/bin/xpd urap-trial.ulg 0x625275c175432035 3de76d52fbdb45e4f06cbf4ed0567bd8
 
 /usr/bin/ucli -t 30 reloadLicenses > /dev/null 2>&1
 true

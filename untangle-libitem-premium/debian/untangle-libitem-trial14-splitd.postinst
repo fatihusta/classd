@@ -1,6 +1,5 @@
 #!/bin/sh
 
-/usr/share/untangle/bin/xpd usplitd-trial.ulg 0x666b1c7b17a83d3d 019c9e727e8426ae56143363fdcd25dc
 
 /usr/bin/ucli -t 30 reloadLicenses > /dev/null 2>&1
 true

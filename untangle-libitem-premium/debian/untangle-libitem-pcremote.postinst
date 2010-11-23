@@ -1,6 +1,5 @@
 #!/bin/sh
 
-/usr/share/untangle/bin/xpd upcr-sub.ulg 0x4661502026ad5c26 a74583a67225383912e13df503ea9ea4
 
 /usr/bin/ucli -t 30 reloadLicenses > /dev/null 2>&1
 true

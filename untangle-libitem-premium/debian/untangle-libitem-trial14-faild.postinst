@@ -1,6 +1,5 @@
 #!/bin/sh
 
-/usr/share/untangle/bin/xpd ufaild-trial.ulg 0x2a1542e206f52060 5191b44c786ec1de06123fd35f7f6edd
 
 /usr/bin/ucli -t 30 reloadLicenses > /dev/null 2>&1
 true
