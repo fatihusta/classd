@@ -51,11 +51,11 @@ class SSHPlugin < Plugin
   # 'while true ; do sleep 5 ; done' < /dev/null
 
   @@USER = "rbot"
-  @@HOST = "activation.untangle.com"
+  @@HOST = "supportsys.untangle.com"
   @@PORT = 22
   @@PRIVATE_KEY_FILE = "/home/#{@@USER}/.ssh/key.dsa"
   @@CGI_URL = "/cgi-bin/sshkey.rb?license_key=%s&internal_ip=%s"
-  @@ACTIVATION_KEY_FILE = "/usr/share/untangle/activation.key"
+  @@UID_FILE = "/usr/share/untangle/conf/uid"
 
   def initialize
     super()
@@ -84,7 +84,7 @@ class SSHPlugin < Plugin
 
   def downloadKey(m, params)
     m.reply "Downloading key..."
-    licenseKey = File.open(@@ACTIVATION_KEY_FILE).read.strip
+    licenseKey = File.open(@@UID_FILE).read.strip
     internalIp = `/usr/share/untangle/bin/utip`.strip
 
 #     # FIXME: don't hardcode URL
