@@ -1,0 +1,60 @@
+#! /bin/bash
+
+ourInit() {
+if [ -x /usr/sbin/invoke-rc.d ] && [ ! "`readlink /usr/sbin/invoke-rc.d`" = /bin/true ] ; then
+  invoke-rc.d $1 $2
+else
+  /etc/init.d/$1 $2
+fi
+}
+
+SQUID_CONF_FILE=/etc/squid/squid.conf
+
+setOption() {
+  if grep -qE "^$1" $SQUID_CONF_FILE ; then
+    perl -i -pe "s/^$1 .*/$1 $2/" $SQUID_CONF_FILE
+  else
+    cat >> $SQUID_CONF_FILE <<EOF
+$1 $2
+EOF
+  fi
+}
+
+MINIMAL_SIZE=2000000 # kB
+PERCENTAGE_TO_RESERVE=0.05
+BASE_CACHE="/var/spool/squid"
+for p in /data / ; do
+  cache=$p/$BASE_CACHE
+  totalSize=$(df $p | awk 'END {print $2}')
+  if [ "$totalSize" -gt $MINIMAL_SIZE ] ; then
+    cacheSize=$( echo ${PERCENTAGE_TO_RESERVE}*${totalSize} | bc -l)
+    if [ $p != / ] ; then
+      echo mkdir -p $cache
+      echo mv $BASE_CACHE/* $cache/
+      echo rm -r $BASE_CACHE
+      echo ln -sf $cache $BASE_CACHE
+    fi
+    break
+  fi
+done
+
+# options we need
+setOption http_port "3128 transparent"
+setOption extension_methods "REPORT MERGE MKACTIVITY CHECKOUT X-UNTANGLE-WEBCACHE"
+setOption cache_dir "ufs ${BASE_CACHE} 8192 16 256"
+setOption maximum_object_size "$cacheSize KB" 
+setOption client_persistent_connections off
+setOption server_persistent_connections off
+setOption dns_testnames www.untangle.com
+setOption digest_generation off 
+setOption cache_peer "127.0.0.1 parent 8888 0 no-query no-digest default"
+setOption never_direct "allow all"
+
+# reloading daemons
+ourInit squid restart
+
+sleep 2
+
+touch /etc/untangle/monit-to-restart
+    
+exit 0
