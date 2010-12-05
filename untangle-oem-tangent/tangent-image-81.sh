@@ -16,10 +16,10 @@ killall /usr/lib/iceweasel/firefox-bin &> /dev/null
 # create UID
 #
 echo "Creating UID..."
-cp /usr/share/untangle/bin/utactivate /tmp/
-sed -i 's/.*utregister.*//' /tmp/utactivate
-/tmp/utactivate
-rm -f /tmp/utactivate
+cp /usr/share/untangle/bin/ut-activate /tmp/
+sed -i 's/.*ut-register.*//' /tmp/ut-activate
+/tmp/ut-activate
+rm -f /tmp/ut-activate
 
 echo "Downloading Package cache..."
 sleep 5

@@ -111,7 +111,7 @@ Depends: untangle-libitem-boxbackup, untangle-libitem-support, untangle-libitem-
 XB-View-Position: 11
 XB-Display-Name: Professional Package
 XB-Untangle-Pkg-Type: lib_item
-XB-Untangle-Hide-On: iso
+XB-Untangle-Hide: true
 XB-Desc-Icon: R0lGODlhKgAqAPcAAAAAALKHAKurtltcVUpKSsLCO5RsADQ2TcbGxmttiHxdGrOt
  NcHFP4heAJKPTPz87zMzM6+LEmtra+XXmcrKVe/vw4t1MxYXIXd3VnJ0jZKUWM6u
  Ejo9V01Rclpce2hhX9PFIr29OpR6KUhLa9HR0sekDNTUdfLy/MebAJSUUpGTpoyM
@@ -158,7 +158,7 @@ Depends: untangle-libitem-kav, untangle-libitem-sitefilter, untangle-libitem-com
 XB-View-Position: 12
 XB-Display-Name: Super Bundle
 XB-Untangle-Pkg-Type: lib_item
-XB-Untangle-Hide-On: iso
+XB-Untangle-Hide: true
 XB-Desc-Icon: R0lGODlhKgAqAPcAAAAAAL6KALy9xo56Q3ZcK3Z8odHEIkhKanV4kVpchVdaczw+SO7usp17Ccei
  CFlaWsDEQjk6RKSkq5ucWSMkLtjY13p7fYteAMC8OIyNlPz828XJUKSJMiMjJGprheXclMzMZnx+
  a0hIScirIdbFIU9Sa2Rlc66vvpeZpn1/ZPDw8ubm5pmZmauTFnBmWL2dGlZZiszMzNrTf0NEYk9S
@@ -452,7 +452,6 @@ Depends: untangle-node-splitd, untangle-libitem-faild
 XB-View-Position: 61
 XB-Display-Name: WAN Balancer
 XB-Untangle-Pkg-Type: lib_item
-XB-Untangle-Hide-On: u4w
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
  AAALEgAACxIB0t1+/AAAABZ0RVh0Q3JlYXRpb24gVGltZQAwMi8yNi8wONgycscAAAAfdEVYdFNv
  ZnR3YXJlAE1hY3JvbWVkaWEgRmlyZXdvcmtzIDi1aNJ4AAAEEXRFWHRYTUw6Y29tLmFkb2JlLnht
@@ -631,7 +630,7 @@ Provides: untangle-libitem-trial30-portal, untangle-libitem-trial14-portal
 XB-View-Position: 1018
 XB-Display-Name: Remote Access Portal
 XB-Untangle-Pkg-Type: lib_item
-XB-Untangle-Hide-On: u4w, iso
+XB-Untangle-Hide: true
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAIAAABKoV4MAAAABGdBTUEAANbY1E9YMgAAABl0
  RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAy9SURBVHjaxFjbb1xXvV5rr7X2
  da72jMexE8fNxSEBQlWgPRxaQaqiQwsvoAr1ASH60OdK/VMAgXjgAV4KCKQSSsU5oofLoUlL
@@ -869,7 +868,7 @@ Provides: untangle-libitem-trial14-pcremote
 XB-View-Position: 1010
 XB-Display-Name: PC Remote
 XB-Untangle-Pkg-Type: lib_item
-XB-Untangle-Hide-On: iso
+XB-Untangle-Hide: true
 XB-Desc-Icon: R0lGODlhKgAqAPcAAAsMGpmZmUpFPyUrasXOznZzbhgbQnWa1kpTpU2AxCMnLEdM
  fYqs4ebm5jI4abW1tSYxQVlxlTpAdBkZGa2trVtbW4OHpzxCk3eSxlhdg/f39yIo
  Y7W8zIObxoWFhS01gjMzM1FarEVLnEJCQr29vRwhUt7e3nN2kYKZy0lKXqeuyjpB
@@ -1513,7 +1512,7 @@ XB-View-Position: 1018
 XB-Display-Name: Remote Access Portal 14-Day Trial
 XB-Untangle-Full-Version: untangle-libitem-portal
 XB-Untangle-Pkg-Type: trial
-XB-Untangle-Hide-On: iso
+XB-Untangle-Hide: true
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAIAAABKoV4MAAAABGdBTUEAANbY1E9YMgAAABl0
  RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAy9SURBVHjaxFjbb1xXvV5rr7X2
  da72jMexE8fNxSEBQlWgPRxaQaqiQwsvoAr1ASH60OdK/VMAgXjgAV4KCKQSSsU5oofLoUlL
@@ -1844,7 +1843,7 @@ XB-View-Position: 1010
 XB-Display-Name: PC Remote 14 Day Trial
 XB-Untangle-Full-Version: untangle-libitem-pcremote
 XB-Untangle-Pkg-Type: trial
-XB-Untangle-Hide-On: iso
+XB-Untangle-Hide: true
 XB-Desc-Icon: R0lGODlhKgAqAPcAAAsMGpmZmUpFPyUrasXOznZzbhgbQnWa1kpTpU2AxCMnLEdM
  fYqs4ebm5jI4abW1tSYxQVlxlTpAdBkZGa2trVtbW4OHpzxCk3eSxlhdg/f39yIo
  Y7W8zIObxoWFhS01gjMzM1FarEVLnEJCQr29vRwhUt7e3nN2kYKZy0lKXqeuyjpB

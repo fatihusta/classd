@@ -85,7 +85,7 @@ class SSHPlugin < Plugin
   def downloadKey(m, params)
     m.reply "Downloading key..."
     licenseKey = File.open(@@UID_FILE).read.strip
-    internalIp = `/usr/share/untangle/bin/utip`.strip
+    internalIp = `/usr/share/untangle/bin/ut-ip`.strip
 
 #     # FIXME: don't hardcode URL
 #     myHttp = Net::HTTP.new(@@HOST, 443)
