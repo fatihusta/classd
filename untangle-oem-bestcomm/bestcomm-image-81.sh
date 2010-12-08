@@ -32,7 +32,7 @@ fi
 #
 # register UID with store
 #
-MYUID="`cat /usr/share/untangle/popid | head -c 19`"
+MYUID="`cat /usr/share/untangle/conf/uid | head -c 19`"
 #VOUCHER="ALD1210-20100305A2GSF3OTP7F"
 VOUCHER=$1
 CUSTOMERID="8627"
