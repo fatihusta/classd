@@ -12,7 +12,7 @@ SQUID_CONF_FILE=/etc/squid/squid.conf
 
 setOption() {
   if grep -qE "^$1" $SQUID_CONF_FILE ; then
-    perl -i -pe "s/^$1 .*/$1 $2/" $SQUID_CONF_FILE
+    perl -i -pe "s|^$1 .*|$1 $2|" $SQUID_CONF_FILE
   else
     cat >> $SQUID_CONF_FILE <<EOF
 $1 $2
@@ -27,7 +27,7 @@ for p in /data / ; do
   cache=$p/$BASE_CACHE
   totalSize=$(df $p | awk 'END {print $2}')
   if [ "$totalSize" -gt $MINIMAL_SIZE ] ; then
-    cacheSize=$( echo "scale = 0 ; ${PERCENTAGE_TO_RESERVE}*${totalSize}" | bc -l)
+    cacheSize=$( echo "scale = 0 ; ${PERCENTAGE_TO_RESERVE}*${totalSize}/1000" | bc -l)
     if [ $p != / ] ; then
       echo mkdir -p $cache
       echo mv $BASE_CACHE/* $cache/
@@ -41,8 +41,8 @@ done
 # options we need
 setOption http_port "3128 transparent"
 setOption extension_methods "REPORT MERGE MKACTIVITY CHECKOUT X-UNTANGLE-WEBCACHE"
-setOption cache_dir "ufs ${BASE_CACHE} 8192 16 256"
-setOption maximum_object_size "$cacheSize KB" 
+setOption cache_dir "ufs ${BASE_CACHE} $cacheSize 16 256"
+setOption maximum_object_size "32768 KB"
 setOption client_persistent_connections off
 setOption server_persistent_connections off
 setOption dns_testnames www.untangle.com
