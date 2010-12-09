@@ -27,7 +27,7 @@ for p in /data / ; do
   cache=$p/$BASE_CACHE
   totalSize=$(df $p | awk 'END {print $2}')
   if [ "$totalSize" -gt $MINIMAL_SIZE ] ; then
-    cacheSize=$( echo ${PERCENTAGE_TO_RESERVE}*${totalSize} | bc -l)
+    cacheSize=$( echo "scale = 0 ; ${PERCENTAGE_TO_RESERVE}*${totalSize}" | bc -l)
     if [ $p != / ] ; then
       echo mkdir -p $cache
       echo mv $BASE_CACHE/* $cache/
