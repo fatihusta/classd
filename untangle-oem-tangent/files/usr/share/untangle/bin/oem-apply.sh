@@ -20,6 +20,8 @@ if [ ! -f /etc/hostname ] ; then
     echo "webhawk.example.com" > /etc/hostname
     hostname "webhawk.example.com"
 fi
+# change alpaca help
+sed -i 's/\(HELP.*\)www.untangle.com/\1www.w3hawk.com/' /var/lib/rails/untangle-net-alpaca/public/javascripts/e/glue.js
 
 # set bootsplash
 splashy_config -s tangent

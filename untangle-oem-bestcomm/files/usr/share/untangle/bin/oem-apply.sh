@@ -21,6 +21,9 @@ if [ ! -f /etc/hostname ] ; then
     hostname "mspx.example.com"
 fi
 
+# change alpaca help
+sed -i 's/\(HELP.*\)www.untangle.com/\1mspx.bestcomm.net/' /var/lib/rails/untangle-net-alpaca/public/javascripts/e/glue.js
+
 # set bootsplash
 splashy_config -s bestcomm
 update-initramfs -u
