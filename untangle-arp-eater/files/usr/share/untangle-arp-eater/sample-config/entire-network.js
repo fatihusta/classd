@@ -1,1 +1,0 @@
-{ "interface": "eth0", "gateway": "0.0.0.0", "timeout": 0, "rate": 0, "enabled": true, "broadcast": true, "networks": [ { "timeout": 0, "rate": 0, "ip": "0.0.0.0", "netmask": "0.0.0.0", "gateway": "0.0.0.0", "enabled": true, "spoof": true, "passive": true } ] }
