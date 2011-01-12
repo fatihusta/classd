@@ -1,21 +1,10 @@
-#!/bin/bash
+#!/bin/sh
 
-START=`date "+%s"`000
-END=$((`date "+%s"` +  60*60*24*15))000
-FILE=/usr/share/untangle/conf/licenses/untangle-node-bandwidth-trial.ulf
+LIBITEM="untangle-libitem-trial14-bandwidth"
 
-mkdir -p /usr/share/untangle/conf/licenses/
+# request a trial license
+curl "http://license.untangle.com/license.php?action=startTrial&uid=`cat /usr/share/untangle/conf/uid`&libitem=$LIBITEM"
 
-if [ ! -f $FILE ] ; then
-    echo "com.untangle.uvm.license.identifier=untangle-node-bandwidth" >> $FILE
-    echo "com.untangle.uvm.license.type=14 Day Trial" >> $FILE
-    echo "com.untangle.uvm.license.mackage=untangle-node-bandwidth" >> $FILE
-    echo "com.untangle.uvm.license.start=$START" >> $FILE
-    echo "com.untangle.uvm.license.end=$END" >> $FILE
-    echo "com.untangle.uvm.license.key=b84d73f0d969a349d2e624c3bfe03773" >> $FILE
-    echo "com.untangle.uvm.license.keyVersion=31" >> $FILE
-fi
-
+# download licenses
 /usr/bin/ucli -t 30 reloadLicenses > /dev/null 2>&1
-
 true

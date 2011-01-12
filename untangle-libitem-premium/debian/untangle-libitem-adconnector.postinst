@@ -1,5 +1,4 @@
-#! /bin/bash
-
+#!/bin/sh
 
 /usr/bin/ucli -t 30 reloadLicenses > /dev/null 2>&1
 true

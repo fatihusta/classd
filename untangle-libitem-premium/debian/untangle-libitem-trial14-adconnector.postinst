@@ -1,5 +1,10 @@
-#! /bin/bash
+#!/bin/sh
 
+LIBITEM="untangle-libitem-trial14-adconnector"
 
+# request a trial license
+curl "http://license.untangle.com/license.php?action=startTrial&uid=`cat /usr/share/untangle/conf/uid`&libitem=$LIBITEM"
+
+# download licenses
 /usr/bin/ucli -t 30 reloadLicenses > /dev/null 2>&1
 true

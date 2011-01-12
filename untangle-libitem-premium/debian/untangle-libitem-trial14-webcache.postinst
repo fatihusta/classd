@@ -1,6 +1,6 @@
 #!/bin/sh
 
-LIBITEM="untangle-libitem-trial14-boxbackup"
+LIBITEM="untangle-libitem-trial14-webcache"
 
 # request a trial license
 curl "http://license.untangle.com/license.php?action=startTrial&uid=`cat /usr/share/untangle/conf/uid`&libitem=$LIBITEM"
