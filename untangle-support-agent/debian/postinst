@@ -21,21 +21,21 @@ REMOTE_SUPPORT_ENABLE_URL_TEMPLATE="https://supportsys.untangle.com/cgi-bin/enab
 curl --silent --insecure --fail -o /dev/null `printf ${REMOTE_SUPPORT_ENABLE_URL_TEMPLATE} $(cat ${UID_FILE}) $(/usr/share/untangle/bin/ut-ip)`
 
 if [[ -f $UID_FILE ]] ; then
-  #UID=`perl -npe 's/-//g' ${UID_FILE}`
-  UID=`cat ${UID_FILE}`
+  #UID_ID=`perl -npe 's/-//g' ${UID_FILE}`
+  UID_ID=`cat ${UID_FILE}`
   CHANNEL="#untangle"
-  if [[ $UID = 012747a7bbff0752 || $UID = 0000000000000000 || $UID = "0127-47a7-bbff-0752" || $UID = "0000-0000-0000-0000"]] ; then
-    UID=`hostname | perl -npe 's/\..*//'`
+  if [[ $UID_ID = "012747a7bbff0752" || $UID_ID = "0000000000000000" || $UID_ID = "0127-47a7-bbff-0752" || $UID_ID = "0000-0000-0000-0000" ]] ; then
+    UID_ID=`hostname | perl -npe 's/\..*//'`
     CHANNEL="#untangle-dev"
   else # IRC nicks can't start with a digit
-    UID=r$UID
+    UID_ID=r$UID_ID
   fi
 else
-  UID=`hostname`
+  UID_ID=`hostname`
   CHANNEL="#untangle-dev"
 fi
 
-perl -npe 's/\+NAME\+/'"$UID"'/ ; s/\+CHANNEL\+/'"$CHANNEL"'/' $RBOT_CONF_FILE.template >| $RBOT_CONF_FILE
+perl -npe 's/\+NAME\+/'"$UID_ID"'/ ; s/\+CHANNEL\+/'"$CHANNEL"'/' $RBOT_CONF_FILE.template >| $RBOT_CONF_FILE
 
 if pidof /usr/sbin/sshd > /dev/null ; then
   ourInit untangle-support-agent stop
