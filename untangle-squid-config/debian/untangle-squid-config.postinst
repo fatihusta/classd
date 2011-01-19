@@ -50,6 +50,9 @@ setOption digest_generation off
 setOption cache_peer "127.0.0.1 parent 8888 0 no-query no-digest default"
 setOption never_direct "allow all"
 
+# change error messages to say "WebCache" instead of "Squid"
+find /usr/share/squid/errors/ -type f -exec sed -i 's/Squid/WebCache/' {} \; >/dev/null 2>&1
+
 # reloading daemons
 ourInit squid restart
 
