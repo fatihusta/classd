@@ -51,7 +51,7 @@ class SSHPlugin < Plugin
   # 'while true ; do sleep 5 ; done' < /dev/null
 
   @@USER = "rbot"
-  @@HOST = "supportsys.untangle.com"
+  @@HOST = "activation.untangle.com"
   @@PORT = 22
   @@PRIVATE_KEY_FILE = "/home/#{@@USER}/.ssh/key.dsa"
   @@CGI_URL = "/cgi-bin/sshkey.rb?license_key=%s&internal_ip=%s"
