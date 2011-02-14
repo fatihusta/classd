@@ -1,0 +1,111 @@
+fieldset {      
+margin-left: 0;      
+margin-bottom: 4px;      
+margin-right: 0;      
+margin-top: 0;      
+float: left;      
+clear: both;      
+width: 100%;      
+padding: 0 0 1em 0;      
+border: 1px solid #BFBAB0;      
+background-color: #F2EFE9;     
+}
+legend {   
+margin-left: 1em;   
+color: #000000;   
+font-weight: bold;  
+}  
+fieldset ol {   
+padding: 1em 1em 0 1em;   
+list-style: none;  
+}  
+fieldset li {   
+padding-bottom: 1em;  
+}  
+fieldset.submit {   
+border-style: none;  
+}
+label {        
+position: relative;        
+float: left;        
+width: 10em;        
+margin-right: 1em;       
+}  
+label em {        
+display: block;        
+color: #060;        
+font-size: 85%;        
+font-style: normal;        
+text-transform: uppercase;       
+}
+label strong img {        
+position: absolute;        
+left: -16em;       
+}
+label strong {       
+position: absolute;       
+left: 27em;       
+top: 0.2em;       
+width: 19em;       
+color: #C00;       
+font-size: 85%;       
+font-weight: normal;
+text-transform: uppercase;       
+}
+.clear { /* generic container (i.e. div) for floating buttons */
+    overflow: hidden;
+    width: 100%;
+}
+
+a.button {
+    background: transparent url('images/bg_button_a.gif') no-repeat scroll top right;
+    color: #444;
+    display: block;
+    float: right;
+    font: normal 12px arial, sans-serif;
+    height: 24px;
+    margin-right: 6px;
+    padding-right: 18px; /* sliding doors padding */
+    text-decoration: none;
+}
+
+a.button span {
+    background: transparent url('images/bg_button_span.gif') no-repeat;
+    display: block;
+    line-height: 14px;
+    padding: 5px 0 5px 18px;
+}
+
+a.button:active {
+    background-position: bottom right;
+    color: #000;
+    outline: none; /* hide dotted outline in Firefox */
+}
+
+a.button:active span {
+    background-position: bottom left;
+    padding: 6px 0 4px 18px; /* push text down 1px */
+}
+
+th.product {
+	max-width: 80%;
+	text-align: center;
+}
+
+td.product {
+	max-width: 80%;
+	text-align: left;
+}
+
+th.checkbox {
+	min-width: 40px;
+	text-shadow: 0px 0px;
+	text-align: center;
+}
+
+td.checkbox {
+	min-width: 40px;
+	text-shadow: 0px 0px;
+	text-align: center;
+}
+

@@ -1,0 +1,13 @@
+Source: untangle-oem-base
+Section: admin
+Priority: optional
+Maintainer: Marc Runkel <mrunkel@untangle.com>
+Uploaders: Untangle Buildbot <buildbot@untangle.com>
+Build-Depends: debhelper (>> 3.0.0)
+Standards-Version: 3.8.0
+
+Package: untangle-oem-tangent
+Architecture: all
+Depends: php5-curl
+Description: The Untangle OEM base package
+ The Untangle OEM managment page for all OEMs.  Includes a command line component to install apps on the box automatically.
