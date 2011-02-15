@@ -3,7 +3,7 @@
 LIBITEM="untangle-libitem-trial14-bandwidth"
 
 # request a trial license
-curl "http://license.untangle.com/license.php?action=startTrial&uid=`cat /usr/share/untangle/conf/uid`&libitem=$LIBITEM"
+curl "https://license.untangle.com/license.php?action=startTrial&uid=`cat /usr/share/untangle/conf/uid`&libitem=$LIBITEM"
 
 # download licenses
 /usr/bin/ucli -t 30 reloadLicenses > /dev/null 2>&1
