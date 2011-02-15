@@ -8,6 +8,6 @@ Standards-Version: 3.8.0
 
 Package: untangle-oem-netbox
 Architecture: all
-Depends: 
+Depends: untangle-oem-base
 Description: The Untangle OEM for Netbox package
  The Untangle OEM configuration for Netbox

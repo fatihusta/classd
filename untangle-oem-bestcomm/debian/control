@@ -8,6 +8,6 @@ Standards-Version: 3.8.0
 
 Package: untangle-oem-bestcomm
 Architecture: all
-Depends: 
+Depends: untangle-oem-base
 Description: The Untangle OEM for Bestcomm package
  The Untangle OEM configuration for Bestcomm

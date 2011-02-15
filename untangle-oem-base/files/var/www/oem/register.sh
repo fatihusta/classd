@@ -73,4 +73,23 @@ $LOGGER "Restarting untangle-vm"
 if [ -f $COOKIEJAR ] ; then
   rm $COOKIEJAR
 fi
+
+# regenerate ssh keys
+$LOGGER "Regenrating SSH Keys"
+ssh-keygen -q -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa
+ssh-keygen -q -f /etc/ssh/ssh_host_dsa_key -N '' -t dsa
+
+/etc/init.d/ssh restart
+
+#
+# unset password
+#
+$LOGGER "Unsetting password..."
+if ! sudo grep -qE '^root:(\*|YKN4WuGxhHpIw|$1$3kRMklXp$W/hDwKvL8GFi5Vdo3jtKC\.|CHANGEME):' /etc/shadow ; then
+    echo "Resetting root password"
+    perl -pe "s/^root:.*?:/root:CHANGEME:/" /etc/shadow > /tmp/newshadow
+    cp -f /tmp/newshadow /etc/shadow
+    rm -f /tmp/newshadow
+fi
+
 exit 0
