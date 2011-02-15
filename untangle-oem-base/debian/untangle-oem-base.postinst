@@ -1,8 +1,8 @@
 #! /bin/bash
 
-# apply files
-if [ -f /usr/share/untangle/bin/oem-apply.sh ] ; then
-    /usr/share/untangle/bin/oem-apply.sh
+# create oem.php if it doesn't already exist
+if [ ! -f /etc/untangle/oem/oem.php ] ; then
+    touch /etc/untangle/oem/oem.php
 fi
 
 exit 0
