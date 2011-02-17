@@ -28,7 +28,6 @@ install/untangle-support-agent::
 	# disabled plugins
 #	find $(PREFIX)/usr/share/rbot -name "*.rb" -a ! -name ssh.rb -exec mv "{}" "{}".disabled \;
 	find $(PREFIX)/usr/share/rbot -iregex ".*\.rb\(\.disabled\)?" -a ! -iregex '.*/\(ssh\|exec\)\.rb' -exec rm -f "{}" \;
-	chmod 755 $(PREFIX)/usr/share/rbot/plugins/extend_trial.sh
 	rm -fr $(PREFIX)/usr/share/rbot/contrib
 	cp -r home-rbot/.ssh home-rbot/.rbot $(PREFIX)/usr/share/untangle-support-agent/rbot-home/
 	cp -r files/etc $(PREFIX)/
