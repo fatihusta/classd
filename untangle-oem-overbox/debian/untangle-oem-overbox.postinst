@@ -1,0 +1,8 @@
+#! /bin/bash
+
+# apply files
+if [ -f /usr/share/untangle/bin/oem-apply.sh ] ; then
+    /usr/share/untangle/bin/oem-apply.sh
+fi
+
+exit 0
