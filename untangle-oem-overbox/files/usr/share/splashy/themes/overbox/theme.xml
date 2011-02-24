@@ -4,9 +4,9 @@
         <!-- theme name is case sensitive. use directory name -->
         <name>overbox</name>
         <version>1.0</version>
-        <description>An overbox theme</description>
+        <description>An OverBOX theme</description>
         <urls></urls>
-        <author>Sebastien Delafond &gt;seb@untangle.com&lt;</author>
+        <author>Harley Larsen &gt;hlarsen@untangle.com&lt;</author>
     </info>
     <progressbar>
         <!-- here are tags to set the bar... x coordinate,
@@ -22,9 +22,9 @@
         set the amount of red, green, blue and alpha channel. 
         Remember that the max value is 255 and the minumun value is 0-->
         <color>
-            <red>103</red>
-            <green>189</green>
-            <blue>73</blue>
+            <red>246</red>
+            <green>38</green>
+            <blue>113</blue>
             <alpha>255</alpha>
         </color>
         <!-- whether or not you want a border around the progressbar. default: no -->
@@ -63,7 +63,7 @@
     </progressbar>
     <!-- conventional path: /etc/splashy/themes + theme-name -->
     <background>
-        <boot>background.png</boot>
+        <boot>error.png</boot>
         <shutdown>shutdown.png</shutdown>
         <resume>background.png</resume>
         <suspend>background.png</suspend>

@@ -9,5 +9,5 @@ Standards-Version: 3.8.0
 Package: untangle-oem-overbox
 Architecture: all
 Depends: untangle-oem-base
-Description: The Untangle OEM for Overbox package
- The Untangle OEM configuration for Overbox
+Description: The Untangle OEM for OverBOX package
+ The Untangle OEM configuration for OverBOX

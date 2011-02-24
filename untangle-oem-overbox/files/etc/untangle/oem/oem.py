@@ -17,7 +17,7 @@
 # Dirk Morris <dmorris@untangle.com>
 
 def oemName():
-    return "Overbox"
+    return "OverBOX"
 
 def oemUrl():
     return "http://www.overbox.es"

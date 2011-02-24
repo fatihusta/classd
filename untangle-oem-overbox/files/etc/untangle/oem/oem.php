@@ -1,6 +1,6 @@
 <?php
 
-$oem_name="Overbox";
+$oem_name="OverBOX";
 $oem_url="http://www.overbox.es";
 
 ?>
