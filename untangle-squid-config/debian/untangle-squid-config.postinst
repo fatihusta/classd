@@ -24,6 +24,7 @@ MINIMAL_SIZE=2000000 # kB
 PERCENTAGE_TO_RESERVE=0.05
 BASE_CACHE="/var/spool/squid"
 for p in /data / ; do
+  [ -d $p ] || continue
   cache=$p/$BASE_CACHE
   totalSize=$(df $p | awk 'END {print $2}')
   if [ "$totalSize" -gt $MINIMAL_SIZE ] ; then
