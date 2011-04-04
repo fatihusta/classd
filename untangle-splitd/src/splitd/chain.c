@@ -18,8 +18,8 @@
 #include "splitd/chain.h"
 #include "splitd/splitter_instance.h"
 
-#define _MARK_SHIFT  9
-#define _MARK_MASK   0xE00
+#define _MARK_SHIFT  8
+#define _MARK_MASK   0xFF00
 
 static char* _print_scores( char* scores_str, int scores_str_len, splitd_scores_t* scores );
 

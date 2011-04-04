@@ -24,7 +24,7 @@
  * work, splitd.h should be self contained. */
 #include "splitd/packet.h"
 
-#define SPLITD_MAX_UPLINKS 8
+#define SPLITD_MAX_UPLINKS 255
 
 #define SPLITD_MAX_SPLITTERS 16
 
