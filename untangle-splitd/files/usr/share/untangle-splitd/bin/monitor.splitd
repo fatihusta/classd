@@ -1,7 +1,8 @@
 #!/bin/dash
 
 mkdir -p /var/log/untangle-splitd
-exec >> /var/log/untangle-splitd/monitor.log 2>&1
+
+exec 2>&1 | logger -t untanglesplitd
 
 NAME="splitd"
 

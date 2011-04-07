@@ -75,7 +75,8 @@ start_faild()
 
 load_defaults
 mkdir -p `dirname ${FAILD_LOG_MONITOR}`
-exec >> ${FAILD_LOG_MONITOR}  2>&1
+
+exec 2>&1 | logger -t untanglesplitd
 
 trap reap_child_easy INT TERM USR1 USR2 QUIT
 
