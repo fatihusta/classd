@@ -1013,7 +1013,7 @@ Section: premium/admin
 Architecture: all
 Depends: untangle-node-ipsec
 XB-View-Position: 1031
-XB-Display-Name: IPsec
+XB-Display-Name: IPsec VPN
 XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAIAAAE9pm6aAAAABnRSTlMA/wD/AP83WBt9AAAACXBI
  WXMAAAsSAAALEgHS3X78AAAACXRFWHRDb21tZW50AACJKo0GAAAPSklEQVR4nK1YB1RTadoO2PZf
@@ -1086,8 +1086,8 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAIAAAE9pm6aAAAABnRSTlMA/wD/AP83WB
  mAiCEegHM/UAgQzdIOS3FJ1AOnh6bX/GYs8SxOn9i9kCv3ayYJELacmRnK8OZi53ylCzT1NzSFNz
  ylh++M7S43l/cyX9DUNaerLgKzCEJwuXuRUuV0DNvQiwApnCEvVT8LlQgQIEbgXL3QqWAU7CuXCJ
  W+GikySVOb3eH+CicH+zv/3/jX8CfPMEo2/j15wAAAAASUVORK5CYII=
-Description: IPsec libitem
- The IPsec libitem.
+Description: IPsec VPN libitem
+ The IPsec VPN libitem.
 
 Package: untangle-libitem-trial14-standard-package
 Section: premium/admin
@@ -2064,7 +2064,7 @@ Section: premium/admin
 Architecture: all
 Depends: untangle-node-ipsec
 XB-View-Position: 1031
-XB-Display-Name: IPsec 14-Day Trial
+XB-Display-Name: IPsec VPN 14-Day Trial
 XB-Untangle-Full-Version: untangle-libitem-ipsec
 XB-Untangle-Pkg-Type: trial
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAIAAAE9pm6aAAAABnRSTlMA/wD/AP83WBt9AAAACXBI
@@ -2138,6 +2138,6 @@ XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAIAAAE9pm6aAAAABnRSTlMA/wD/AP83WB
  mAiCEegHM/UAgQzdIOS3FJ1AOnh6bX/GYs8SxOn9i9kCv3ayYJELacmRnK8OZi53ylCzT1NzSFNz
  ylh++M7S43l/cyX9DUNaerLgKzCEJwuXuRUuV0DNvQiwApnCEvVT8LlQgQIEbgXL3QqWAU7CuXCJ
  W+GikySVOb3eH+CicH+zv/3/jX8CfPMEo2/j15wAAAAASUVORK5CYII=
-Description: IPsec libitem
- The IPsec libitem.
+Description: IPsec VPN libitem
+ The IPsec VPN libitem.
 
