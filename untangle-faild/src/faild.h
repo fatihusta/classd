@@ -21,8 +21,8 @@
 #include <json/json.h>
 #include <netinet/ether.h>
 
-#define FAILD_MAX_INTERFACES 8
-#define FAILD_MAX_INTERFACE_TESTS 8
+#define FAILD_MAX_INTERFACES 255
+#define FAILD_MAX_INTERFACE_TESTS 255
 
 #define FAILD_TEST_CLASS_NAME_SIZE  32
 #define FAILD_TEST_LIB_NAME_SIZE  32
