@@ -121,6 +121,9 @@ void faild_manager_destroy( void )
     }
 }
 
+static u_char is_active[FAILD_MAX_INTERFACES][FAILD_MAX_INTERFACE_TESTS];
+static faild_test_config_t* new_tests[FAILD_MAX_INTERFACES * FAILD_MAX_INTERFACE_TESTS];
+
 /**
  * Copies in the config to the global config
  */
@@ -132,11 +135,9 @@ int faild_manager_set_config( faild_config_t* config )
     
     int _critical_section() {
         debug( 9, "Loading new config\n" );
-
-        u_char is_active[FAILD_MAX_INTERFACES][FAILD_MAX_INTERFACE_TESTS];
-        faild_test_config_t* new_tests[FAILD_MAX_INTERFACES * FAILD_MAX_INTERFACE_TESTS];
         
         int num_new_tests = 0;
+
         bzero( is_active, sizeof( is_active ));
         bzero( new_tests, sizeof( new_tests ));
 
