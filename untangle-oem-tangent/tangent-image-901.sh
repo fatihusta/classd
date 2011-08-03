@@ -16,7 +16,7 @@ killall /usr/lib/iceweasel/firefox-bin &> /dev/null
 # create UID
 #
 echo "Creating UID..."
-/usr/share/untangle-/bin/ut-createUID
+/usr/share/untangle/bin/ut-createUID
 #cp /usr/share/untangle/bin/ut-activate /tmp/
 #sed -i 's/.*ut-register.*//' /tmp/ut-activate
 #/tmp/ut-activate
