@@ -71,7 +71,7 @@ sleep 5
 OTHER="untangle-support-agent"
 LIBITEMS="untangle-libitem-cpd untangle-libitem-protofilter untangle-libitem-reporting untangle-libitem-shield untangle-libitem-sitefilter untangle-libitem-bandwidth"
 RACK_NODES="untangle-node-protofilter untangle-node-sitefilter untangle-node-bandwidth"
-SERVICE_NODES="untangle-node-reporting untangle-node-reporting untangle-node-cpd untangle-node-shield"
+SERVICE_NODES="untangle-node-reporting untangle-node-cpd untangle-node-shield"
 
 echo "apt-get install --yes --force-yes $OTHER"
 apt-get install --yes --force-yes $OTHER
