@@ -38,10 +38,17 @@ is_queue_open()
 
 insert_splitd_iptables_rules()
 {
-    ## Using alpaca-redirect because this guarantees this occurs
-    ## before a redirect which is a terminating target.  Has to occur in NAT Prerouting
-    ## because the decision must be made before routing.
-    ${IPTABLES} -t nat -I alpaca-redirect 1 -m addrtype --dst-type unicast -j NFQUEUE --queue-num ${UNTANGLE_SPLITD_QUEUE_NUM}
+    # Only capture traffic coming from non-WAN interfaces
+    # Insert one rule for each non-WAN
+    /usr/share/untangle-net-alpaca/scripts/uvm/netConfig.py non_wan_idx | while read intfId ; do
+        local t_mark=$(( $intfId ))
+    	local t_mask=$(( ${MASK_SRC_INTERFACE} ))
+	
+        ## Using alpaca-redirect because this guarantees this occurs
+        ## before a redirect which is a terminating target.  Has to occur in NAT Prerouting
+        ## because the decision must be made before routing.
+	${IPTABLES} -t nat -I alpaca-redirect 1 -m mark --mark ${t_mark}/${t_mask} -m addrtype --dst-type unicast -j NFQUEUE --queue-num ${UNTANGLE_SPLITD_QUEUE_NUM}
+    done	
 }
 
 
