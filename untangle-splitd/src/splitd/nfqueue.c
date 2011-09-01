@@ -366,8 +366,7 @@ int  splitd_nfqueue_set_verdict( splitd_packet_t* packet, int verdict )
  * This only has an affect for the verdict NF_ACCEPT.
  * @param mark The mark to set the packet to, or unused if set_mark is zero.
  */
-int  splitd_nfqueue_set_verdict_mark( splitd_packet_t* packet, int verdict,
-                                            int set_mark, u_int32_t mark )
+int  splitd_nfqueue_set_verdict_mark( splitd_packet_t* packet, int verdict, int set_mark, u_int32_t mark )
 {
     if ( packet == NULL ) return errlogargs();
 
