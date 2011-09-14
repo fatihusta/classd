@@ -1,4 +1,4 @@
-striSource: untangle-libitem-premium
+Source: untangle-libitem-premium
 Section: premium/admin
 Priority: standard
 Maintainer: Sebastien Delafond <seb@untangle.com>
