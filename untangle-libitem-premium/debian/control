@@ -10,7 +10,7 @@ Package: untangle-libitem-standard-package
 Section: premium/admin
 Architecture: all
 Depends: untangle-libitem-boxbackup, untangle-libitem-support, untangle-libitem-adconnector, untangle-libitem-policy, untangle-libitem-branding, untangle-libitem-sitefilter, untangle-libitem-shield, untangle-libitem-spyware, untangle-libitem-clam, untangle-libitem-protofilter, untangle-libitem-firewall, untangle-libitem-spamassassin, untangle-libitem-phish, untangle-libitem-openvpn, untangle-libitem-ips, untangle-libitem-reporting, untangle-libitem-adblocker, untangle-libitem-cpd
-XB-View-Position: 11
+XB-View-Position: 5
 XB-Display-Name: Standard Package
 XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: R0lGODlhKgAqAPcAAAAAAL6KALy9xo56Q3ZcK3Z8odHEIkhKanV4kVpchVdaczw+SO7usp17Ccei
@@ -61,7 +61,7 @@ Depends: untangle-libitem-standard-package, untangle-libitem-commtouchav, untang
 Conflicts: untangle-libitem-superbundle-package
 Provides: untangle-libitem-superbundle-package
 Replaces: untangle-libitem-superbundle-package
-XB-View-Position: 12
+XB-View-Position: 6
 XB-Display-Name: Premium Package
 XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: R0lGODlhKgAqAPcAAAAAALKHAKurtltcVUpKSsLCO5RsADQ2TcbGxmttiHxdGrOt
