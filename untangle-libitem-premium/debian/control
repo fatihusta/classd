@@ -57,7 +57,7 @@ Description: Untangle Standard Package
 Package: untangle-libitem-premium-package
 Section: premium/admin
 Architecture: all
-Depends: untangle-libitem-standard-package, untangle-libitem-commtouchav, untangle-libitem-sitefilter, untangle-libitem-bandwidth, untangle-libitem-webcache, untangle-libitem-ipsec, untangle-libitem-commtouch, untangle-libitem-faild, untangle-libitem-splitd, untangle-libitem-boxbackup, untangle-libitem-adconnector, untangle-libitem-policy, untangle-libitem-support, untangle-libitem-branding, untangle-libitem-shield, untangle-libitem-spyware, untangle-libitem-clam, untangle-libitem-protofilter, untangle-libitem-firewall, untangle-libitem-spamassassin, untangle-libitem-phish, untangle-libitem-openvpn, untangle-libitem-ips, untangle-libitem-reporting, untangle-libitem-adblocker, untangle-libitem-cpd
+Depends: untangle-libitem-standard-package, untangle-libitem-commtouchav, untangle-libitem-commtouchas, untangle-libitem-sitefilter, untangle-libitem-bandwidth, untangle-libitem-webcache, untangle-libitem-ipsec, untangle-libitem-commtouch, untangle-libitem-faild, untangle-libitem-splitd, untangle-libitem-boxbackup, untangle-libitem-adconnector, untangle-libitem-policy, untangle-libitem-support, untangle-libitem-branding, untangle-libitem-shield, untangle-libitem-spyware, untangle-libitem-clam, untangle-libitem-protofilter, untangle-libitem-firewall, untangle-libitem-phish, untangle-libitem-openvpn, untangle-libitem-ips, untangle-libitem-reporting, untangle-libitem-adblocker, untangle-libitem-cpd
 Conflicts: untangle-libitem-superbundle-package
 Provides: untangle-libitem-superbundle-package
 Replaces: untangle-libitem-superbundle-package
@@ -158,6 +158,7 @@ Provides: untangle-libitem-trial14-kav
 XB-View-Position: 29
 XB-Display-Name: Kaspersky Virus Blocker
 XB-Untangle-Pkg-Type: lib_item
+XB-Untangle-Hide: true
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAAAXNSR0IArs4c
  6QAAA7xJREFUWMPN2U1PG0ccBvBnZ8awpoCXJsQuq1ZJFtMkh+YQca1UCdrm
  jUocEJeSVL0UkzSfou0XqKpKqXqCBnAbqcWmVe18hBxSRWkTzCksXgNeCdmp
@@ -1233,7 +1234,7 @@ Description: Untangle Standard Package 14-Day Trial
 Package: untangle-libitem-trial14-premium-package
 Section: premium/admin
 Architecture: all
-Depends: untangle-libitem-trial14-commtouchav, untangle-libitem-trial14-sitefilter, untangle-libitem-trial14-faild, untangle-libitem-trial14-splitd, untangle-libitem-trial14-boxbackup, untangle-libitem-trial14-adconnector, untangle-libitem-trial14-policy, untangle-libitem-trial14-support, untangle-libitem-trial14-bandwidth, untangle-libitem-trial14-webcache, untangle-libitem-trial14-ipsec, untangle-libitem-shield, untangle-libitem-spyware, untangle-libitem-clam, untangle-libitem-protofilter, untangle-libitem-firewall, untangle-libitem-spamassassin, untangle-libitem-phish, untangle-libitem-openvpn, untangle-libitem-ips, untangle-libitem-reporting, untangle-libitem-adblocker, untangle-libitem-cpd
+Depends: untangle-libitem-trial14-commtouchav, untangle-libitem-trial14-commtouchas, untangle-libitem-trial14-sitefilter, untangle-libitem-trial14-faild, untangle-libitem-trial14-splitd, untangle-libitem-trial14-boxbackup, untangle-libitem-trial14-adconnector, untangle-libitem-trial14-policy, untangle-libitem-trial14-support, untangle-libitem-trial14-bandwidth, untangle-libitem-trial14-webcache, untangle-libitem-trial14-ipsec, untangle-libitem-shield, untangle-libitem-spyware, untangle-libitem-clam, untangle-libitem-protofilter, untangle-libitem-firewall, untangle-libitem-phish, untangle-libitem-openvpn, untangle-libitem-ips, untangle-libitem-reporting, untangle-libitem-adblocker, untangle-libitem-cpd
 Conflicts: untangle-libitem-trial14-superbundle-package
 Provides: untangle-libitem-trial14-superbundle-package
 Replaces: untangle-libitem-trial14-superbundle-package
@@ -1336,6 +1337,7 @@ XB-View-Position: 29
 XB-Display-Name: Kaspersky Virus Blocker 14-Day Trial
 XB-Untangle-Full-Version: untangle-libitem-kav
 XB-Untangle-Pkg-Type: trial
+XB-Untangle-Hide: true
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAAAXNSR0IArs4c
  6QAAA7xJREFUWMPN2U1PG0ccBvBnZ8awpoCXJsQuq1ZJFtMkh+YQca1UCdrm
  jUocEJeSVL0UkzSfou0XqKpKqXqCBnAbqcWmVe18hBxSRWkTzCksXgNeCdmp
