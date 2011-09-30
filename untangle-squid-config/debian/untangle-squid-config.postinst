@@ -30,10 +30,10 @@ for p in /data / ; do
   if [ "$totalSize" -gt $MINIMAL_SIZE ] ; then
     cacheSize=$( echo "scale = 0 ; ${PERCENTAGE_TO_RESERVE}*${totalSize}/1000" | bc -l)
     if [ $p != / ] ; then
-      echo mkdir -p $cache
-      echo mv $BASE_CACHE/* $cache/
-      echo rm -r $BASE_CACHE
-      echo ln -sf $cache $BASE_CACHE
+      mkdir -p $cache
+      mv $BASE_CACHE/* $cache/
+      rm -r $BASE_CACHE
+      ln -sf $cache $BASE_CACHE
     fi
     break
   fi
