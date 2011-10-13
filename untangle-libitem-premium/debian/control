@@ -62,7 +62,7 @@ Depends: untangle-libitem-commtouchav, untangle-libitem-commtouchas, untangle-li
 Conflicts: untangle-libitem-superbundle-package
 Provides: untangle-libitem-superbundle-package
 Replaces: untangle-libitem-superbundle-package
-XB-View-Position: 6
+XB-View-Position: 4
 XB-Display-Name: Premium Package
 XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: R0lGODlhKgAqAPcAAAAAALKHAKurtltcVUpKSsLCO5RsADQ2TcbGxmttiHxdGrOt
