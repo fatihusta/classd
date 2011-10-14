@@ -32,6 +32,7 @@ for p in /data / ; do
     if [ $p != / ] ; then
       mkdir -p $cache
       mv $BASE_CACHE/* $cache/
+      chown -R proxy:proxy $cache
       rm -r $BASE_CACHE
       ln -sf $cache $BASE_CACHE
     fi
