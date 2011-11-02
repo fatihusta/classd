@@ -403,9 +403,9 @@ Description: AntiSpam Booster
 Package: untangle-libitem-commtouchas
 Architecture: all
 Depends: untangle-node-commtouchas
-Conflicts: untangle-libitem-commtouch
-Provides: untangle-libitem-commtouch, untangle-libitem-trial14-commtouchas
-Replaces: untangle-libitem-commtouch
+Conflicts: untangle-libitem-commtouch, untangle-node-commtouch
+Provides: untangle-libitem-commtouch, untangle-libitem-trial14-commtouchas, untangle-node-commtouch
+Replaces: untangle-libitem-commtouch, untangle-node-commtouch
 XB-View-Position: 60
 XB-Display-Name: Spam Blocker
 XB-Untangle-Pkg-Type: lib_item
