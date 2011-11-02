@@ -58,7 +58,7 @@ Description: Untangle Standard Package
 Package: untangle-libitem-premium-package
 Section: premium/admin
 Architecture: all
-Depends: untangle-libitem-commtouchav, untangle-libitem-commtouchas, untangle-libitem-sitefilter, untangle-libitem-bandwidth, untangle-libitem-webcache, untangle-libitem-ipsec, untangle-libitem-commtouch, untangle-libitem-faild, untangle-libitem-splitd, untangle-libitem-boxbackup, untangle-libitem-adconnector, untangle-libitem-policy, untangle-libitem-support, untangle-libitem-branding, untangle-libitem-shield, untangle-libitem-spyware, untangle-libitem-clam, untangle-libitem-protofilter, untangle-libitem-firewall, untangle-libitem-phish, untangle-libitem-openvpn, untangle-libitem-ips, untangle-libitem-reporting, untangle-libitem-adblocker, untangle-libitem-cpd
+Depends: untangle-libitem-commtouchav, untangle-libitem-commtouchas, untangle-libitem-sitefilter, untangle-libitem-bandwidth, untangle-libitem-webcache, untangle-libitem-ipsec, untangle-libitem-faild, untangle-libitem-splitd, untangle-libitem-boxbackup, untangle-libitem-adconnector, untangle-libitem-policy, untangle-libitem-support, untangle-libitem-branding, untangle-libitem-shield, untangle-libitem-spyware, untangle-libitem-clam, untangle-libitem-protofilter, untangle-libitem-firewall, untangle-libitem-phish, untangle-libitem-openvpn, untangle-libitem-ips, untangle-libitem-reporting, untangle-libitem-adblocker, untangle-libitem-cpd
 Conflicts: untangle-libitem-superbundle-package
 Provides: untangle-libitem-superbundle-package
 Replaces: untangle-libitem-superbundle-package
