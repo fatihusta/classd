@@ -310,7 +310,7 @@ Description: Web Filter
 Package: untangle-libitem-commtouch
 Section: premium/admin
 Architecture: all
-Depends: untangle-libitem-spamassassin, untangle-node-commtouch
+Depends: untangle-libitem-spamassassin, untangle-node-commtouch, untangle-libitem-commtouchas
 XB-View-Position: 60
 XB-Display-Name: AntiSpam Booster
 XB-Untangle-Pkg-Type: lib_item
