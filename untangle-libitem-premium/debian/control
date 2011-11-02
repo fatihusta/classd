@@ -154,7 +154,7 @@ Description: Untangle Professional Package
 Package: untangle-libitem-kav
 Section: premium/admin
 Architecture: all
-Depends: untangle-node-kav
+Depends: untangle-node-kav, untangle-libitem-commtouchav
 Provides: untangle-libitem-trial14-kav
 XB-View-Position: 29
 XB-Display-Name: Kaspersky Virus Blocker
