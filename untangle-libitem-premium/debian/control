@@ -1109,7 +1109,7 @@ Package: untangle-libitem-classd
 Section: premium/admin
 Architecture: all
 Depends: untangle-node-classd
-XB-View-Position: 81
+XB-View-Position: 99
 XB-Display-Name: Application Control
 XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
