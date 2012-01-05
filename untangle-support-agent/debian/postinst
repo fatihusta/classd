@@ -36,8 +36,11 @@ fi
 
 perl -npe 's/\+NAME\+/'"$UID_ID"'/ ; s/\+CHANNEL\+/'"$CHANNEL"'/' $RBOT_CONF_FILE.template >| $RBOT_CONF_FILE
 
+rm -fr /home/rbot/.rbot/logs
+
 if pidof /usr/sbin/sshd > /dev/null ; then
   ourInit untangle-support-agent stop
+  rm -fr /home/rbot/.rbot/logs
   ourInit untangle-support-agent start
 fi
 
