@@ -1,5 +1,5 @@
 #!/bin/dash
 
-/etc/init.d/untangle-net-alpaca-iptables restart
+/etc/init.d/untangle-net-alpaca-iptables restart splitd
 
 exit 0
