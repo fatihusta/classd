@@ -1,8 +1,8 @@
-#!/bin/dash
+#!/bin/bash
 
 mkdir -p /var/log/untangle-splitd
 
-exec 2>&1 | logger -t untanglesplitd
+exec &> >(logger -t untanglesplitd)
 
 NAME="splitd"
 
