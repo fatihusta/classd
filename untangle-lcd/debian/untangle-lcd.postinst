@@ -8,7 +8,7 @@ ourInit() {
     fi
 }
 
-if [ -x "/etc/init.d/untangle-ctasd" ]; then
+if [ -x "/etc/init.d/untangle-lcd" ]; then
     update-rc.d untangle-lcd defaults 40 > /dev/null
     ourInit untangle-lcd restart
 fi

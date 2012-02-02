@@ -33,7 +33,7 @@ start()
     fi
 
     log_progress_msg "untangle-lcd"    
-    start-stop-daemon -m --pidfile ${PID_FILE} --name ${MONITOR} --start --background --startas ${DAEMON_SCRIPT}
+    start-stop-daemon -m --pidfile ${PID_FILE} --name ${DESC} --start --background --startas ${DAEMON_SCRIPT}
 
     log_end_msg 0	
 }

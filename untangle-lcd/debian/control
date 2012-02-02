@@ -7,6 +7,6 @@ Standards-Version: 3.7.2
 
 Package: untangle-lcd
 Architecture: any
-Depends: ${shlibs:Depends}, dash, libjson-ruby
+Depends: ${shlibs:Depends}, dash
 Description: The Untangle Appliance LCD driver
  The Untangle Appliance LCD driver daemon

@@ -41,32 +41,14 @@ void getoutput(char* cmd, char* output, int outputlen)
     }
 
     /* Read the output a line at a time - output it. */
-    fgets(output, outputlen-1, fp);
+    fgets(output, outputlen+1, fp);
 
-    /* end string if non-alpha-numberic characters found */
+    /* end string if control characters found */
     for ( i=0 ; i < outputlen ; i++ ) {
-        if (!isalnum(output[i]))
+        if (iscntrl(output[i]))
             output[i] = 0;
     }
     
-    /* if its a short string center it */
-    if (strlen(output)<outputlen) {
-        int spacing_len = (outputlen - strlen(output)) / 2;
-        {
-            printf("spacing_len: %i outputlen: %i\n",spacing_len, outputlen);
-            char space[spacing_len+1];
-            char orig[outputlen];
-            bzero(space,spacing_len+1);
-            memset(space,' ',spacing_len);
-            strcpy(orig, output);
-            
-            printf("short string: \"%s\"\n", output);
-            printf("centered string: \"%s%s%s\"\n", space, output, space);
-            snprintf(output, outputlen, "%s%s%s", space, orig, space);
-            printf("output: \"%s\"\n",output);
-        }
-    }
-        
     /* close */
     pclose(fp);
 
@@ -75,25 +57,25 @@ void getoutput(char* cmd, char* output, int outputlen)
 
 void showpage(int page)
 {
+    char cmd1[255];
+    char cmd2[255];
     char line1[LINE_LENGTH+1];
     char line2[LINE_LENGTH+1];
-    bzero(&line1,LINE_LENGTH+1);
-    bzero(&line2,LINE_LENGTH+1);
+
+    bzero(cmd1,255);
+    bzero(cmd2,255);
+    bzero(line1,LINE_LENGTH+1);
+    bzero(line2,LINE_LENGTH+1);
+
     printf("Showing page: %i\n",page);
-    
+
+    snprintf(cmd1,255,"/usr/share/untangle-lcd/bin/ut-lcd-page %i %i",page,1);
+    snprintf(cmd2,255,"/usr/share/untangle-lcd/bin/ut-lcd-page %i %i",page,2);
+
     Cls();
-    switch (page) {
-    case 0:
-        strncpy(line1,"*** Untangle ***",LINE_LENGTH);
-        getoutput("hostname -s", line2, LINE_LENGTH);
-        ShowMessage(line1, line2);
-        break;
-    case 1:
-        strncpy(line1,"***   Load   ***",LINE_LENGTH);
-        getoutput("cat /proc/loadavg", line2, LINE_LENGTH);
-        ShowMessage(line1, line2);
-        break;
-    }
+    getoutput(cmd1, line1, LINE_LENGTH);
+    getoutput(cmd2, line2, LINE_LENGTH);
+    ShowMessage(line1, line2);
 
     return;
 }

@@ -1,3 +1,44 @@
 #!/usr/bin/python
 
-print "*** Untangle ***"
+import sys;
+import subprocess;
+
+def center(str):
+    if (len(str) >= 16):
+        return str;
+    padding = " " * ((16 - len(str))/2)
+    return padding + str + padding
+
+def runCmd(cmd):
+    proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    std_out = proc.stdout.read();
+    ret_code = proc.wait();
+    return std_out.rstrip();
+
+
+
+
+if (len(sys.argv) < 3):
+    print "Usage ",sys.argv[0],": <page> <line>"
+    sys.exit(1);
+
+    proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    std_out = proc.stdout.read();
+ 
+page = int(sys.argv[1])
+line = int(sys.argv[2])
+
+#print "Page: ",page
+#print "Line: ",line
+
+if (page == 0):
+    if (line == 1):
+        print "*** Untangle ***"
+    else:
+        print center(runCmd("hostname -s"))
+elif (page == 1):
+    if (line == 1):
+        print "*** load ***"
+    else:
+        print center(runCmd('cat /proc/loadavg| awk \'{print $1" "$2" "$3}\''))
+    
