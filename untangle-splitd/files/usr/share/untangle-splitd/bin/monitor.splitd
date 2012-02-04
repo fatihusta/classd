@@ -1,10 +1,9 @@
-#!/bin/bash
+#!/bin/dash
 
 mkdir -p /var/log/untangle-splitd
 
-exec &> >(logger -t untanglesplitd)
-
 NAME="splitd"
+LOG="untanglesplitd"
 
 load_defaults()
 {
@@ -12,7 +11,7 @@ load_defaults()
     SPLITD_CONF_FILE="/etc/untangle-splitd/config.js"
     SPLITD_LOG_OUT="/var/log/untangle-splitd/debug.log"
     SPLITD_LOG_ERR="/var/log/untangle-splitd/error.log"
-    
+
     if [ -f /etc/default/untangle-splitd ] ; then
         . /etc/default/untangle-splitd
     fi
@@ -37,13 +36,13 @@ reap_child_easy()
 
 reap_child()
 {
-    echo "[`date`] Received Signal      (monitor: $$) (splitd: $SPLITD_PID) (sending signal: $1) "
+    echo "[`date`] Received Signal      (monitor: $$) (splitd: $SPLITD_PID) (sending signal: $1) " | logger -t ${LOG}
 
     if [ ! -z "$SPLITD_PID" ] ; then
-        echo "[`date`] Sending signal $1 to splitd ($SPLITD_PID)."
+        echo "[`date`] Sending signal $1 to splitd ($SPLITD_PID)." | logger -t ${LOG}
         kill -$1 ${SPLITD_PID}
         wait ${SPLITD_PID}
-        echo "[`date`] SplitD Stopped    (monitor: $$) (splitd: $SPLITD_PID)"
+        echo "[`date`] SplitD Stopped    (monitor: $$) (splitd: $SPLITD_PID)" | logger -t ${LOG}
 
         /etc/init.d/untangle-net-alpaca-iptables restart monitor.splitd
     fi
@@ -54,10 +53,10 @@ reap_child()
 start_splitd()
 {
     load_defaults
-    
+
     local t_args
     t_args="${SPLITD_ARGS}"
-    
+
     test -n "${SPLITD_BIND_PORT}" && t_args="${t_args} -p ${SPLITD_BIND_PORT}"
     test -n "${SPLITD_CONF_FILE}" && t_args="${t_args} -c ${SPLITD_CONF_FILE}"
     test -n "${SPLITD_LOG_OUT}" && t_args="${t_args} -o ${SPLITD_LOG_OUT}"
@@ -65,21 +64,22 @@ start_splitd()
     test -n "${SPLITD_DEBUG_LEVEL}" && t_args="${t_args} -l ${SPLITD_DEBUG_LEVEL}"
     test -n "${SPLITD_LIB_DIR}" && t_args="${t_args} -t ${SPLITD_LIB_DIR}"
     test -n "${SPLITD_QUEUE_NUM}" && t_args="${t_args} -q ${SPLITD_QUEUE_NUM}"
-    
+
     /usr/bin/${NAME} ${t_args} &
     SPLITD_PID=$!
-    echo "[`date`] Started SplitD    (monitor: $$) (splitd: $SPLITD_PID)"
+    echo "[`date`] Started SplitD    (monitor: $$) (splitd: $SPLITD_PID)" | logger -t ${LOG}
 }
 
 trap reap_child_easy INT TERM USR1 USR2 QUIT
 
 while ( true ) ;  do
-    echo "[`date`] Starting SplitD"
+    echo "[`date`] Starting SplitD" | logger -t ${LOG}
 
     start_splitd
     sleep 2
-    echo "[`date`] Monitoring SplitD (monitor: $$) (splitd: $SPLITD_PID)"
+    echo "[`date`] Monitoring SplitD (monitor: $$) (splitd: $SPLITD_PID)" | logger -t ${LOG}
     wait $SPLITD_PID
 
-    echo "[`date`] SplitD Died!      (monitor: $$) (splitd: $SPLITD_PID)"
+    echo "[`date`] SplitD Died!      (monitor: $$) (splitd: $SPLITD_PID)" | logger -t ${LOG}
 done
+
