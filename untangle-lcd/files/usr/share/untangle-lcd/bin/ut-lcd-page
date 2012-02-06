@@ -38,7 +38,27 @@ if (page == 0):
         print center(runCmd("hostname -s"))
 elif (page == 1):
     if (line == 1):
-        print "*** load ***"
+        print "*** CPU Load ***"
     else:
-        print center(runCmd('cat /proc/loadavg| awk \'{print $1" "$2" "$3}\''))
+        cpu1f = float(runCmd('cat /proc/loadavg| awk \'{print $1}\''))
+        cpuCount = float(runCmd('cat /proc/loadavg| grep processor | wc -l'))
+        cpuLoadText = "low"
+        if (cpu1f - cpuCount > 1.0):
+            cpuLoadText = "medium"
+        if (cpu1f - cpuCount > 4.0):
+            cpuLoadText = "high"
+        print center(cpuLoadText + " (" + str(cpu1f) + ")")
+elif (page == 2):
+    if (line == 1):
+        print "***  Memory  ***"
+    else:
+        used = float(runCmd('free -m | grep \'buffers/cache\' | awk \'{print $3}\''))
+        free = float(runCmd('free -m | grep \'buffers/cache\' | awk \'{print $4}\''))
+        totalGigs = str(int(round((used + free)/1000))) + " Gb"
+        percentFree = str(int(round((free/(used + free))*100.0))) + "%"
+        print center(totalGigs + " " + percentFree + " free")
+
+        
+
+                       
     
