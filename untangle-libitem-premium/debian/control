@@ -1305,7 +1305,7 @@ Description: IPsec VPN libitem
 Package: untangle-libitem-trial14-standard-package
 Section: premium/admin
 Architecture: all
-Depends: untangle-libitem-trial14-boxbackup, untangle-libitem-trial14-support, untangle-libitem-trial14-adconnector, untangle-libitem-trial14-policy, untangle-libitem-lite-package, untangle-libitem-trial14-sitefilter
+Depends: untangle-libitem-trial14-boxbackup, untangle-libitem-trial14-support, untangle-libitem-trial14-adconnector, untangle-libitem-trial14-policy, untangle-libitem-lite-package, untangle-libitem-trial14-sitefilter, untangle-libitem-trial14-ipsec
 XB-View-Position: 11
 XB-Display-Name: Standard Package 14-Day Trial
 XB-Untangle-Full-Version: untangle-libitem-standard-package
