@@ -1,7 +1,7 @@
 FILES = src/ezio 
 
 INCLUDEDIR = /usr/include
-CFLAGS =  -O2 -I$(INCLUDEDIR)
+CFLAGS =  -g -O0 -I$(INCLUDEDIR)
 
 all: $(FILES)
 

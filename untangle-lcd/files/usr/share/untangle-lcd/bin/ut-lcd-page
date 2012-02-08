@@ -2,6 +2,7 @@
 
 import sys;
 import subprocess;
+import simplejson as json
 
 def center(str):
     if (len(str) >= 16):
@@ -15,8 +16,21 @@ def runCmd(cmd):
     ret_code = proc.wait();
     return std_out.rstrip();
 
-
-
+def interfaceIp(intfName):
+    netconf = json.loads(open('/etc/untangle-net-alpaca/netConfig.js', 'r').read())
+    if netconf == None:
+        exit(1);
+    if netconf['interfaceList'] == None:
+        exit(1);
+    if netconf['interfaceList']['list'] == None:
+        exit(1);
+    for intfConf in netconf['interfaceList']['list']:
+        if (intfConf["name"] == None or intfConf["name"] != intfName):
+            continue;
+        if (intfConf["primaryAddressStr"] != None):
+            return intfConf["primaryAddressStr"].split("/")[0]
+        else:
+            return intfConf["configType"]
 
 if (len(sys.argv) < 3):
     print "Usage ",sys.argv[0],": <page> <line>"
@@ -57,8 +71,24 @@ elif (page == 2):
         totalGigs = str(int(round((used + free)/1000))) + " Gb"
         percentFree = str(int(round((free/(used + free))*100.0))) + "%"
         print center(totalGigs + " " + percentFree + " free")
-
-        
+elif (page == 3):
+    if (line == 1):
+        print "***   Disk   ***"
+    else:
+        diskSize = runCmd('df -h / | grep \'dev\' | awk \'{print $2}\'')
+        percentUsed = float(runCmd('df -h / | grep \'dev\' | awk \'{print $5}\'').strip("%"))
+        percentFree = str(100.0 - percentUsed) + "%"
+        print center(diskSize + " " + percentFree + " free")
+elif (page == 4):
+    if (line == 1):
+        print "*** External ***"
+    else:
+        print center(interfaceIp("External"))
+elif (page == 5):
+    if (line == 1):
+        print "*** Internal ***"
+    else:
+        print center(interfaceIp("Internal"))
 
                        
     
