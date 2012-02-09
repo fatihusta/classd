@@ -89,6 +89,12 @@ elif (page == 5):
         print "*** Internal ***"
     else:
         print center(interfaceIp("Internal"))
+elif (page == 6):
+    if (line == 1):
+        print "***   UID    ***"
+    else:
+        uid = runCmd(' cat /usr/share/untangle/conf/uid | sed -e \'s/-//g\' ')
+        print center(uid)
 
                        
     
