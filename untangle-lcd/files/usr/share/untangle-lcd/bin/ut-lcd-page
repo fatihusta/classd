@@ -54,8 +54,8 @@ elif (page == 1):
     if (line == 1):
         print "*** CPU Load ***"
     else:
-        cpu1f = float(runCmd('cat /proc/loadavg| awk \'{print $1}\''))
-        cpuCount = float(runCmd('cat /proc/loadavg| grep processor | wc -l'))
+        cpu1f = float(runCmd('cat /proc/loadavg | awk \'{print $1}\''))
+        cpuCount = float(runCmd('cat /proc/cpuinfo | grep processor | wc -l'))
         cpuLoadText = "low"
         if (cpu1f - cpuCount > 1.0):
             cpuLoadText = "medium"
