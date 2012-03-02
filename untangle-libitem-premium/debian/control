@@ -151,45 +151,13 @@ XB-Desc-Icon: R0lGODlhKgAqAPcAAAAAALKHAKurtltcVUpKSsLCO5RsADQ2TcbGxmttiHxdGrOt
 Description: Untangle Professional Package
  The Untangle Professional Package Library Item.
 
-Package: untangle-libitem-kav
-Section: premium/admin
-Architecture: all
-Depends: untangle-node-kav, untangle-libitem-commtouchav
-Provides: untangle-libitem-trial14-kav
-XB-View-Position: 29
-XB-Display-Name: Kaspersky Virus Blocker
-XB-Untangle-Pkg-Type: lib_item
-XB-Untangle-Hide: true
-XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAAAXNSR0IArs4c
- 6QAAA7xJREFUWMPN2U1PG0ccBvBnZ8awpoCXJsQuq1ZJFtMkh+YQca1UCdrm
- jUocEJeSVL0UkzSfou0XqKpKqXqCBnAbqcWmVe18hBxSRWkTzCksXgNeCdmp
- 2Rd7c3CMYwjYu8wCI/my3pn56fnPjFa7guM4Do55EwRBYABQLBaPNdRxHIdt
- bm6CUorOzk4AQCmxAOPhw6adA2dP463Pbza9z372FMV791zj2HvvovOLL7dD
- ZKqqQpbl7RtKf6VR/Hm66UAdH33YFGo/ewpt6DNUNtZdIWn4JCKpZMM1ksvl
- YJomCoUC13LZy8vQhkY8IcPpJGh/f2PCuq6jXC5D13VQRvkhh6+hsrHhDhnp
- RTiVAFP6dy8Fy7JQqVRgWRZsy+aH1NY8IJNgivLG/wn3cvuA5Aq1lzPQhq/6
- guQGrSe57guSC7ScyUAbuuor8kBQBw7KmQyyw9dQyfmLBADmudzrG8h+fN0b
- Mp0EO6u46ucZaj3+13Wf7SRdIrkfT/si33mVpKJ46k8ODekxyUOD8kD6DqUn
- TyD89wLI6TP4ZWYG5XL5+EFp79sIP1gAOaPg9lQMd6YmcSv2lWcs8Q2ZToAo
- UXw9FcOvc7NgjOF+PI7bsUlPWO5QcqqOvHMrhvjcLAipTkMIwW/xeU/JMt7I
- SKqe5PzcLChpzIIQgvvxOADg+x9+BKX0cBN9HVlLcidyJ3avZLPZVfx09y5/
- 6E7k/Gy93Hv22QObza5i5MqnePLkMd/S15As+j6++/ablpB7LYO1tRyuX/4E
- 6ooKCAI/6OtIAJiMTeHPxUUs/df6c0ANaxoG/nn0qIrkuUZ3IgFAkiT8kUgi
- eu68u7EIwWIigZXnz/lupjchD4rlvuv3Q/qJdQWlp04gkkrui/QLS9wgw6kE
- WHSg5cF5Yom7JAdcT1DDDpy/4C+0hqTRqOdJJEnC7wsJnLvgHcuaItOLu15Y
- eWkvXhQP9CKOHQZSVVcwcuUyVlWVZ+kFkEgvwg+ODxIA2NbWFhzHgWmaMAwD
- 7XK4unEUhcuxMjM9jUuDg7g0OOiq38UPLjZC8/k8bNuGrusQBAHdExP4n1JA
- 07hAJ27cbP2cphSiKKKrq2t3orquwzRNZDIZFAoFiKKIQCCAo2iUUnR0dECS
- JEiShO7u7jpU0zRYloWlpSXk83kEg0Ewxo4E2tbWBlEUEQqF0NfXB0mS0NPT
- U4WWSiVYloWxsTFQSlt+lvSrCYKAQCCw/TMMo3p9dHS04YNYe3v7kUKDwSBC
- oRBkWYYsyxgfH4cgCP0vAfn5oDLGa82iAAAAAElFTkSuQmCC
-Description: Untangle Kaspersky Virus Blocker
- The Untangle Kaspersky Virus Blocker Library Item.
-
 Package: untangle-libitem-commtouchav
 Section: premium/admin
 Architecture: all
 Depends: untangle-node-commtouchav
+Conflicts: untangle-libitem-kav
+Provides: untangle-libitem-kav
+Replaces: untangle-libitem-kav
 XB-View-Position: 30
 XB-Display-Name: Virus Blocker
 XB-Untangle-Pkg-Type: lib_item
@@ -1449,45 +1417,13 @@ XB-Desc-Icon: R0lGODlhKgAqAPcAAAAAALKHAKurtltcVUpKSsLCO5RsADQ2TcbGxmttiHxdGrOt
 Description: Untangle Professional Packages 14-Day Trial
  The Untangle Professional Package 14-Day Trial Library Item.
 
-Package: untangle-libitem-trial14-kav
-Section: premium/admin
-Architecture: all
-Depends: untangle-node-kav
-XB-View-Position: 29
-XB-Display-Name: Kaspersky Virus Blocker 14-Day Trial
-XB-Untangle-Full-Version: untangle-libitem-kav
-XB-Untangle-Pkg-Type: trial
-XB-Untangle-Hide: true
-XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAAAXNSR0IArs4c
- 6QAAA7xJREFUWMPN2U1PG0ccBvBnZ8awpoCXJsQuq1ZJFtMkh+YQca1UCdrm
- jUocEJeSVL0UkzSfou0XqKpKqXqCBnAbqcWmVe18hBxSRWkTzCksXgNeCdmp
- 2Rd7c3CMYwjYu8wCI/my3pn56fnPjFa7guM4Do55EwRBYABQLBaPNdRxHIdt
- bm6CUorOzk4AQCmxAOPhw6adA2dP463Pbza9z372FMV791zj2HvvovOLL7dD
- ZKqqQpbl7RtKf6VR/Hm66UAdH33YFGo/ewpt6DNUNtZdIWn4JCKpZMM1ksvl
- YJomCoUC13LZy8vQhkY8IcPpJGh/f2PCuq6jXC5D13VQRvkhh6+hsrHhDhnp
- RTiVAFP6dy8Fy7JQqVRgWRZsy+aH1NY8IJNgivLG/wn3cvuA5Aq1lzPQhq/6
- guQGrSe57guSC7ScyUAbuuor8kBQBw7KmQyyw9dQyfmLBADmudzrG8h+fN0b
- Mp0EO6u46ucZaj3+13Wf7SRdIrkfT/si33mVpKJ46k8ODekxyUOD8kD6DqUn
- TyD89wLI6TP4ZWYG5XL5+EFp79sIP1gAOaPg9lQMd6YmcSv2lWcs8Q2ZToAo
- UXw9FcOvc7NgjOF+PI7bsUlPWO5QcqqOvHMrhvjcLAipTkMIwW/xeU/JMt7I
- SKqe5PzcLChpzIIQgvvxOADg+x9+BKX0cBN9HVlLcidyJ3avZLPZVfx09y5/
- 6E7k/Gy93Hv22QObza5i5MqnePLkMd/S15As+j6++/ablpB7LYO1tRyuX/4E
- 6ooKCAI/6OtIAJiMTeHPxUUs/df6c0ANaxoG/nn0qIrkuUZ3IgFAkiT8kUgi
- eu68u7EIwWIigZXnz/lupjchD4rlvuv3Q/qJdQWlp04gkkrui/QLS9wgw6kE
- WHSg5cF5Yom7JAdcT1DDDpy/4C+0hqTRqOdJJEnC7wsJnLvgHcuaItOLu15Y
- eWkvXhQP9CKOHQZSVVcwcuUyVlWVZ+kFkEgvwg+ODxIA2NbWFhzHgWmaMAwD
- 7XK4unEUhcuxMjM9jUuDg7g0OOiq38UPLjZC8/k8bNuGrusQBAHdExP4n1JA
- 07hAJ27cbP2cphSiKKKrq2t3orquwzRNZDIZFAoFiKKIQCCAo2iUUnR0dECS
- JEiShO7u7jpU0zRYloWlpSXk83kEg0Ewxo4E2tbWBlEUEQqF0NfXB0mS0NPT
- U4WWSiVYloWxsTFQSlt+lvSrCYKAQCCw/TMMo3p9dHS04YNYe3v7kUKDwSBC
- oRBkWYYsyxgfH4cgCP0vAfn5oDLGa82iAAAAAElFTkSuQmCC
-Description: Untangle Kaspersky Virus Blocker 14-Day Trial
- The Untangle Kaspersky Virus Blocker 14-Day Trial Library Item.
-
 Package: untangle-libitem-trial14-commtouchav
 Section: premium/admin
 Architecture: all
 Depends: untangle-node-commtouchav
+Conflicts: untangle-libitem-trial14-kav
+Provides: untangle-libitem-trial14-kav
+Replaces: untangle-libitem-trial14-kav
 XB-View-Position: 30
 XB-Display-Name: Kaspersky Virus Blocker 14-Day Trial
 XB-Untangle-Full-Version: untangle-libitem-commtouchav
