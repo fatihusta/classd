@@ -9,7 +9,7 @@ Standards-Version: 3.8.0
 Package: untangle-libitem-standard-package
 Section: premium/admin
 Architecture: all
-Depends: untangle-libitem-boxbackup, untangle-libitem-support, untangle-libitem-adconnector, untangle-libitem-policy, untangle-libitem-branding, untangle-libitem-sitefilter, untangle-libitem-ipsec, untangle-libitem-shield, untangle-libitem-spyware, untangle-libitem-clam, untangle-libitem-protofilter, untangle-libitem-firewall, untangle-libitem-spamassassin, untangle-libitem-phish, untangle-libitem-openvpn, untangle-libitem-ips, untangle-libitem-reporting, untangle-libitem-adblocker, untangle-libitem-cpd
+Depends: untangle-libitem-boxbackup, untangle-libitem-support, untangle-libitem-adconnector, untangle-libitem-policy, untangle-libitem-branding, untangle-libitem-sitefilter, untangle-libitem-classd, untangle-libitem-ipsec, untangle-libitem-shield, untangle-libitem-spyware, untangle-libitem-clam, untangle-libitem-protofilter, untangle-libitem-firewall, untangle-libitem-spamassassin, untangle-libitem-phish, untangle-libitem-openvpn, untangle-libitem-ips, untangle-libitem-reporting, untangle-libitem-adblocker, untangle-libitem-cpd
 XB-View-Position: 5
 XB-Display-Name: Standard Package
 XB-Untangle-Hide: untangle-libitem-premium-package
