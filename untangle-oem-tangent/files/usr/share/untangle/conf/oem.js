@@ -1,0 +1,6 @@
+{
+    javaClass: "com.untangle.uvm.OemSettings",
+    oemName: "WebHawk",
+    oemUrl: "http://w3hawk.com",
+    hiddenLibitems: "untangle-libitem-router,untangle-libitem-splitd,untangle-libitem-trial14-splitd,untangle-libitem-commtouch,untangle-libitem-trial14-commtouch,untangle-libitem-webfilter,untangle-libitem-lite-package,untangle-libitem-standard-package,untangle-libitem-trial14-standard-package,untangle-libitem-premium-package,untangle-libitem-trial14-premium-package,untangle-libitem-commtouch,untangle-libitem-trial14-commtouch,untangle-libitem-adblocker,untangle-libitem-clam,untangle-libitem-firewall,untangle-libitem-ips,untangle-libitem-opensource-package,untangle-libitem-openvpn,untangle-libitem-phish,untangle-libitem-spamassassin,untangle-libitem-spyware,untangle-libitem-adconnector,untangle-libitem-trial14-adconnector,,untangle-libitem-boxbackup,untangle-libitem-branding,untangle-libitem-faild,untangle-libitem-trial14-faild,untangle-libitem-kav,untangle-libitem-trial14-kav,untangle-libitem-policy,untangle-libitem-trial14-policy,untangle-libitem-splitd,untangle-libitem-trial14-splitd,untangle-libitem-support,untangle-libitem-webcache,untangle-libitem-trial14-webcache"
+}
