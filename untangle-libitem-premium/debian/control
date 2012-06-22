@@ -155,9 +155,6 @@ Package: untangle-libitem-commtouchav
 Section: premium/admin
 Architecture: all
 Depends: untangle-node-commtouchav
-Conflicts: untangle-libitem-kav
-Provides: untangle-libitem-kav
-Replaces: untangle-libitem-kav
 XB-View-Position: 30
 XB-Display-Name: Virus Blocker
 XB-Untangle-Pkg-Type: lib_item
