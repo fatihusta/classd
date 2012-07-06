@@ -1418,9 +1418,6 @@ Package: untangle-libitem-trial14-commtouchav
 Section: premium/admin
 Architecture: all
 Depends: untangle-node-commtouchav
-Conflicts: untangle-libitem-trial14-kav
-Provides: untangle-libitem-trial14-kav
-Replaces: untangle-libitem-trial14-kav
 XB-View-Position: 30
 XB-Display-Name: Kaspersky Virus Blocker 14-Day Trial
 XB-Untangle-Full-Version: untangle-libitem-commtouchav
