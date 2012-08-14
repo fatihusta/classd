@@ -44,4 +44,9 @@ if pidof /usr/sbin/sshd > /dev/null ; then
   ourInit untangle-support-agent start
 fi
 
+if [ -f /etc/init.d/untangle-pyconnector ] ; then
+    echo "Enabling pyconnector..."
+    /usr/sbin/update-rc.d untangle-pyconnector defaults 
+fi
+
 exit 0
