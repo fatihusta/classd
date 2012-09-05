@@ -47,6 +47,7 @@ fi
 if [ -f /etc/init.d/untangle-pyconnector ] ; then
     echo "Enabling pyconnector..."
     /usr/sbin/update-rc.d untangle-pyconnector defaults 
+    ourInit untangle-pyconnector start
 fi
 
 exit 0
