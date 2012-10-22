@@ -9,7 +9,7 @@ Standards-Version: 3.8.0
 Package: untangle-libitem-standard-package
 Section: premium/admin
 Architecture: all
-Depends: untangle-libitem-boxbackup, untangle-libitem-support, untangle-libitem-adconnector, untangle-libitem-policy, untangle-libitem-branding, untangle-libitem-sitefilter, untangle-libitem-classd, untangle-libitem-ipsec, untangle-libitem-shield, untangle-libitem-spyware, untangle-libitem-clam, untangle-libitem-protofilter, untangle-libitem-firewall, untangle-libitem-spamassassin, untangle-libitem-phish, untangle-libitem-openvpn, untangle-libitem-ips, untangle-libitem-reporting, untangle-libitem-adblocker, untangle-libitem-cpd
+Depends: untangle-libitem-boxbackup, untangle-libitem-support, untangle-libitem-adconnector, untangle-libitem-policy, untangle-libitem-branding, untangle-libitem-sitefilter, untangle-libitem-classd, untangle-libitem-ipsec, untangle-libitem-shield, untangle-libitem-spyware, untangle-libitem-clam, untangle-libitem-protofilter, untangle-libitem-firewall, untangle-libitem-spamassassin, untangle-libitem-phish, untangle-libitem-openvpn, untangle-libitem-ips, untangle-libitem-reporting, untangle-libitem-adblocker, untangle-libitem-capture
 Conflicts: untangle-libitem-trial14-standard-package
 Replaces: untangle-libitem-trial14-standard-package
 Provdies: untangle-libitem-trial14-standard-package
@@ -61,7 +61,7 @@ Description: Untangle Standard Package
 Package: untangle-libitem-premium-package
 Section: premium/admin
 Architecture: all
-Depends: untangle-libitem-commtouchav, untangle-libitem-commtouchas, untangle-libitem-sitefilter, untangle-libitem-bandwidth, untangle-libitem-webcache, untangle-libitem-classd, untangle-libitem-ipsec, untangle-libitem-faild, untangle-libitem-splitd, untangle-libitem-boxbackup, untangle-libitem-adconnector, untangle-libitem-policy, untangle-libitem-support, untangle-libitem-branding, untangle-libitem-shield, untangle-libitem-spyware, untangle-libitem-clam, untangle-libitem-protofilter, untangle-libitem-firewall, untangle-libitem-phish, untangle-libitem-openvpn, untangle-libitem-ips, untangle-libitem-reporting, untangle-libitem-adblocker, untangle-libitem-cpd
+Depends: untangle-libitem-commtouchav, untangle-libitem-commtouchas, untangle-libitem-sitefilter, untangle-libitem-bandwidth, untangle-libitem-webcache, untangle-libitem-classd, untangle-libitem-ipsec, untangle-libitem-faild, untangle-libitem-splitd, untangle-libitem-boxbackup, untangle-libitem-adconnector, untangle-libitem-policy, untangle-libitem-support, untangle-libitem-branding, untangle-libitem-shield, untangle-libitem-spyware, untangle-libitem-clam, untangle-libitem-protofilter, untangle-libitem-firewall, untangle-libitem-phish, untangle-libitem-openvpn, untangle-libitem-ips, untangle-libitem-reporting, untangle-libitem-adblocker, untangle-libitem-capture
 Conflicts: untangle-libitem-trial14-premium-package, untangle-libitem-superbundle-package
 Provides: untangle-libitem-trial14-premium-package, untangle-libitem-superbundle-package
 Replaces: untangle-libitem-trial14-premium-package, untangle-libitem-superbundle-package
