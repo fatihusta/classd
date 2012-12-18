@@ -12,7 +12,7 @@ Architecture: all
 Depends: untangle-libitem-boxbackup, untangle-libitem-support, untangle-libitem-adconnector, untangle-libitem-policy, untangle-libitem-branding, untangle-libitem-sitefilter, untangle-libitem-classd, untangle-libitem-ipsec, untangle-libitem-shield, untangle-libitem-spyware, untangle-libitem-clam, untangle-libitem-protofilter, untangle-libitem-firewall, untangle-libitem-spamassassin, untangle-libitem-phish, untangle-libitem-openvpn, untangle-libitem-ips, untangle-libitem-reporting, untangle-libitem-adblocker, untangle-libitem-capture
 Conflicts: untangle-libitem-trial14-standard-package
 Replaces: untangle-libitem-trial14-standard-package
-Provdies: untangle-libitem-trial14-standard-package
+Provides: untangle-libitem-trial14-standard-package
 XB-View-Position: 5
 XB-Display-Name: Standard Package
 XB-Untangle-Hide: untangle-libitem-premium-package
@@ -152,7 +152,7 @@ Architecture: all
 Depends: untangle-node-commtouchav
 Conflicts: untangle-libitem-trial14-commtouchav
 Replaces: untangle-libitem-trial14-commtouchav
-Provdies: untangle-libitem-trial14-commtouchav
+Provides: untangle-libitem-trial14-commtouchav
 XB-View-Position: 30
 XB-Display-Name: Virus Blocker
 XB-Untangle-Pkg-Type: lib_item
@@ -213,7 +213,7 @@ Architecture: all
 Depends: untangle-node-sitefilter
 Conflicts: untangle-libitem-trial14-sitefilter
 Replaces: untangle-libitem-trial14-sitefilter
-Provdies: untangle-libitem-trial14-sitefilter
+Provides: untangle-libitem-trial14-sitefilter
 XB-View-Position: 10
 XB-Display-Name: Web Filter
 XB-Untangle-Pkg-Type: lib_item
@@ -367,7 +367,7 @@ Architecture: all
 Depends: untangle-node-faild
 Conflicts: untangle-libitem-trial14-faild
 Replaces: untangle-libitem-trial14-faild
-Provdies: untangle-libitem-trial14-faild
+Provides: untangle-libitem-trial14-faild
 XB-View-Position: 1040
 XB-Display-Name: WAN Failover
 XB-Untangle-Pkg-Type: lib_item
@@ -448,7 +448,7 @@ Architecture: all
 Depends: untangle-node-splitd, untangle-libitem-faild
 Conflicts: untangle-libitem-trial14-splitd
 Replaces: untangle-libitem-trial14-splitd
-Provdies: untangle-libitem-trial14-splitd
+Provides: untangle-libitem-trial14-splitd
 XB-View-Position: 1050
 XB-Display-Name: WAN Balancer
 XB-Untangle-Pkg-Type: lib_item
@@ -947,7 +947,7 @@ Architecture: all
 Depends: untangle-node-bandwidth
 Conflicts: untangle-libitem-trial14-bandwidth
 Replaces: untangle-libitem-trial14-bandwidth
-Provdies: untangle-libitem-trial14-bandwidth
+Provides: untangle-libitem-trial14-bandwidth
 XB-View-Position: 90
 XB-Display-Name: Bandwidth Control
 XB-Untangle-Pkg-Type: lib_item
@@ -1029,7 +1029,7 @@ Architecture: all
 Depends: untangle-node-webcache
 Conflicts: untangle-libitem-trial14-webcache
 Replaces: untangle-libitem-trial14-webcache
-Provdies: untangle-libitem-trial14-webcache
+Provides: untangle-libitem-trial14-webcache
 XB-View-Position: 80
 XB-Display-Name: Web Cache
 XB-Untangle-Pkg-Type: lib_item
@@ -1114,7 +1114,7 @@ Architecture: all
 Depends: untangle-node-classd
 Conflicts: untangle-libitem-trial14-classd
 Replaces: untangle-libitem-trial14-classd
-Provdies: untangle-libitem-trial14-classd
+Provides: untangle-libitem-trial14-classd
 XB-View-Position: 99
 XB-Display-Name: Application Control
 XB-Untangle-Pkg-Type: lib_item
@@ -1230,7 +1230,7 @@ Architecture: all
 Depends: untangle-node-ipsec
 Conflicts: untangle-libitem-trial14-ipsec
 Replaces: untangle-libitem-trial14-ipsec
-Provdies: untangle-libitem-trial14-ipsec
+Provides: untangle-libitem-trial14-ipsec
 XB-View-Position: 1070
 XB-Display-Name: IPsec VPN
 XB-Untangle-Pkg-Type: lib_item
