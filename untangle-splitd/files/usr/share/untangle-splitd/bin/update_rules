@@ -1,15 +1,6 @@
 #!/bin/dash
 
-UNTANGLE_PRIORITY_BASE="36"
-UNTANGLE_PRIORITY_SPLITD="366"
-
-UNTANGLE_SPLITD_SHIFT=8
-UNTANGLE_SPLITD_MASK=0xFF00
-
 UNTANGLE_SPLITD_QUEUE_NUM=3004
-
-IP_RT_TABLE_BASE=64
-
 IPTABLES=${IPTABLES:-iptables}
 
 debug()
@@ -36,21 +27,37 @@ is_queue_open()
     return 0
 }
 
+flush_splitd_iptables_rules()
+{
+    debug "Flushing splitd iptables rules..."
+    ${IPTABLES} -t nat -F splitd-queue >/dev/null 2>&1
+    ${IPTABLES} -t nat -F splitd-rules >/dev/null 2>&1 
+    ${IPTABLES} -t nat -D PREROUTING -j splitd-queue >/dev/null 2>&1
+    ${IPTABLES} -t nat -D PREROUTING -j splitd-rules >/dev/null 2>&1
+    debug "Flushing splitd iptables rules... done"
+}
+
 insert_splitd_iptables_rules()
 {
+    debug "Inserting splitd iptables rules..."
+
     # Only capture traffic coming from non-WAN interfaces
     # Insert one rule for each non-WAN
-    # Note: Ideally we would actually only capture traffic TO WAN interfaces, however the dst mark is not always set so this is an approximation
+    # Note: Ideally we would actually only capture traffic TO WAN interfaces, however the dst mark is not set yet in nat PREROUTING
     /usr/share/untangle-net-alpaca/scripts/uvm/netConfig.py non_wan_idx | while read intfId ; do
         local t_mark=$(( $intfId ))
-    	local t_mask=$(( ${MASK_SRC_INTERFACE} ))
+    	local t_mask=$(( 0xff )) # MASK_SRC_INTERFACE
 	
         ## Using alpaca-redirect because this guarantees this occurs
         ## before a redirect which is a terminating target.  Has to occur in NAT Prerouting
         ## because the decision must be made before routing.
-	## ${IPTABLES} -t nat -I alpaca-redirect 1 -m mark --mark ${t_mark}/${t_mask} -m addrtype --dst-type unicast -j NFQUEUE --queue-num ${UNTANGLE_SPLITD_QUEUE_NUM}
-	${IPTABLES} -t nat -I alpaca-redirect 1 -m mark --mark ${t_mark}/${t_mask} -m conntrack --ctstate NEW -m addrtype --dst-type unicast -j NFQUEUE --queue-num ${UNTANGLE_SPLITD_QUEUE_NUM}
+	## ${IPTABLES} -t nat -A splitd-queue -m mark --mark ${t_mark}/${t_mask} -m addrtype --dst-type unicast -j NFQUEUE --queue-num ${UNTANGLE_SPLITD_QUEUE_NUM}
+	${IPTABLES} -t nat -A splitd-queue -m mark --mark ${t_mark}/${t_mask} -m conntrack --ctstate NEW -m addrtype --dst-type unicast -j NFQUEUE --queue-num ${UNTANGLE_SPLITD_QUEUE_NUM}
     done	
+
+    ${IPTABLES} -t nat -I PREROUTING 2 -j splitd-queue
+    ${IPTABLES} -t nat -I PREROUTING 2 -j splitd-rules
+    debug "Inserting splitd iptables rules... done"
 }
 
 
@@ -59,6 +66,7 @@ if [ -f /etc/default/untangle-splitd ]; then
     . /etc/default/untangle-splitd
 fi
 
+flush_splitd_iptables_rules
 
 ## If the queue is open generate the new rules
 is_queue_open && {
