@@ -36,11 +36,11 @@
 #define SHUTDOWN_DELAY 200000
 
 /* Script to update iptables rules. */
-#define UPDATE_IPTABLES_DEFAULT "/usr/share/untangle-splitd/bin/update_iptables"
-#define UPDATE_IPTABLES_ENV     "SPLITD_UPDATE_IPTABLES"
+#define UPDATE_RULES_DEFAULT "/usr/share/untangle-splitd/bin/update_rules"
+#define UPDATE_RULES_ENV     "SPLITD_UPDATE_RULES"
 
 #ifdef _POSTROUTING_QUEUE_
-#warning "POSTROUTING QUEUE code is not complete.  Need to finish update_iptables and actually queue packets."
+#warning "POSTROUTING QUEUE code is not complete.  Need to finish update_rules and actually queue packets."
 #endif
 
 enum {
@@ -100,7 +100,7 @@ static int _handle_message_disable( splitd_reader_t* reader, int epoll_fd );
 
 static int _send_message( splitd_reader_t* reader, struct _message *message );
 
-static int _run_update_iptables( void );
+static int _run_update_rules( void );
 
 /* Utility to recreate the queue, now that there are two, this makes it easier. */
 static int _update_nfqueue( splitd_nfqueue_t* nfqueue, u_int16_t queue_num, struct epoll_event* epoll_event,
@@ -596,8 +596,8 @@ static int _handle_message_enable( splitd_reader_t* reader, int epoll_fd )
 #endif
 
     
-    if ( _run_update_iptables() < 0 ) {
-        return errlog( ERR_CRITICAL, "_run_update_iptables\n" );
+    if ( _run_update_rules() < 0 ) {
+        return errlog( ERR_CRITICAL, "_run_update_rules\n" );
     }
     
     return 0;
@@ -634,8 +634,8 @@ static int _handle_message_disable( splitd_reader_t* reader, int epoll_fd )
     splitd_nfqueue_destroy( &reader->post_nfqueue );
 #endif
 
-    if ( _run_update_iptables() < 0 ) {
-        return errlog( ERR_CRITICAL, "_run_update_iptables\n" );
+    if ( _run_update_rules() < 0 ) {
+        return errlog( ERR_CRITICAL, "_run_update_rules\n" );
     }
 
     return 0;
@@ -663,10 +663,10 @@ static int _send_message( splitd_reader_t* reader, struct _message *message )
     return 0;
 }
 
-static int _run_update_iptables( void )
+static int _run_update_rules( void )
 {
-    char *cmd_name = getenv( UPDATE_IPTABLES_ENV );
-    if ( cmd_name == NULL ) cmd_name = UPDATE_IPTABLES_DEFAULT;
+    char *cmd_name = getenv( UPDATE_RULES_ENV );
+    if ( cmd_name == NULL ) cmd_name = UPDATE_RULES_DEFAULT;
     if ( splitd_libs_system( cmd_name, cmd_name, NULL ) < 0 ) {
         return errlog( ERR_CRITICAL, "splitd_libs_system\n" );
     }

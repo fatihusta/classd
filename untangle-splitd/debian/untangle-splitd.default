@@ -14,7 +14,7 @@
 ## SPLITD_QUEUE_NUM="3004"
 
 ## Uncomment to use a different script when the queue is opened or closed.
-## SPLITD_UPDATE_IPTABLES="/usr/share/untangle-splitd/bin/update_iptables"
+## SPLITD_UPDATE_RULES="/usr/share/untangle-splitd/bin/update_rules"
 
 ## This is presently only used inside of the defaults script.
 SPLITD_LOG_DIR="/var/log/untangle-splitd"
