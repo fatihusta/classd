@@ -17,20 +17,22 @@ def runCmd(cmd):
     return std_out.rstrip();
 
 def interfaceIp(intfName):
-    netconf = json.loads(open('/etc/untangle-net-alpaca/netConfig.js', 'r').read())
+    # FIXME must read status file and return current IP - not settings
+    return "FIXME"
+    netconf = json.loads(open('/usr/share/untangle/settings/untangle-vm/network.js', 'r').read())
     if netconf == None:
         exit(1);
-    if netconf['interfaceList'] == None:
+    if netconf.get('interfaces') == None:
         exit(1);
-    if netconf['interfaceList']['list'] == None:
+    if netconf.get('interfaceList').get('list') == None:
         exit(1);
-    for intfConf in netconf['interfaceList']['list']:
+    for intfConf in netconf.get('interfaceList').get('list'):
         if (intfConf["name"] == None or intfConf["name"] != intfName):
             continue;
-        if (intfConf["primaryAddressStr"] != None):
-            return intfConf["primaryAddressStr"].split("/")[0]
+        if (intfConf.get("v4StaticAddress") != None):
+            return intfConf["v4StaticAddress"]
         else:
-            return intfConf["configType"]
+            return intfConf.get("configType")
 
 if (len(sys.argv) < 3):
     print "Usage ",sys.argv[0],": <page> <line>"
@@ -83,12 +85,12 @@ elif (page == 4):
     if (line == 1):
         print "*** External ***"
     else:
-        print center(interfaceIp("External"))
+        print center(interfaceIp("External")) # FIXME - hardcoded name - show first WAN
 elif (page == 5):
     if (line == 1):
         print "*** Internal ***"
     else:
-        print center(interfaceIp("Internal"))
+        print center(interfaceIp("Internal")) # FIXME - hardcoded name - show first non-WAN
 elif (page == 6):
     if (line == 1):
         print "***   UID    ***"
