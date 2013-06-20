@@ -13,7 +13,6 @@ Depends: untangle-libitem-boxbackup, untangle-libitem-support, untangle-libitem-
 XB-View-Position: 5
 XB-Display-Name: Standard Package
 XB-Untangle-Hide: untangle-libitem-premium-package
-XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA
  IGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAwdSURBVHjarJltjFzl
  dcd/57l37uzM7Kx3vesFv2DWL7w6RIU2JKC+0FYRUmQQplROPoCapjIiEV+SCqeKKlW0qkBI7QdC
@@ -80,7 +79,6 @@ Architecture: all
 Depends: untangle-libitem-commtouchav, untangle-libitem-commtouchas, untangle-libitem-sitefilter, untangle-libitem-bandwidth, untangle-libitem-webcache, untangle-libitem-classd, untangle-libitem-ipsec, untangle-libitem-faild, untangle-libitem-splitd, untangle-libitem-boxbackup, untangle-libitem-adconnector, untangle-libitem-policy, untangle-libitem-support, untangle-libitem-branding, untangle-libitem-clam, untangle-libitem-protofilter, untangle-libitem-firewall, untangle-libitem-phish, untangle-libitem-openvpn, untangle-libitem-ips, untangle-libitem-reporting, untangle-libitem-adblocker, untangle-libitem-capture
 XB-View-Position: 4
 XB-Display-Name: Premium Package
-XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA
  IGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAvxSURBVHjarJlrjF3l
  dYaf9e199pkzZ85cPOO7MYNtbIxDBLRpQkRalzRCqlL/oEjIEkKNUqqG/EuqNlWEVNKqVUVV8SOt
@@ -146,7 +144,6 @@ Architecture: all
 Depends: untangle-node-commtouchav
 XB-View-Position: 30
 XB-Display-Name: Virus Blocker
-XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
  AAALEgAACxIB0t1+/AAAABh0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzT7MfTgAAABZ0RVh0
  Q3JlYXRpb24gVGltZQAwOC8xMi8xMdRHSesAAAn+SURBVFiFrZl7jFxVHcc/v3PvzHR326Xtdktb
@@ -204,7 +201,6 @@ Architecture: all
 Depends: untangle-node-sitefilter, untangle-libitem-https
 XB-View-Position: 10
 XB-Display-Name: Web Filter
-XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA
  IGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAtFSURBVHjarJlfbFRX
  fsc/5947Y3s8Y2MT6n8EbJMFQzZxABMQqkhLVeWBPG0FVZqH3adKSI3SZBUpq0Z9aKp9SpOXrVKh
@@ -266,7 +262,6 @@ Architecture: all
 Depends: untangle-node-commtouchas
 XB-View-Position: 60
 XB-Display-Name: Spam Blocker
-XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
  AAALEgAACxIB0t1+/AAAABh0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzT7MfTgAAABZ0RVh0
  Q3JlYXRpb24gVGltZQAwOC8xMi8xMdRHSesAABArSURBVFiFrZl5kB1XdcZ/997uftvMm12jGY2s
@@ -352,7 +347,6 @@ Architecture: all
 Depends: untangle-node-faild
 XB-View-Position: 1040
 XB-Display-Name: WAN Failover
-XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
  AAALEgAACxIB0t1+/AAAABZ0RVh0Q3JlYXRpb24gVGltZQAwMi8yNi8wONgycscAAAAfdEVYdFNv
  ZnR3YXJlAE1hY3JvbWVkaWEgRmlyZXdvcmtzIDi1aNJ4AAAEEXRFWHRYTUw6Y29tLmFkb2JlLnht
@@ -430,7 +424,6 @@ Architecture: all
 Depends: untangle-node-splitd, untangle-libitem-faild
 XB-View-Position: 1050
 XB-Display-Name: WAN Balancer
-XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
  AAALEgAACxIB0t1+/AAAABZ0RVh0Q3JlYXRpb24gVGltZQAwMi8yNi8wONgycscAAAAfdEVYdFNv
  ZnR3YXJlAE1hY3JvbWVkaWEgRmlyZXdvcmtzIDi1aNJ4AAAEEXRFWHRYTUw6Y29tLmFkb2JlLnht
@@ -521,7 +514,6 @@ Architecture: all
 Depends: untangle-node-boxbackup
 XB-View-Position: 1120
 XB-Display-Name: Configuration Backup
-XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA
  IGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAA+5SURBVHjarJlpkFTX
  eYafc+7Wy3TPTM8GmmEZlpEsgYQEAoS1ggSSZWwhlSNZYEvEsctLVSo/vJSTiquSSiqVxCnbMYkt
@@ -604,7 +596,6 @@ Architecture: all
 Depends: untangle-node-adconnector
 XB-View-Position: 1030
 XB-Display-Name: Directory Connector
-XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA
  IGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAA3uSURBVHjarJlZjCVX
  ecd/3zmnqu69fbt7pnu6e8aDZ5rZjNcxEMYmsoEsKAEbkYcsiCghRFkklDwkCiQC8YLCSxYUogik
@@ -679,7 +670,6 @@ Architecture: all
 Depends: untangle-node-policy
 XB-View-Position: 1020
 XB-Display-Name: Policy Manager
-XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA
  IGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAw7SURBVHjarJlrkBzV
  dcd/9/ZjHrs7s6y0u5JW0i4SEuJhLASxKkYkOLwS7FCOnYCtIjEGqvIhVamk8qrgpIpyiFOJXU45
@@ -747,7 +737,6 @@ Architecture: all
 Depends: untangle-libitem-boxbackup, untangle-node-support
 XB-View-Position: 1140
 XB-Display-Name: Live Support
-XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA
  IGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAABAzSURBVHjalJlpjCRn
  ecd/71t3X9M93eM59ppd72XWNodNgOUMFraRCAlCIgoSgRAgUj6FCMGHfEpELgkhJUFRIB/MIXIo
@@ -832,7 +821,6 @@ Architecture: all
 Depends: untangle-node-branding
 XB-View-Position: 1130
 XB-Display-Name: Branding Manager
-XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA
  IGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAA8ZSURBVHjarJl7dFXV
  ncc/e59z7r153bxDAgQCCQ8dgYYkSDBWQdSholNnRkQLS1yrslwj6rimlUFbUVetdU3r1NpOq+ig
@@ -912,7 +900,6 @@ Architecture: all
 Depends: untangle-node-bandwidth
 XB-View-Position: 90
 XB-Display-Name: Bandwidth Control
-XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
  AAALEgAACxIB0t1+/AAAAB90RVh0U29mdHdhcmUATWFjcm9tZWRpYSBGaXJld29ya3MgOLVo0ngA
  AAQRdEVYdFhNTDpjb20uYWRvYmUueG1wADw/eHBhY2tldCBiZWdpbj0iICAgIiBpZD0iVzVNME1w
@@ -991,7 +978,6 @@ Architecture: all
 Depends: untangle-node-webcache
 XB-View-Position: 80
 XB-Display-Name: Web Cache
-XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
  AAALEgAACxIB0t1+/AAAAB90RVh0U29mdHdhcmUATWFjcm9tZWRpYSBGaXJld29ya3MgOLVo0ngA
  AAQRdEVYdFhNTDpjb20uYWRvYmUueG1wADw/eHBhY2tldCBiZWdpbj0iICAgIiBpZD0iVzVNME1w
@@ -1073,7 +1059,6 @@ Architecture: all
 Depends: untangle-node-classd
 XB-View-Position: 99
 XB-Display-Name: Application Control
-XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
  AAALEgAACxIB0t1+/AAAABh0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzT7MfTgAAABZ0RVh0
  Q3JlYXRpb24gVGltZQAwMi8yNi8wONgycscAAAQRdEVYdFhNTDpjb20uYWRvYmUueG1wADw/eHBh
@@ -1186,7 +1171,6 @@ Architecture: all
 Depends: untangle-casing-https
 XB-View-Position: 102
 XB-Display-Name: HTTPS Inspector
-XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAKN2lDQ1BQaG90b3Nob3AgSUNDIHBy
  b2ZpbGUAAHicnJZ3VFPZFofPvTe9UJIQipTQa2hSAkgNvUiRLioxCRBKwJAAIjZEVHBEUZGmCDIo
  4ICjQ5GxIoqFAVGx6wQZRNRxcBQblklkrRnfvHnvzZvfH/d+a5+9z91n733WugCQ/IMFwkxYCYAM
@@ -1303,7 +1287,6 @@ Architecture: all
 Depends: untangle-node-ipsec
 XB-View-Position: 1070
 XB-Display-Name: IPsec VPN
-XB-Untangle-Pkg-Type: lib_item
 XB-Desc-Icon: iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAABHNCSVQICAgIfAhkiAAAAAlwSFlz
  AAALEgAACxIB0t1+/AAAABZ0RVh0Q3JlYXRpb24gVGltZQAwMi8yNi8wONgycscAAAAfdEVYdFNv
  ZnR3YXJlAE1hY3JvbWVkaWEgRmlyZXdvcmtzIDi1aNJ4AAAEEXRFWHRYTUw6Y29tLmFkb2JlLnht
