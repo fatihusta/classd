@@ -1,13 +1,5 @@
 #! /bin/bash
 
-ourInit() {
-if [ -x /usr/sbin/invoke-rc.d ] && [ ! "`readlink /usr/sbin/invoke-rc.d`" = /bin/true ] ; then
-  invoke-rc.d $1 $2
-else
-  /etc/init.d/$1 $2
-fi
-}
-
 SQUID_CONF_FILE=/etc/squid/squid.conf
 
 setOption() {
@@ -58,11 +50,7 @@ setOption never_direct "allow all"
 # change error messages to say "WebCache" instead of "Squid"
 find /usr/share/squid/errors/ -type f -exec sed -i 's/Squid/WebCache/' {} \; >/dev/null 2>&1
 
-# reloading daemons
-ourInit squid restart
+# remove squid from startup
+update-rc.d squid remove
 
-sleep 2
-
-touch /etc/untangle/monit-to-restart
-    
 exit 0
