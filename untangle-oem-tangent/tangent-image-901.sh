@@ -57,32 +57,8 @@ fi
 echo "Successfully redeemed Voucher"
 sleep 5
 
-#
-# download apps
-#
-# Tangent libitem list:
-#untangle-libitem-protofilter
-#untangle-libitem-reporting
-#untangle-libitem-shield
-#untangle-libitem-sitefilter
-#untangle-libitem-bandwidth
-#untangle-libitem-cpd
-
-#OTHER="untangle-support-agent"
-LIBITEMS="untangle-libitem-cpd untangle-libitem-protofilter untangle-libitem-reporting untangle-libitem-shield untangle-libitem-sitefilter untangle-libitem-bandwidth"
 FILTER_NODES="untangle-node-protofilter untangle-node-sitefilter untangle-node-bandwidth"
 SERVICE_NODES="untangle-node-reporting untangle-node-cpd untangle-node-shield"
-
-#echo "apt-get install --yes --force-yes $OTHER"
-#apt-get install --yes --force-yes $OTHER
-
-echo "apt-get install --yes --force-yes $LIBITEMS"
-apt-get install --yes --force-yes $LIBITEMS
-
-if [ ! $? -eq 0 ] ; then
-    echo "ERROR: Failed to download libitems successfully - call Untangle or email support@untangle.com"
-    exit 1
-fi
 
 #
 # install oem package
@@ -102,7 +78,6 @@ uvm.oem.url = http://w3hawk.com
 uvm.legal.url = http://legal.untangle.com
 uvm.store.url = https://store.w3hawk.com
 uvm.help.url = http://www.w3hawk.com/get.php
-uvm.hidden.libitems = untangle-libitem-router,untangle-libitem-splitd,untangle-libitem-splitd,untangle-libitem-commtouch,untangle-libitem-commtouch,untangle-libitem-webfilter,untangle-libitem-lite-package,untangle-libitem-standard-package,untangle-libitem-standard-package,untangle-libitem-premium-package,untangle-libitem-premium-package,untangle-libitem-commtouch,untangle-libitem-commtouch,untangle-libitem-adblocker,untangle-libitem-clam,untangle-libitem-firewall,untangle-libitem-ips,untangle-libitem-opensource-package,untangle-libitem-openvpn,untangle-libitem-phish,untangle-libitem-spamassassin,untangle-libitem-adconnector,untangle-libitem-adconnector,,untangle-libitem-boxbackup,untangle-libitem-branding,untangle-libitem-faild,untangle-libitem-faild,untangle-libitem-kav,untangle-libitem-kav,untangle-libitem-policy,untangle-libitem-policy,untangle-libitem-splitd,untangle-libitem-splitd,untangle-libitem-support,untangle-libitem-webcache,untangle-libitem-webcache
 ENDOFTEXT
 
 
@@ -116,7 +91,7 @@ for i in $FILTER_NODES ; do
     echo "Installing $i" 
     TID="`ucli -p 'Default Rack' instantiate $i`"
     if [ ! $? -eq 0 ] ; then
-        echo "ERROR: Failed to install libitems successfully - call Untangle or email support@untangle.com"
+        echo "ERROR: Failed to install nodes successfully - call Untangle or email support@untangle.com"
         exit 1
     fi    
     ucli start $TID &> /dev/null
@@ -127,7 +102,7 @@ for i in $SERVICE_NODES ; do
     echo "Installing $i" 
     TID="`ucli instantiate $i`"
     if [ ! $? -eq 0 ] ; then
-        echo "ERROR: Failed to install libitems successfully - call Untangle or email support@untangle.com"
+        echo "ERROR: Failed to install nodes successfully - call Untangle or email support@untangle.com"
         exit 1
     fi    
     ucli start $TID &> /dev/null

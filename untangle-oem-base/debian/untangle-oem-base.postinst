@@ -1,9 +1,0 @@
-#! /bin/bash
-
-# create oem.php if it doesn't already exist
-if [ ! -f /etc/untangle/oem/oem.php ] ; then
-    mkdir -p /etc/untangle/oem
-    touch /etc/untangle/oem/oem.php
-fi
-
-exit 0

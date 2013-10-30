@@ -8,6 +8,5 @@ Standards-Version: 3.8.0
 
 Package: untangle-oem-tangent
 Architecture: all
-Depends: untangle-oem-base
 Description: The Untangle OEM for Tangent package
  The Untangle OEM configuration for Tangent
