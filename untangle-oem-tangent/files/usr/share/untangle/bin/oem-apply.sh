@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 # apply files
 rsync -Ha /usr/share/untangle-oem-*/ /
