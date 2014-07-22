@@ -1,0 +1,9 @@
+/var/log/bdamserver.log {
+	rotate 2
+	missingok
+	size 500k
+	compress
+	notifempty
+	copytruncate
+}
+

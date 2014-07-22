@@ -1,0 +1,25 @@
+ifplugin Mail::SpamAssassin::Plugin::SpamBlocker
+
+# The host and port where the daemon is running.
+#
+#spamblocker_host localhost
+#spamblocker_port 1344
+
+# Add a X-Spam-SpamBlocker-Status header.
+#
+add_header all SpamBlocker-Status _SPAMBLOCKSTAT_
+
+full SPAMBLOCKER_FLAGGED	eval:spamblocker_check_message()
+
+describe SPAMBLOCKER_FLAGGED	SPAMBLOCKER: Confirmed spam or virus
+
+#				+---------------Local
+#				|   +-----------Local, and Network
+#				|   |   +-------Local, and Bayes
+#				|   |   |   +---Local, Network, and Bayes
+#				|   |   |   |
+score SPAMBLOCKER_FLAGGED	0   10  0   10
+
+tflags SPAMBLOCKER_FLAGGED	net noautolearn
+
+endif

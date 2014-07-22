@@ -1,0 +1,31 @@
+#!/bin/bash
+
+adduser spamc uvmlogin >/dev/null 2>&1
+
+function setOption 
+{
+    if [ -z "`grep $1 /etc/bdamserver/bdamserver.conf`" ] ; then
+        echo "$1=$2" >> /etc/bdamserver/bdamserver.conf
+    else
+        sed -e "s/.*$1.*=.*/$1=$2/" -i /etc/bdamserver/bdamserver.conf
+    fi
+}
+
+setOption "LicenseSerial" "2860CA7909F1AE5B2C80"
+setOption "LicenseAntispam" "174FFC1C-4C61-47E5-8A73-700BBB1EE655"
+setOption "PathDatabase" "\/var\/cache\/untangle-bdamserver\/virus"
+setOption "PathAntispam" "\/var\/cache\/untangle-bdamserver\/spam"
+setOption "PathPid" "\/var\/run\/bdamserver\/bdamserver.pid"
+setOption "PathLog" "\/var\/log\/bdamserver.log"
+setOption "MaxClients" "10"
+setOption "ProtocolSPAMD" "antimalware,antispam"
+setOption "Daemon" "1"
+
+# enable the on-disk cache mode by creating a special file which
+# reduces resident memory usage from 512Mb to around 128Mb
+touch /var/cache/untangle-bdamserver/virus/Plugins/cache.000
+
+# disable untangle-bdamserver at startup (now handled by nodes)
+update-rc.d untangle-bdamserver disable >/dev/null 2>&1
+
+exit 0
