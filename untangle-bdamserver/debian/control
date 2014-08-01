@@ -10,5 +10,6 @@ Package: untangle-bdamserver
 Architecture: any
 Conflicts: untangle-ctasd
 Replaces: untangle-ctasd
+Provides: untangle-ctasd
 Description: Bitdefender anti-malware package for VirusBlocker and SpamBlocker.
  Bitdefender bdamserver and spamassassin plugin.
