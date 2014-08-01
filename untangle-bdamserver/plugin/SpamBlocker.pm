@@ -59,7 +59,7 @@ sub _spamblocker_classify {
 	$result >>= 8;
 	if ($result != 0) {
 		warn "SpamBlocker License Invalid: $result";
-#		return;
+		return;
 	}
 
 	# get the original message and size
@@ -85,13 +85,11 @@ sub _spamblocker_classify {
 	# 32 = return in-progress information
 	# 64 = BDAM_SCANOPT_SPAMCHECK
 	my $xmit = "SCANFILE 79 " . $filename . "\r\n";
-	warn "XMIT: $xmit";
 
 	# read the scan result
 	my $recv = "";
 	$socket->send($xmit);
 	$socket->recv($recv, 1024);
-	warn "RECV: $recv";
 
 	# close the socket and remove the temporary file
 	$socket->close();
