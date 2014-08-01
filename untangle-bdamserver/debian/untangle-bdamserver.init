@@ -76,7 +76,7 @@ reload()
 
 do_start()
 {
-    cd $BINDIR && $DAEMON -c $DAEMON_CONFFILE $DAEMON_OPTS &
+    start-stop-daemon --chdir ${RUNDIR} --pidfile ${DAEMON_PIDFILE} --start --background --exec $DAEMON -- -c $DAEMON_CONFFILE $DAEMON_OPTS
 
     if [ "x$HAVE_SNMP" = "xYES" ]; then
         echo "Starting $NAME snmp agent"
