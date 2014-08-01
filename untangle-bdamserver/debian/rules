@@ -36,6 +36,7 @@ build-stamp: patch patch-stamp
 	mkdir -p ./debian/tmp
 	dh_installdirs -A -v
 	install -d ./debian/tmp/usr/lib/bdamserver
+	install -d ./debian/tmp/usr/bin
 	cp $(BDAMDDIR)/bin/bdamserver ./debian/tmp/usr/lib/bdamserver
 	cp $(BDAMDDIR)/bin/bdamclient ./debian/tmp/usr/bin/
 	cp $(BDAMDDIR)/bin/*.so ./debian/tmp/usr/lib/bdamserver
