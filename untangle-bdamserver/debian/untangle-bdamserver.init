@@ -1,12 +1,14 @@
 #!/bin/sh
 
-#
-# start/stop/reload the daemon
-#
-#
-###############################
-
-# Defaults
+### BEGIN INIT INFO
+# Provides:          untangle-bdamserver
+# Required-Start:    $network $syslog $remote_fs
+# Required-Stop:     $network $syslog $remote_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Bitdefender anti-malware server daemon
+# Description:       Used by untangle-virusblocker and untangle-spamblocker
+### END INIT INFO
 
 if [ -e /etc/default/untangle-bdamserver ]; then
     . /etc/default/untangle-bdamserver
