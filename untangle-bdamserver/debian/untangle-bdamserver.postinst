@@ -11,7 +11,7 @@ function setOption
     fi
 }
 
-setOption "LicenseSerial" "84BB8EE05F624FC00A1A"
+setOption "LicenseSerial" "B98B967084E39CC6BF9C"
 setOption "LicenseAntispam" "174FFC1C-4C61-47E5-8A73-700BBB1EE655"
 setOption "PathDatabase" "\/var\/cache\/untangle-bdamserver\/virus"
 setOption "PathAntispam" "\/var\/cache\/untangle-bdamserver\/spam"
