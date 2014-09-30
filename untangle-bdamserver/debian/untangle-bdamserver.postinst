@@ -34,7 +34,7 @@ case "$ARCH" in
     setOption "UpdateURLAntivirus" "http:\/\/bd.untangle.com\/av64bit"
     setOption "UpdateURLAntispam" "http:\/\/bd.untangle.com\/as_linux64"
     ;;
-  "i386")
+  "i686")
     setOption "UpdateURLAntivirus" "http:\/\/bd.untangle.com\/av32bit"
     setOption "UpdateURLAntispam" "http:\/\/bd.untangle.com\/as_linux32"
     ;;
