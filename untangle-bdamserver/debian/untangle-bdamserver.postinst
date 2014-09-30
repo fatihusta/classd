@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CONFFILE=/usr/share/untangle/conf/bdamserver.conf
+CONFFILE=/etc/bdamserver/bdamserver.conf
 adduser spamc uvmlogin >/dev/null 2>&1
 
 function setOption 

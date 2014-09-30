@@ -14,7 +14,7 @@
 
 NAME=bdamserver
 DESC=untangle-bdamserver
-CONFDIR=/usr/share/untangle/conf
+CONFDIR=/etc/$NAME
 BINDIR=/usr/lib/$NAME
 RUNDIR=/usr/lib/$NAME
 PIDDIR=/var/run

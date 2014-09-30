@@ -40,8 +40,8 @@ build-stamp: patch patch-stamp
 	cp $(BDAMDDIR)/bin/bdamserver ./debian/tmp/usr/lib/bdamserver
 	cp $(BDAMDDIR)/bin/bdamclient ./debian/tmp/usr/bin
 	cp $(BDAMDDIR)/bin/*.so ./debian/tmp/usr/lib/bdamserver
-	install -d ./debian/tmp/usr/share/untangle/conf
-	cp $(BDAMDDIR)/etc/*.conf ./debian/tmp/usr/share/untangle/conf
+	install -d ./debian/tmp/etc/bdamserver
+	cp $(BDAMDDIR)/etc/*.conf ./debian/tmp/etc/bdamserver
 	install -d ./debian/tmp/usr/share/perl5/Mail/SpamAssassin/Plugin
 	cp ./plugin/SpamBlocker.pm ./debian/tmp/usr/share/perl5/Mail/SpamAssassin/Plugin
 	install -d ./debian/tmp/etc/spamassassin
