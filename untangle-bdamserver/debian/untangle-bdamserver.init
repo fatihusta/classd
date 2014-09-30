@@ -10,15 +10,11 @@
 # Description:       Used by untangle-virusblocker and untangle-spamblocker
 ### END INIT INFO
 
-if [ -e /etc/default/untangle-bdamserver ]; then
-    . /etc/default/untangle-bdamserver
-fi
-
 . /lib/lsb/init-functions
 
 NAME=bdamserver
 DESC=untangle-bdamserver
-CONFDIR=/etc/$NAME
+CONFDIR=/usr/share/untangle/conf
 BINDIR=/usr/lib/$NAME
 RUNDIR=/usr/lib/$NAME
 PIDDIR=/var/run

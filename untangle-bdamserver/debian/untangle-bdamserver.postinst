@@ -1,13 +1,19 @@
 #!/bin/bash
 
+CONFFILE=/usr/share/untangle/conf/bdamserver.conf
 adduser spamc uvmlogin >/dev/null 2>&1
 
 function setOption 
 {
-    if [ -z "`grep $1 /etc/bdamserver/bdamserver.conf`" ] ; then
-        echo "$1=$2" >> /etc/bdamserver/bdamserver.conf
+    if [ -z "`grep $1 $CONFFILE`" ] ; then
+	# line not found so apped to end of file
+        echo "$1=$2" >> $CONFFILE
     else
-        sed -e "s/.*$1.*=.*/$1=$2/" -i /etc/bdamserver/bdamserver.conf
+	# search for uncommented line with space on both sides
+        sed -e "s/^$1[[:space:]]*=.*/$1=$2/" -i $CONFFILE
+	
+	# search for commented line with space on both sides
+        sed -e "s/^#[[:space:]]*$1[[:space:]]*=.*/$1=$2/" -i $CONFFILE	
     fi
 }
 
@@ -20,6 +26,22 @@ setOption "PathLog" "\/var\/log\/bdamserver.log"
 setOption "MaxClients" "10"
 setOption "ProtocolSPAMD" "antimalware,antispam"
 setOption "Daemon" "1"
+
+ARCH=`arch`
+
+case "$ARCH" in
+  "x86_64")
+    setOption "UpdateURLAntivirus" "http:\/\/bd.untangle.com\/av64bit"
+    setOption "UpdateURLAntispam" "http:\/\/bd.untangle.com\/as_linux64"
+    ;;
+  "i386")
+    setOption "UpdateURLAntivirus" "http:\/\/bd.untangle.com\/av32bit"
+    setOption "UpdateURLAntispam" "http:\/\/bd.untangle.com\/as_linux32"
+    ;;
+  *)
+    printf "WARNING: Unknown architecture detected during postinst\n"
+    ;;
+esac
 
 # enable the on-disk cache mode by creating a special file which
 # reduces resident memory usage from 512Mb to around 128Mb
