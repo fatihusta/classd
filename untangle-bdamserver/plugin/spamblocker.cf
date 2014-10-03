@@ -20,6 +20,6 @@ describe SPAMBLOCKER_FLAGGED	SPAMBLOCKER: Confirmed spam or virus
 #				|   |   |   |
 score SPAMBLOCKER_FLAGGED	0   10  0   10
 
-tflags SPAMBLOCKER_FLAGGED	net noautolearn
+tflags SPAMBLOCKER_FLAGGED	net
 
 endif
