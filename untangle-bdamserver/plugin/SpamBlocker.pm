@@ -89,7 +89,13 @@ sub _spamblocker_classify {
 	# read the scan result
 	my $recv = "";
 	$socket->send($xmit);
-	$socket->recv($recv, 1024);
+
+	my @ready = IO::Select->new($socket)->can_read(15);
+	if (@ready) {
+	    $socket->recv($recv, 1024);
+	} else {
+	    warn "BDAM server timeout";
+	}
 
 	# close the socket and remove the temporary file
 	$socket->close();
@@ -104,6 +110,11 @@ sub _spamblocker_classify {
 	# retlist[1] = threat type (V, S, W, D, A, M)
 	# retlist[2] = other details
 	my @retlist = split(' ', $recv, 3);
+
+	if ( scalar(@retlist) < 1 ) {
+	    warn "BDAM server invalid results";
+	    return;
+	}
 
 	# Return status of 227 indicates the file was clean.  Several
 	# other codes could be returned if there is some problem scanning
