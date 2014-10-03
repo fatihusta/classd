@@ -18,7 +18,7 @@ describe SPAMBLOCKER_FLAGGED	SPAMBLOCKER: Confirmed spam or virus
 #				|   |   +-------Local, and Bayes
 #				|   |   |   +---Local, Network, and Bayes
 #				|   |   |   |
-score SPAMBLOCKER_FLAGGED	0   10  0   10
+score SPAMBLOCKER_FLAGGED	0   8   0   8
 
 tflags SPAMBLOCKER_FLAGGED	net
 
