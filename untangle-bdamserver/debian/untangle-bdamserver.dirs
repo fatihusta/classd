@@ -1,5 +1,6 @@
-usr/lib/bdamserver
-var/cache/untangle-bdamserver
-var/cache/untangle-bdamserver/virus
-var/cache/untangle-bdamserver/virus/Plugins
-var/cache/untangle-bdamserver/spam
+/usr/lib/bdamserver
+/var/log/untangle-bdamserver
+/var/cache/untangle-bdamserver
+/var/cache/untangle-bdamserver/virus
+/var/cache/untangle-bdamserver/virus/Plugins
+/var/cache/untangle-bdamserver/spam

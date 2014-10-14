@@ -64,14 +64,13 @@ reload()
 
 do_start()
 {
+    # the bdamserver daemon truncates the log file every time it starts
+    # so we append the existing contents to a file in a different directory
+    # and logrotate will make sure neither one of them get too big.
     if [ -f /var/log/bdamserver.log ]
     then
-        if [ -f /var/log/bdamserver.old ]
-	then
-	    rm -f /var/log/bdamserver.old
-	fi
-	mv /var/log/bdamserver.log /var/log/bdamserver.old
-	touch /var/log/bdamserver.log
+        cat /var/log/bdamserver.log >> /var/log/untangle-bdamserver/bdamserver.log
+	truncate -s 0 /var/log/bdamserver.log
     fi
 
     start-stop-daemon --chdir ${RUNDIR} --pidfile ${DAEMON_PIDFILE} --start --background --exec $DAEMON -- -c $DAEMON_CONFFILE $DAEMON_OPTS
