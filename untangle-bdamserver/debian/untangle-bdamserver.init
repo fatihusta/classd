@@ -64,6 +64,16 @@ reload()
 
 do_start()
 {
+    if [ -f /var/log/bdamserver.log ]
+    then
+        if [ -f /var/log/bdamserver.old ]
+	then
+	    rm -f /var/log/bdamserver.old
+	fi
+	mv /var/log/bdamserver.log /var/log/bdamserver.old
+	touch /var/log/bdamserver.log
+    fi
+
     start-stop-daemon --chdir ${RUNDIR} --pidfile ${DAEMON_PIDFILE} --start --background --exec $DAEMON -- -c $DAEMON_CONFFILE $DAEMON_OPTS
 }
 
