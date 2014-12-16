@@ -1,0 +1,88 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+# export DH_VERBOSE=1
+
+# This is the debhelper compatibility version to use.
+
+MKDIR=/bin/mkdir -p
+ARCH := $(shell uname -m)
+
+ifeq ($(ARCH),x86_64)
+   SPAMCATDDIR := ./64/spamcatd
+else
+   SPAMCATDDIR := ./32/spamcatd
+endif
+
+include /usr/share/dpatch/dpatch.make
+
+ifneq (,$(findstring debug,$(DEB_BUILD_OPTIONS)))
+	CFLAGS += -g
+endif
+ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
+	INSTALL_PROGRAM += -s
+endif
+
+build: build-stamp
+build-stamp: patch patch-stamp
+	dh_testdir
+	rm -rf ./debian/tmp
+	mkdir -p ./debian/tmp
+	dh_installdirs -A -v
+	install -d ./debian/tmp/usr/bin
+	install -d ./debian/tmp/etc/spamcatd
+	install -d ./debian/tmp/usr/share/perl5/Mail/SpamAssassin/Plugin
+	install -d ./debian/tmp/etc/spamassassin
+	tar xvfz $(SPAMCATDDIR)/*.tar.gz -C $(SPAMCATDDIR)
+	cp $(SPAMCATDDIR)/spamcatd ./debian/tmp/usr/bin/spamcatd
+	cp $(SPAMCATDDIR)/etc/*.conf ./debian/tmp/etc/spamcatd
+	cp ./plugin/MailShell.pm ./debian/tmp/usr/share/perl5/Mail/SpamAssassin/Plugin
+	cp ./plugin/mailshell.pre ./debian/tmp/etc/spamassassin
+	cp ./plugin/mailshell.cf ./debian/tmp/etc/spamassassin
+	install -d ./debian/tmp/tmp
+	/usr/bin/find ./debian/tmp/ -name '.svn' | xargs rm -rf
+	touch build-stamp
+
+clean: unpatch
+	dh_testdir
+	dh_testroot
+	rm -f build-stamp
+	rm -rf debian/tmp debian/untangle-spamcatd
+	dh_clean
+
+binary-arch: build
+	dh_testdir
+	dh_testroot
+	dh_movefiles
+#	dh_installdebconf
+#	dh_shlibdeps
+	dh_installdocs -n
+#	dh_installexamples
+#	dh_installmenu
+	dh_installlogrotate
+#	dh_installemacsen
+#	dh_installpam
+#	dh_installmime
+	dh_installinit
+#	dh_installcron
+#	dh_installman
+#	dh_installinfo
+#	dh_undocumented
+	dh_installchangelogs
+#	dh_strip
+#	dh_link
+	dh_compress
+#	dh_fixperms
+	dh_installdeb
+#	dh_perl
+	/usr/bin/find ./debian/tmp/ -name '.svn' | xargs rm -rf
+	if [ -f debian/version ] ; then dh_gencontrol -- -v"`cat debian/version`" ; else dh_gencontrol ; fi
+	dh_md5sums
+	dh_builddeb -a
+
+binary-indep: build
+# nothing to do
+
+binary: binary-indep binary-arch
+
+.PHONY: build clean binary-indep binary install configure

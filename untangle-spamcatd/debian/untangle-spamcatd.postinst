@@ -1,0 +1,25 @@
+#!/bin/bash
+
+CONFFILE=/etc/spamcatd/spamcatd.conf
+
+function setOption 
+{
+    if [ -z "`grep $1 $CONFFILE`" ] ; then
+	# line not found so apped to end of file
+        echo "$1=$2" >> $CONFFILE
+    else
+	# search for uncommented line with space on both sides
+        sed -e "s/^$1[[:space:]]*=.*/$1=$2/" -i $CONFFILE
+	
+	# search for commented line with space on both sides
+        sed -e "s/^#[[:space:]]*$1[[:space:]]*=.*/$1=$2/" -i $CONFFILE	
+    fi
+}
+
+setOption "conf_dir" "/etc/spamcatd"
+setOption "spam_threshold" "87"
+
+# disable untangle-spamcatd at startup (now handled by nodes)
+update-rc.d untangle-spamcatd disable >/dev/null 2>&1
+
+exit 0

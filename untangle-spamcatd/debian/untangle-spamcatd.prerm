@@ -1,0 +1,13 @@
+#!/bin/bash
+
+/etc/init.d/untangle-spamcatd stop
+
+# we only delete the signatures and other stuff
+# if the package is being completely removed
+if [ "$1" = "purge" ]; then
+    -rm -f /var/cache/untangle-bdamserver/virus/Plugins/* >/dev/null 2>&1
+    -rm -f /var/cache/untangle-bdamserver/virus/* >/dev/null 2>&1
+    -rm -f /var/cache/untangle-bdamserver/spam/* >/dev/null 2>&1
+fi
+
+exit 0

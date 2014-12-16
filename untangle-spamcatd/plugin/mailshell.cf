@@ -1,0 +1,44 @@
+ifplugin Mail::SpamAssassin::Plugin::MailShell
+
+full MAILSHELL_SCORE_95_100	eval:mailshell_check_message_95_100()
+full MAILSHELL_SCORE_90_94	eval:mailshell_check_message_90_94()
+full MAILSHELL_SCORE_87_89	eval:mailshell_check_message_87_89()
+full MAILSHELL_SCORE_80_86	eval:mailshell_check_message_80_86()
+full MAILSHELL_SCORE_70_79	eval:mailshell_check_message_70_79()
+full MAILSHELL_SCORE_10_69	eval:mailshell_check_message_10_69()
+full MAILSHELL_SCORE_5_9	eval:mailshell_check_message_5_9()
+full MAILSHELL_SCORE_0_4	eval:mailshell_check_message_0_4()
+
+describe MAILSHELL_SCORE_95_100	MailShell scored message 95-100
+describe MAILSHELL_SCORE_90_94	MailShell scored message 90-94
+describe MAILSHELL_SCORE_87_89	MailShell scored message 87-89
+describe MAILSHELL_SCORE_80_86	MailShell scored message 80-86
+describe MAILSHELL_SCORE_70_79	MailShell scored message 70-79
+describe MAILSHELL_SCORE_10_69	MailShell scored message 10-69
+describe MAILSHELL_SCORE_5_9	MailShell scored message 5-9
+describe MAILSHELL_SCORE_0_4	MailShell scored message 0-4
+
+#				+---------------Local
+#				|   +-----------Local, and Network
+#				|   |   +-------Local, and Bayes
+#				|   |   |   +---Local, Network, and Bayes
+#				|   |   |   |
+score MAILSHELL_SCORE_95_100	0   10   0  10
+score MAILSHELL_SCORE_90_94	0   5   0   5
+score MAILSHELL_SCORE_87_89	0   4   0   4
+score MAILSHELL_SCORE_80_86	0   2   0   2
+score MAILSHELL_SCORE_70_79	0   1   0   1
+score MAILSHELL_SCORE_10_69	0   0.0001   0   0.0001
+score MAILSHELL_SCORE_5_9	0   -0.0001   0   -0.0001
+score MAILSHELL_SCORE_0_4	0   -0.0001   0   -0.0001
+
+tflags MAILSHELL_SCORE_95_100	net
+tflags MAILSHELL_SCORE_90_94	net
+tflags MAILSHELL_SCORE_87_89	net
+tflags MAILSHELL_SCORE_80_86	net
+tflags MAILSHELL_SCORE_70_79	net
+tflags MAILSHELL_SCORE_10_69	net
+tflags MAILSHELL_SCORE_5_9	net
+tflags MAILSHELL_SCORE_0_4	net
+
+endif

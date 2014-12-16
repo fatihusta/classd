@@ -1,0 +1,3 @@
+# SpamBlocker - check the MailShell daemon for mail classifications
+#
+loadplugin Mail::SpamAssassin::Plugin::MailShell

@@ -1,0 +1,17 @@
+/var/log/bdamserver.log {
+	rotate 5
+	missingok
+	size 500k
+	compress
+	notifempty
+	copytruncate
+}
+
+/var/log/untangle-bdamserver/bdamserver.log {
+	rotate 5
+	missingok
+	size 500k
+	compress
+	notifempty
+	copytruncate
+}
