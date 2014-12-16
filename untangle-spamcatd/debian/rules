@@ -9,9 +9,11 @@ MKDIR=/bin/mkdir -p
 ARCH := $(shell uname -m)
 
 ifeq ($(ARCH),x86_64)
-   SPAMCATDDIR := ./64/spamcatd
+   SPAMCATDTAR := ./64/*.tar.gz
+   SPAMCATDDIR := ./64/
 else
-   SPAMCATDDIR := ./32/spamcatd
+   SPAMCATDTAR := ./64/*.tar.gz
+   SPAMCATDDIR := ./32/
 endif
 
 include /usr/share/dpatch/dpatch.make
@@ -33,9 +35,11 @@ build-stamp: patch patch-stamp
 	install -d ./debian/tmp/etc/spamcatd
 	install -d ./debian/tmp/usr/share/perl5/Mail/SpamAssassin/Plugin
 	install -d ./debian/tmp/etc/spamassassin
-	tar xvfz $(SPAMCATDDIR)/*.tar.gz -C $(SPAMCATDDIR)
-	cp $(SPAMCATDDIR)/spamcatd ./debian/tmp/usr/bin/spamcatd
-	cp $(SPAMCATDDIR)/etc/*.conf ./debian/tmp/etc/spamcatd
+	tar xfz $(SPAMCATDTAR) -C $(SPAMCATDDIR)
+	make -C $(SPAMCATDDIR)/spamcatd clean all
+	cp $(SPAMCATDDIR)/spamcatd/spamcatd ./debian/tmp/usr/bin/spamcatd
+	cp $(SPAMCATDDIR)/spamcatd/*.conf ./debian/tmp/etc/spamcatd
+	cp $(SPAMCATDDIR)/spamcatd/conf/*.conf ./debian/tmp/etc/spamcatd
 	cp ./plugin/MailShell.pm ./debian/tmp/usr/share/perl5/Mail/SpamAssassin/Plugin
 	cp ./plugin/mailshell.pre ./debian/tmp/etc/spamassassin
 	cp ./plugin/mailshell.cf ./debian/tmp/etc/spamassassin
@@ -48,6 +52,7 @@ clean: unpatch
 	dh_testroot
 	rm -f build-stamp
 	rm -rf debian/tmp debian/untangle-spamcatd
+	rm -rf 64/spamcatd 32/spamcatd
 	dh_clean
 
 binary-arch: build

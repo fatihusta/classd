@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ### BEGIN INIT INFO
-# Provides:          untangle-bdamserver
+# Provides:          untangle-spamcatd
 # Required-Start:    $network $syslog $remote_fs
 # Required-Stop:     $network $syslog $remote_fs
 # Default-Start:     2 3 4 5
@@ -12,18 +12,17 @@
 
 . /lib/lsb/init-functions
 
-NAME=bdamserver
-DESC=untangle-bdamserver
+NAME=spamcatd
+DESC=untangle-spamcatd
 CONFDIR=/etc/$NAME
-BINDIR=/usr/lib/$NAME
-RUNDIR=/usr/lib/$NAME
+BINDIR=/usr/bin
+RUNDIR=/var/run
 PIDDIR=/var/run
 
 DAEMON=$BINDIR/$NAME
 DAEMON_CONFFILE=$CONFDIR/$NAME.conf
 DAEMON_PIDFILE=$PIDDIR/$NAME.pid
 DAEMON_STOP_TIMEOUT=5
-DAEMON_OPTS=
 
 # Reads config file (will override defaults above)
 [ -r /etc/default/$NAME ] && . /etc/default/$NAME
@@ -64,16 +63,7 @@ reload()
 
 do_start()
 {
-    # the bdamserver daemon truncates the log file every time it starts
-    # so we append the existing contents to a file in a different directory
-    # and logrotate will make sure neither one of them get too big.
-    if [ -f /var/log/bdamserver.log ]
-    then
-        cat /var/log/bdamserver.log >> /var/log/untangle-bdamserver/bdamserver.log
-	truncate -s 0 /var/log/bdamserver.log
-    fi
-
-    start-stop-daemon --chdir ${RUNDIR} --pidfile ${DAEMON_PIDFILE} --start --background --exec $DAEMON -- -c $DAEMON_CONFFILE $DAEMON_OPTS
+    start-stop-daemon --chdir ${RUNDIR} --pidfile ${DAEMON_PIDFILE} --start --background --exec $DAEMON -- $DAEMON_CONFFILE
 }
 
 do_stop()
