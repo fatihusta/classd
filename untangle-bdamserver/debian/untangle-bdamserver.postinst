@@ -9,10 +9,10 @@ function setOption
 	# line not found so apped to end of file
         echo "$1=$2" >> $CONFFILE
     else
-	# search for uncommented line with space on both sides
+    	# search for uncommented line with space on both sides
         sed -e "s/^$1[[:space:]]*=.*/$1=$2/" -i $CONFFILE
 	
-	# search for commented line with space on both sides
+	    # search for commented line with space on both sides
         sed -e "s/^#[[:space:]]*$1[[:space:]]*=.*/$1=$2/" -i $CONFFILE	
     fi
 }
