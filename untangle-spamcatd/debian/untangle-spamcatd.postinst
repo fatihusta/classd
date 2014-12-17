@@ -40,6 +40,7 @@ setOption "rule_weights" "46:1.5,10977:7,11042:9,11212:2,11213:2,11214:3,11215:9
 setOption "snhost" "sn10.mailshell.net" $SPAMCATCHER_CONFFILE
 setOption "spam_threshold" "87" $SPAMCATCHER_CONFFILE
 setOption "force_msgbl" "yes" $SPAMCATCHER_CONFFILE
+setOption "tmpdir" "/tmp" $SPAMCATCHER_CONFFILE
 
 setOption "msgbl_new_protocol" "yes" $SPAMCATCHER_CONFFILE
 setOption "snhost" "sn14.mailshell.net" $SPAMCATCHER_CONFFILE
