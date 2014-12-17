@@ -19,7 +19,7 @@ BINDIR=/usr/bin
 RUNDIR=/var/run
 PIDDIR=/var/run
 
-DAEMON=$BINDIR/$NAME
+DAEMON=$BINDIR/$NAME.sh
 DAEMON_CONFFILE=$CONFDIR/$NAME.conf
 DAEMON_PIDFILE=$PIDDIR/$NAME.pid
 DAEMON_STOP_TIMEOUT=5
@@ -31,7 +31,6 @@ start()
 {
     log_daemon_msg "Starting $DESC"
 
-    log_progress_msg "$DESC"
     do_start
 
     log_end_msg 0	
@@ -41,7 +40,6 @@ stop()
 {
     log_daemon_msg "Stopping $DESC"
 
-    log_progress_msg "$DESC"
     if ! ensure_stop; then
         echo "$NAME is not running"
     fi
@@ -63,7 +61,7 @@ reload()
 
 do_start()
 {
-    start-stop-daemon --chdir ${RUNDIR} --pidfile ${DAEMON_PIDFILE} --start --background --exec $DAEMON -- $DAEMON_CONFFILE
+    start-stop-daemon --chdir ${RUNDIR} --make-pidfile --pidfile ${DAEMON_PIDFILE} --start --background --exec $DAEMON -- $DAEMON_CONFFILE
 }
 
 do_stop()

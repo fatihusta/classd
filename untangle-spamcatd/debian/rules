@@ -9,11 +9,9 @@ MKDIR=/bin/mkdir -p
 ARCH := $(shell uname -m)
 
 ifeq ($(ARCH),x86_64)
-   SPAMCATDTAR := ./64/*.tar.gz
-   SPAMCATDDIR := ./64/
+   SPAMCATDDIR := ./64
 else
-   SPAMCATDTAR := ./64/*.tar.gz
-   SPAMCATDDIR := ./32/
+   SPAMCATDDIR := ./32
 endif
 
 include /usr/share/dpatch/dpatch.make
@@ -35,11 +33,21 @@ build-stamp: patch patch-stamp
 	install -d ./debian/tmp/etc/spamcatd
 	install -d ./debian/tmp/usr/share/perl5/Mail/SpamAssassin/Plugin
 	install -d ./debian/tmp/etc/spamassassin
-	tar xfz $(SPAMCATDTAR) -C $(SPAMCATDDIR)
+	install -d ./debian/tmp/usr/lib
+	tar --exclude=.svn -cf - -C files `find files/ -name '.svn' -prune -o -mindepth 1 -maxdepth 1 -printf "%P " 2>/dev/null`  | tar -xf - -C debian/tmp
+	for tarball in $(SPAMCATDDIR)/spamcatd*.tar.gz ; do \
+		tar xf $$tarball -C $(SPAMCATDDIR) ; \
+	done
+	for tarball in $(SPAMCATDDIR)/spamcatcher*.tar.gz ; do \
+		mkdir -p $(SPAMCATDDIR)/spamcatchersdk ; \
+		tar xf $$tarball -C $(SPAMCATDDIR)/spamcatchersdk --strip-components=1 ; \
+	done
+	cp $(SPAMCATDDIR)/spamcatchersdk/lib/* $(SPAMCATDDIR)/spamcatd/lib/
 	make -C $(SPAMCATDDIR)/spamcatd clean all
 	cp $(SPAMCATDDIR)/spamcatd/spamcatd ./debian/tmp/usr/bin/spamcatd
 	cp $(SPAMCATDDIR)/spamcatd/*.conf ./debian/tmp/etc/spamcatd
 	cp $(SPAMCATDDIR)/spamcatd/conf/*.conf ./debian/tmp/etc/spamcatd
+	cp $(SPAMCATDDIR)/spamcatchersdk/lib/* ./debian/tmp/usr/lib/
 	cp ./plugin/MailShell.pm ./debian/tmp/usr/share/perl5/Mail/SpamAssassin/Plugin
 	cp ./plugin/mailshell.pre ./debian/tmp/etc/spamassassin
 	cp ./plugin/mailshell.cf ./debian/tmp/etc/spamassassin
@@ -52,7 +60,7 @@ clean: unpatch
 	dh_testroot
 	rm -f build-stamp
 	rm -rf debian/tmp debian/untangle-spamcatd
-	rm -rf 64/spamcatd 32/spamcatd
+	rm -rf 64/spamcatd 64/spamcatchersdk 32/spamcatd 32/spamcatchersdk
 	dh_clean
 
 binary-arch: build

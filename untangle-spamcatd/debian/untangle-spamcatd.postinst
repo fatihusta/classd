@@ -26,6 +26,7 @@ setOption "spam_threshold" "87" $SPAMCATD_CONFFILE
 #setOption "dbg_verbose_level" "8" $SPAMCATCHER_CONFFILE
 
 setOption "regkey" '%%$78-9$6$$-AZ%42-%5%E9' $SPAMCATCHER_CONFFILE
+
 setOption "dns_server_retries" "1" $SPAMCATCHER_CONFFILE
 setOption "dnscache_dns_server" "176.58.101.140" $SPAMCATCHER_CONFFILE
 setOption "enable_predata_localip" "no" $SPAMCATCHER_CONFFILE
