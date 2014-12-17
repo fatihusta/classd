@@ -7,6 +7,6 @@ Build-Depends: debhelper (>> 3.0.0), dpatch, unrar
 Standards-Version: 3.8.0
 
 Package: untangle-spamcatd
-Architecture: i386, amd64
+Architecture: i386 amd64
 Description: Mailshell antispam daemon
  Mailshell spamcatd and spamassassin plugin.
