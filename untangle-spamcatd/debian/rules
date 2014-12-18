@@ -48,7 +48,6 @@ build-stamp: patch patch-stamp
 	cp $(SPAMCATDDIR)/spamcatd/*.conf ./debian/tmp/etc/spamcatd
 	cp $(SPAMCATDDIR)/spamcatd/conf/*.conf ./debian/tmp/etc/spamcatd
 	cp -a $(SPAMCATDDIR)/spamcatchersdk/lib/* ./debian/tmp/usr/lib/spamcatd/
-	chown -h root:root ./debian/tmp/usr/lib/spamcatd/*
 	chmod 644 ./debian/tmp/usr/lib/spamcatd/* || true
 	cp ./plugin/MailShell.pm ./debian/tmp/usr/share/perl5/Mail/SpamAssassin/Plugin
 	cp ./plugin/mailshell.pre ./debian/tmp/etc/spamassassin
