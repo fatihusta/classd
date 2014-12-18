@@ -70,10 +70,19 @@ do_start()
     if [ -f /var/log/bdamserver.log ]
     then
         cat /var/log/bdamserver.log >> /var/log/untangle-bdamserver/bdamserver.log
-	truncate -s 0 /var/log/bdamserver.log
     fi
 
-    start-stop-daemon --chdir ${RUNDIR} --pidfile ${DAEMON_PIDFILE} --start --background --exec $DAEMON -- -c $DAEMON_CONFFILE $DAEMON_OPTS
+    # make sure the log file exists and has the correct user and group
+    truncate -s 0 /var/log/bdamserver.log
+    chown daemon:daemon /var/log/bdamserver.log
+
+    # make sure the database directory has the correct user and group
+    chown -R daemon:daemon /var/cache/untangle-bdamserver
+
+    # since we run as daemon:daemon we need to pre-create the pid file
+    truncate -s 0 $DAEMON_PIDFILE
+    chown daemon:daemon $DAEMON_PIDFILE
+    start-stop-daemon --chuid daemon:daemon --chdir ${RUNDIR} --pidfile ${DAEMON_PIDFILE} --start --background --exec $DAEMON -- -c $DAEMON_CONFFILE $DAEMON_OPTS
 }
 
 do_stop()
