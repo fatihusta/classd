@@ -19,6 +19,7 @@ BINDIR=/usr/bin
 RUNDIR=/var/run
 PIDDIR=/var/run
 LOGFILE=/var/log/untangle-spamcatd.log
+USER=spamd
 
 DAEMON=$BINDIR/$NAME.sh
 DAEMON_CONFFILE=$CONFDIR/$NAME.conf
@@ -63,11 +64,10 @@ reload()
 do_start()
 {
     touch $LOGFILE
-    chmod 777 $LOGFILE
+    chown $USER:$USER $LOGFILE
 
-    chmod 777 /etc/spamcatd # FIXME - currently signatures are stored here
-
-    start-stop-daemon --chuid spamd --chdir ${RUNDIR} --make-pidfile --pidfile ${DAEMON_PIDFILE} --start --background --exec $DAEMON -- $DAEMON_CONFFILE
+    chown $USER:$USER /var/cache/untangle-spamcatd
+    start-stop-daemon --chuid $USER --chdir ${RUNDIR} --make-pidfile --pidfile ${DAEMON_PIDFILE} --start --background --exec $DAEMON -- $DAEMON_CONFFILE
 }
 
 do_stop()
