@@ -47,8 +47,7 @@ build-stamp: patch patch-stamp
 	cp $(SPAMCATDDIR)/spamcatd/spamcatd ./debian/tmp/usr/bin/spamcatd
 	cp $(SPAMCATDDIR)/spamcatd/*.conf ./debian/tmp/etc/spamcatd
 	cp $(SPAMCATDDIR)/spamcatd/conf/*.conf ./debian/tmp/etc/spamcatd
-	cp -a $(SPAMCATDDIR)/spamcatchersdk/lib/* ./debian/tmp/usr/lib/spamcatd/
-	chmod 644 ./debian/tmp/usr/lib/spamcatd/* || true
+	cp -a $(SPAMCATDDIR)/spamcatchersdk/lib/libspamcatcher.so* ./debian/tmp/usr/lib/spamcatd/
 	cp ./plugin/MailShell.pm ./debian/tmp/usr/share/perl5/Mail/SpamAssassin/Plugin
 	cp ./plugin/mailshell.pre ./debian/tmp/etc/spamassassin
 	cp ./plugin/mailshell.cf ./debian/tmp/etc/spamassassin
@@ -87,7 +86,7 @@ binary-arch: build
 #	dh_strip
 #	dh_link
 	dh_compress
-#	dh_fixperms
+	dh_fixperms
 	dh_installdeb
 #	dh_perl
 	/usr/bin/find ./debian/tmp/ -name '.svn' | xargs rm -rf
