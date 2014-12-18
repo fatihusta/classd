@@ -20,7 +20,7 @@ function setOption
 setOption "ip" "127.0.0.1" $SPAMCATD_CONFFILE
 setOption "conf_dir" "/etc/spamcatd" $SPAMCATD_CONFFILE
 setOption "spam_threshold" "87" $SPAMCATD_CONFFILE
-setOption "port" "784" $SPAMCATD_CONFFILE
+setOption "port" "1784" $SPAMCATD_CONFFILE
 
 #setOption "dbg_logfile" "spamcatcher-sdk.log" $SPAMCATCHER_CONFFILE
 #setOption "dbg_verbose_level" "8" $SPAMCATCHER_CONFFILE

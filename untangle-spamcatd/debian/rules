@@ -33,7 +33,7 @@ build-stamp: patch patch-stamp
 	install -d ./debian/tmp/etc/spamcatd
 	install -d ./debian/tmp/usr/share/perl5/Mail/SpamAssassin/Plugin
 	install -d ./debian/tmp/etc/spamassassin
-	install -d ./debian/tmp/usr/lib
+	install -d ./debian/tmp/usr/lib/spamcatd
 	tar --exclude=.svn -cf - -C files `find files/ -name '.svn' -prune -o -mindepth 1 -maxdepth 1 -printf "%P " 2>/dev/null`  | tar -xf - -C debian/tmp
 	for tarball in $(SPAMCATDDIR)/spamcatd*.tar.gz ; do \
 		tar xf $$tarball -C $(SPAMCATDDIR) ; \
@@ -42,15 +42,18 @@ build-stamp: patch patch-stamp
 		mkdir -p $(SPAMCATDDIR)/spamcatchersdk ; \
 		tar xf $$tarball -C $(SPAMCATDDIR)/spamcatchersdk --strip-components=1 ; \
 	done
-	cp $(SPAMCATDDIR)/spamcatchersdk/lib/* $(SPAMCATDDIR)/spamcatd/lib/
+	cp -a $(SPAMCATDDIR)/spamcatchersdk/lib/* $(SPAMCATDDIR)/spamcatd/lib/
 	make -C $(SPAMCATDDIR)/spamcatd clean all
 	cp $(SPAMCATDDIR)/spamcatd/spamcatd ./debian/tmp/usr/bin/spamcatd
 	cp $(SPAMCATDDIR)/spamcatd/*.conf ./debian/tmp/etc/spamcatd
 	cp $(SPAMCATDDIR)/spamcatd/conf/*.conf ./debian/tmp/etc/spamcatd
-	cp $(SPAMCATDDIR)/spamcatchersdk/lib/* ./debian/tmp/usr/lib/
+	cp -a $(SPAMCATDDIR)/spamcatchersdk/lib/* ./debian/tmp/usr/lib/spamcatd/
+	chown -h root:root ./debian/tmp/usr/lib/spamcatd/*
+	chmod 644 ./debian/tmp/usr/lib/spamcatd/*
 	cp ./plugin/MailShell.pm ./debian/tmp/usr/share/perl5/Mail/SpamAssassin/Plugin
 	cp ./plugin/mailshell.pre ./debian/tmp/etc/spamassassin
 	cp ./plugin/mailshell.cf ./debian/tmp/etc/spamassassin
+	chmod 755 debian/tmp/usr/bin/*
 	install -d ./debian/tmp/tmp
 	/usr/bin/find ./debian/tmp/ -name '.svn' | xargs rm -rf
 	touch build-stamp
