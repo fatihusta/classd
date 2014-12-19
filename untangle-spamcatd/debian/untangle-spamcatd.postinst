@@ -47,8 +47,15 @@ setOption "msgbl_new_protocol" "yes" $SPAMCATCHER_CONFFILE
 setOption "snhost" "sn14.mailshell.net" $SPAMCATCHER_CONFFILE
 setOption "stat_file_upload_url" "http://untanglestat.mailshell.net/mailsh.cgi?untangle" $SPAMCATCHER_CONFFILE
 
-
 # disable untangle-spamcatd at startup (now handled by nodes)
 update-rc.d untangle-spamcatd disable >/dev/null 2>&1
+
+# if spamassassin (spamd) is running - restart it
+if pgrep -c spamd >/dev/null 2>&1 ; then
+    service spamassassin restart
+fi
+if pgrep -c spamassassin >/dev/null 2>&1 ; then
+    service spamassassin restart
+fi
 
 exit 0
