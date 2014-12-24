@@ -29,7 +29,8 @@ setOption "port" "1784" $SPAMCATD_CONFFILE
 setOption "regkey" '%%$78-9$6$$-AZ%42-%5%E9' $SPAMCATCHER_CONFFILE
 
 setOption "dns_server_retries" "1" $SPAMCATCHER_CONFFILE
-setOption "dnscache_dns_server" "176.58.101.140" $SPAMCATCHER_CONFFILE
+sed -i -e '/dnscache_dns_server=/d' $SPAMCATCHER_CONFFILE
+#setOption "dnscache_dns_server" "127.0.0.1" $SPAMCATCHER_CONFFILE
 setOption "enable_predata_localip" "no" $SPAMCATCHER_CONFFILE
 setOption "extended_rules" "yes" $SPAMCATCHER_CONFFILE
 setOption "ignored_stat_file_tokens" "HTODOMAIN,RFDOMAIN1,RFDOMAIN2,RFDOMAINX1,HFROMDOMAIN,HEADERTOUSER,HEADERTOEMAIL,FROMUSER,HREPLYTOUSER,HREPLYTOEMAIL,HREPLYTODOMAIN" $SPAMCATCHER_CONFFILE
@@ -38,12 +39,11 @@ setOption "rbl_list" "cbl.abuseat.org:127.0.0.2:30" $SPAMCATCHER_CONFFILE
 setOption "rbl_max_ips" "1" $SPAMCATCHER_CONFFILE
 setOption "rbl_timeout" "250" $SPAMCATCHER_CONFFILE
 setOption "rule_weights" "46:1.5,10977:7,11042:9,11212:2,11213:2,11214:3,11215:9,12556:9,12557:9,12558:9,12559:9,12560:9,12187:6.5,12443:4,12445:4.7" $SPAMCATCHER_CONFFILE
-setOption "snhost" "sn10.mailshell.net" $SPAMCATCHER_CONFFILE
+setOption "snhost" "sn14.mailshell.net" $SPAMCATCHER_CONFFILE
 setOption "spam_threshold" "87" $SPAMCATCHER_CONFFILE
 setOption "force_msgbl" "yes" $SPAMCATCHER_CONFFILE
 setOption "tmpdir" "/tmp" $SPAMCATCHER_CONFFILE
 
-#setOption "snhost" "sn14.mailshell.net" $SPAMCATCHER_CONFFILE
 #setOption "stat_file_upload_url" "http://untanglestat.mailshell.net/mailsh.cgi?untangle" $SPAMCATCHER_CONFFILE
 
 # disable untangle-spamcatd at startup (now handled by nodes)
