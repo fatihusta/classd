@@ -43,8 +43,7 @@ setOption "snhost" "sn14.mailshell.net" $SPAMCATCHER_CONFFILE
 setOption "spam_threshold" "87" $SPAMCATCHER_CONFFILE
 setOption "force_msgbl" "yes" $SPAMCATCHER_CONFFILE
 setOption "tmpdir" "/tmp" $SPAMCATCHER_CONFFILE
-
-#setOption "stat_file_upload_url" "http://untanglestat.mailshell.net/mailsh.cgi?untangle" $SPAMCATCHER_CONFFILE
+setOption "stat_file_upload_url" "http://untanglestat.mailshell.net/mailsh.cgi?untangle" $SPAMCATCHER_CONFFILE
 
 # disable untangle-spamcatd at startup (now handled by nodes)
 update-rc.d untangle-spamcatd disable >/dev/null 2>&1
