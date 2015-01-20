@@ -18,13 +18,25 @@ function setOption
 }
 
 setOption "LicenseSerial" "B98B967084E39CC6BF9C"
-setOption "LicenseAntispam" "174FFC1C-4C61-47E5-8A73-700BBB1EE655"
-setOption "PathDatabase" "\/var\/cache\/untangle-bdamserver\/virus"
-setOption "PathAntispam" "\/var\/cache\/untangle-bdamserver\/spam"
+
+# No longer needed since we aren't using their anti-spam component
+#setOption "LicenseAntispam" "174FFC1C-4C61-47E5-8A73-700BBB1EE655"
+
+# These are the old 1.15 path options
+#setOption "PathDatabase" "\/var\/cache\/untangle-bdamserver\/virus"
+#setOption "PathAntispam" "\/var\/cache\/untangle-bdamserver\/spam"
+
+# These are the new 1.16 path options
+setOption "PathAntimalwareRoot" "\/var\/cache\/untangle-bdamserver\/virus"
+setOption "PathAntispamRoot" "\/var\/cache\/untangle-bdamserver\/spam"
+
 setOption "PathPid" "\/var\/run\/bdamserver.pid"
 setOption "PathLog" "\/var\/log\/bdamserver.log"
 setOption "MaxClients" "10"
-setOption "ProtocolSPAMD" "antimalware,antispam"
+
+#setOption "ProtocolSPAMD" "antimalware,antispam"
+setOption "ProtocolSPAMD" "antimalware"
+
 setOption "Daemon" "1"
 
 ARCH=`arch`
