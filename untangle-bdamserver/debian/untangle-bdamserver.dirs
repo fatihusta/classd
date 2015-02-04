@@ -3,4 +3,6 @@
 /var/cache/untangle-bdamserver
 /var/cache/untangle-bdamserver/virus
 /var/cache/untangle-bdamserver/virus/Plugins
+/var/cache/untangle-bdamserver/virus/1/Plugins
+/var/cache/untangle-bdamserver/virus/2/Plugins
 /var/cache/untangle-bdamserver/spam
