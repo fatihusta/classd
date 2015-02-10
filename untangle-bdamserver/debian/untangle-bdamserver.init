@@ -44,7 +44,7 @@ stop()
 
     log_progress_msg "$DESC"
     if ! ensure_stop; then
-        echo "$NAME is not running"
+        log_progress_msg "$NAME is not running"
     fi
 
     log_end_msg 0	
@@ -106,6 +106,9 @@ is_process_running()
     local PIDFILE=$1
     if [ -f $PIDFILE ]; then
         local PID=`cat $PIDFILE`
+        if [ -z "$PID" ] ; then
+            return 1
+        fi 
         if [ `ps --pid $PID --no-headers | wc -l` != 0 ]; then
             return 0
         fi
