@@ -72,6 +72,7 @@ esac
 # enable the on-disk cache mode by creating a special file which
 # reduces resident memory usage from 512Mb to around 128Mb
 rm -r -f /var/cache/untangle-bdamserver/spam
+touch /var/cache/untangle-bdamserver/virus/1/Plugins/cache.000
 touch /var/cache/untangle-bdamserver/virus/2/Plugins/cache.000
 
 # disable untangle-bdamserver at startup (now handled by nodes)
