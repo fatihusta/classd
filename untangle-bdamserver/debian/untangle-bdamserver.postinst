@@ -17,6 +17,12 @@ function setOption
     fi
 }
 
+function commentOutOption
+{
+	    # search for line and comment it out
+        sed -e "/^.*$1.*=.*/s/^#*/#/" -i $CONFFILE	
+}
+
 # this sets the license for anti-virus
 setOption "LicenseSerial" "B98B967084E39CC6BF9C"
 
@@ -26,11 +32,14 @@ setOption "LicenseSerial" "B98B967084E39CC6BF9C"
 # These are the old 1.15 path options
 #setOption "PathDatabase" "\/var\/cache\/untangle-bdamserver\/virus"
 #setOption "PathAntispam" "\/var\/cache\/untangle-bdamserver\/spam"
+commentOutOption "PathDatabase" 
+commentOutOption "PathAntispam" 
 
 # These are the new 1.16 path options and we only need virus
 # since we no longer use ther anti-spam stuff
 setOption "PathAntimalwareRoot" "\/var\/cache\/untangle-bdamserver\/virus"
 #setOption "PathAntispamRoot" "\/var\/cache\/untangle-bdamserver\/spam"
+commentOutOption "PathAntispamRoot" 
 
 setOption "PathPid" "\/var\/run\/bdamserver.pid"
 setOption "PathLog" "\/var\/log\/bdamserver.log"
@@ -48,10 +57,12 @@ case "$ARCH" in
   "x86_64")
     setOption "UpdateURLAntivirus" "http:\/\/bd.untangle.com\/av64bit"
 #    setOption "UpdateURLAntispam" "http:\/\/bd.untangle.com\/as_linux64"
+    commentOutOption "UpdateURLAntispam"
     ;;
   "i686")
     setOption "UpdateURLAntivirus" "http:\/\/bd.untangle.com\/av32bit"
 #    setOption "UpdateURLAntispam" "http:\/\/bd.untangle.com\/as_linux32"
+    commentOutOption "UpdateURLAntispam"
     ;;
   *)
     printf "WARNING: Unknown architecture detected during postinst\n"
