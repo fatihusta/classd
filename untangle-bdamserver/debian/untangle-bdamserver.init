@@ -69,9 +69,6 @@ do_start()
     if [ -d /var/cache/untangle-bdamserver/virus/2/Plugins ] ; then
         touch /var/cache/untangle-bdamserver/virus/2/Plugins/cache.000
     fi
-    if [ -d /var/cache/untangle-bdamserver/virus/1/Plugins ] ; then
-        touch /var/cache/untangle-bdamserver/virus/1/Plugins/cache.000
-    fi
 
     # the bdamserver daemon truncates the log file every time it starts
     # so we append the existing contents to a file in a different directory
