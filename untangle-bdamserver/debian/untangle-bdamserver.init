@@ -7,7 +7,7 @@
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
 # Short-Description: Bitdefender anti-malware server daemon
-# Description:       Used by untangle-virusblocker and untangle-spamblocker
+# Description:       Used by untangle-node-virus-blocker 
 ### END INIT INFO
 
 . /lib/lsb/init-functions
