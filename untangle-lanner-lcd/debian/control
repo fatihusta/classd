@@ -1,0 +1,12 @@
+Source: untangle-lanner-lcd
+Section: non-free/admin
+Priority: optional
+Maintainer: Sebastien Delafond <seb@untangle.com>
+Build-Depends: debhelper (>> 3.0.0), libc6 (>= 2.3.2), gcc, make, fakeroot
+Standards-Version: 3.7.2
+
+Package: untangle-lanner-lcd
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, dash
+Description: The Untangle Lanner Appliance LCD driver
+ The Untangle Lanner Appliance LCD driver daemon

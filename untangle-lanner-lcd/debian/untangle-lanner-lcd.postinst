@@ -1,0 +1,16 @@
+#!/bin/bash
+
+ourInit() {
+    if [ -x /usr/sbin/invoke-rc.d ] && [ ! "`readlink /usr/sbin/invoke-rc.d`" = /bin/true ] ; then
+        invoke-rc.d $1 $2
+    else
+        /etc/init.d/$1 $2
+    fi
+}
+
+if [ -x "/etc/init.d/untangle-lanner-lcd" ]; then
+    update-rc.d untangle-lanner-lcd defaults 40 > /dev/null
+    ourInit untangle-lanner-lcd restart
+fi
+
+exit 0
