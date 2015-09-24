@@ -7,6 +7,6 @@ Standards-Version: 3.7.2
 
 Package: untangle-lanner-lcd
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, dash, python2.7
+Depends: ${shlibs:Depends}, ${misc:Depends}, dash, python2.7, lanner-lcd-kernel
 Description: The Untangle Lanner Appliance LCD driver
  The Untangle Lanner Appliance LCD driver daemon
