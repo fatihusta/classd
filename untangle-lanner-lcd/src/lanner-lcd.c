@@ -99,6 +99,8 @@ int main(int argc, char* argv[]) {
 
     showpage(devfd, current_page);
 
+    Pre_Value = ioctl(devfd, PLCM_IOCTL_GET_KEYPAD, 0);
+    ioctl(devfd, PLCM_IOCTL_SET_LINE, 1);
     while (1) {            
 
         usleep(100000); //sleep .1 seconds
@@ -118,10 +120,9 @@ int main(int argc, char* argv[]) {
         /**
          * Read from the LCD
          */
-        Pre_Value = ioctl(devfd, PLCM_IOCTL_GET_KEYPAD, 0);
-        ioctl(devfd, PLCM_IOCTL_SET_LINE, 1);
 
         Keypad_Value = ioctl(devfd, PLCM_IOCTL_GET_KEYPAD, 0);
+
         if(Pre_Value != Keypad_Value)
         {
             detect_press=(Keypad_Value & 0x40);
@@ -151,6 +152,15 @@ int main(int argc, char* argv[]) {
                         }
                 }
             }
+
+            /*recalculate the timer after pushed button*/
+            if (auto_cycling && next_cycle_time == 0) {
+                next_cycle_time = time(NULL) + CYCLE_TIME_SECONDS;
+            }
+            if (next_refresh_time == 0) {
+                next_refresh_time = time(NULL) + REFRESH_TIME_SECONDS;
+            }
+
             Pre_Value = Keypad_Value;
         }
         usleep(100000); // 100 msec
