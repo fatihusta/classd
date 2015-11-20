@@ -15,9 +15,9 @@ MKDIR=/bin/mkdir -p
 ARCH := $(shell uname -m)
 
 ifeq ($(ARCH),x86_64)
-   BDAMDDIR := ./64/clientserver-1.16
+   BDAMDDIR := ./64/clientserver-1.19
 else
-   BDAMDDIR := ./32/clientserver-1.16
+   BDAMDDIR := ./32/clientserver-1.19
 endif
 
 include /usr/share/dpatch/dpatch.make
