@@ -1,0 +1,13 @@
+Source: untangle-google-connector
+Section: admin
+Priority: optional
+Maintainer: Dirk Morris <dmorris@untangle.com>
+Uploaders: Untangle Buildbot <buildbot@untangle.com>
+Build-Depends: debhelper (>> 3.0.0), dpatch, unrar
+Standards-Version: 3.8.0
+
+Package: untangle-google-connector
+Architecture: all
+Depends: drive
+Description: Untangle google API connection utilities
+ Untangle google API connection utilities for google drive.
