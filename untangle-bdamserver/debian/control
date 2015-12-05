@@ -8,8 +8,5 @@ Standards-Version: 3.8.0
 
 Package: untangle-bdamserver
 Architecture: i386 amd64
-Conflicts: untangle-ctasd
-Replaces: untangle-ctasd
-Provides: untangle-ctasd
 Description: Bitdefender anti-malware package for VirusBlocker and SpamBlocker.
  Bitdefender bdamserver and spamassassin plugin.
