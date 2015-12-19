@@ -12,6 +12,7 @@ clean:
 	dh_testdir
 	dh_testroot
 	rm -rf $(DESTDIR) sav-install build-stamp
+	rm -rf debian/dirs core configure-stamp build
 	dh_clean
 
 binary-indep: build
