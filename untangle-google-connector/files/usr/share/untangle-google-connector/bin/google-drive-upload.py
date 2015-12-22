@@ -35,6 +35,7 @@ for opt in opts:
      if k == '-d' or k == '--directory':
          directory = str(v)
 
+print "Uploading: ", files
 for file in files:
     filename = os.path.basename( file )
     if directory != None:
@@ -55,5 +56,4 @@ for file in files:
     except Exception,err:
         print str(err)
     
-print "Uploading: ", files
-
+sys.exit(ret)
