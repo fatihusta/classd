@@ -120,7 +120,7 @@ sub _mailshell_classify {
 	close $handle;
 
 	# run spamc
-	my $output = `/usr/bin/spamc -R -p 1784 < $filename`;
+	my $output = `/usr/bin/spamc -d 127.0.0.1 -R -p 1784 < $filename`;
 	if ( $? != 0 ) {
 	    warn "mailshell: spamc failed: $?";
             unlink($filename);
