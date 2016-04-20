@@ -80,6 +80,7 @@ int main(int argc, char* argv[]) {
     unsigned char detect_press;
     unsigned char detect_dir;
     int devfd;
+    int devfd_tries = 60 * 10;
     unsigned char line1[16];
     unsigned char line2[16];
 
@@ -88,12 +89,18 @@ int main(int argc, char* argv[]) {
     time_t next_refresh_time = 0; /* next time that the page should be refreshed */
     int auto_cycling = 1;
 
-    fprintf(stderr,"Untangle LANNERE LCD-server " VERSION"\n"); 
+    fprintf(stderr,"Untangle LANNER LCD-server " VERSION"\n"); 
 
-    devfd = open("/dev/plcm_drv", O_RDWR);
-    if(devfd == -1)
-    {
-        printf("Can't open /dev/plcm_drv\n");
+    do{
+    	devfd = open("/dev/plcm_drv", O_RDWR);
+    	if(devfd != -1)
+    	{
+		break;
+    	}
+        usleep(100000);
+    }while(devfd == -1 && devfd_tries--);
+    if(devfd == -1){
+	printf("Can't open /dev/plcm_drv\n");
         return -1;
     }
 
