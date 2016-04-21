@@ -8,9 +8,9 @@ ourInit() {
     fi
 }
 
-if [ -x "/etc/init.d/untangle-lcd" ]; then
-    update-rc.d untangle-lcd defaults 40 > /dev/null
-    ourInit untangle-lcd restart
+if [ -x "/etc/init.d/untangle-portwell-lcd" ]; then
+    update-rc.d untangle-portwell-lcd defaults 40 > /dev/null
+    ourInit untangle-portwell-lcd restart
 fi
 
 exit 0

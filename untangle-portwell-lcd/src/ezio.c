@@ -71,8 +71,8 @@ void showpage(int page)
     bzero(line1,LINE_LENGTH+1);
     bzero(line2,LINE_LENGTH+1);
 
-    snprintf(cmd1,255,"/usr/share/untangle-lcd/bin/ut-lcd-page %i %i",page,1);
-    snprintf(cmd2,255,"/usr/share/untangle-lcd/bin/ut-lcd-page %i %i",page,2);
+    snprintf(cmd1,255,"/usr/share/untangle-portwell-lcd/bin/ut-lcd-page %i %i",page,1);
+    snprintf(cmd2,255,"/usr/share/untangle-portwell-lcd/bin/ut-lcd-page %i %i",page,2);
 
     getoutput(cmd1, line1, LINE_LENGTH);
     getoutput(cmd2, line2, LINE_LENGTH);

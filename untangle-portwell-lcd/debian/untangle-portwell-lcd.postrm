@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SERVICE=untangle-lcd
+SERVICE=untangle-portwell-lcd
 
 case $1 in
   purge)

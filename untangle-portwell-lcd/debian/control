@@ -1,12 +1,15 @@
-Source: untangle-lcd
+Source: untangle-portwell-lcd
 Section: non-free/admin
 Priority: optional
 Maintainer: Dirk Morris <dmorris@untangle.com>
 Build-Depends: debhelper (>> 3.0.0), libc6 (>= 2.3.2), gcc, make, fakeroot
 Standards-Version: 3.7.2
 
-Package: untangle-lcd
+Package: untangle-portwell-lcd
 Architecture: any
+Conflicts: untangle-lcd
+Replaces: untangle-lcd
+Provides: untangle-lcd
 Depends: ${shlibs:Depends}, dash
 Description: The Untangle Appliance LCD driver
  The Untangle Appliance LCD driver daemon

@@ -1,7 +1,7 @@
 #! /bin/dash
 
 ### BEGIN INIT INFO
-# Provides:          untangle-lcd
+# Provides:          untangle-portwell-lcd
 # Required-Start:    $local_fs $remote_fs
 # Required-Stop:
 # Default-Start:     2 3 4 5
@@ -13,9 +13,9 @@
 . /lib/lsb/init-functions
 
 DESC="Untangle LCD"
-DAEMON_NAME="untangle-lcd"
+DAEMON_NAME="untangle-portwell-lcd"
 DAEMON_SCRIPT=/usr/bin/ezio
-PID_FILE="/var/run/untangle-lcd.pid"
+PID_FILE="/var/run/untangle-portwell-lcd.pid"
 
 start()
 {
@@ -32,7 +32,7 @@ start()
       rm -f ${PID_FILE}
     fi
 
-    log_progress_msg "untangle-lcd"    
+    log_progress_msg "untangle-portwell-lcd"    
     start-stop-daemon -m --pidfile ${PID_FILE} --name ${DESC} --start --background --startas ${DAEMON_SCRIPT}
 
     log_end_msg 0	
@@ -42,7 +42,7 @@ stop()
 {
     log_daemon_msg "Stopping $DESC"
 
-    log_progress_msg "untangle-lcd"    
+    log_progress_msg "untangle-portwell-lcd"    
     start-stop-daemon --pidfile ${PID_FILE} --stop --retry USR1/4/USR1/2/USR1/2/INT/1/TERM/1/KILL/1
     RET=$?
     log_end_msg $RET
