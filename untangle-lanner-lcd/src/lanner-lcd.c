@@ -4,19 +4,26 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <syslog.h>
 #include "plcm_ioctl.h"
 
-#define VERSION "1.0"
+#define VERSION "1.1"
+#define DEVICE "/dev/plcm_drv"
+#define UNTANGLE_LCD_PAGE "/usr/share/untangle-lanner-lcd/bin/ut-lcd-page"
 #define LINE_LENGTH 16
 #define NUM_PAGES 7
 
 #define CYCLE_TIME_SECONDS 5
 #define REFRESH_TIME_SECONDS 10
 
+int Debug = 0;
+
 void ShowMessage (int devfd, char *str1 , char *str2)
 {
-    printf("DISPLAY LINE 1: \"%s\"\n", str1);
-    printf("DISPLAY LINE 2: \"%s\"\n", str2);
+    if(Debug){
+        printf("DISPLAY LINE 1: \"%s\"\n", str1);
+        printf("DISPLAY LINE 2: \"%s\"\n", str2);
+    }
     ioctl(devfd, PLCM_IOCTL_SET_LINE, 1);
     write(devfd, str1, strlen(str1));
     ioctl(devfd, PLCM_IOCTL_SET_LINE, 2);
@@ -32,7 +39,8 @@ void getoutput(char* cmd, char* output, int outputlen)
     /* Open the command for reading. */
     fp = popen(cmd, "r");
     if (fp == NULL) {
-        fprintf( stderr,"Failed to run command\n" );
+        fprintf( stderr,"Failed to run command %s\n", cmd );
+        syslog(LOG_INFO, "Failed to run command %s", cmd);
         return;
     }
 
@@ -63,14 +71,25 @@ void showpage(int devfd, int page)
     bzero(line1,LINE_LENGTH+1);
     bzero(line2,LINE_LENGTH+1);
 
-    snprintf(cmd1,255,"/usr/share/untangle-lanner-lcd/bin/ut-lcd-page %i %i",page,1);
-    snprintf(cmd2,255,"/usr/share/untangle-lanner-lcd/bin/ut-lcd-page %i %i",page,2);
+    snprintf(cmd1, 255, UNTANGLE_LCD_PAGE " %i %i",page,1);
+    snprintf(cmd2, 255, UNTANGLE_LCD_PAGE " %i %i",page,2);
 
     getoutput(cmd1, line1, LINE_LENGTH);
     getoutput(cmd2, line2, LINE_LENGTH);
     ShowMessage(devfd, line1, line2);
 
     return;
+}
+
+void opensyslog()
+{
+    setlogmask( LOG_UPTO (LOG_INFO) );
+    openlog("lanner-lcd", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL1 );
+}
+
+void closesyslog()
+{
+    closelog();
 }
 
 int main(int argc, char* argv[]) {
@@ -89,18 +108,30 @@ int main(int argc, char* argv[]) {
     time_t next_refresh_time = 0; /* next time that the page should be refreshed */
     int auto_cycling = 1;
 
-    fprintf(stderr,"Untangle LANNER LCD-server " VERSION"\n"); 
+    if(argc > 0){
+        for( i = 1; i< argc; i++){
+            if(!strcmp(argv[i],"--debug")){
+                Debug = 1;
+            }
+        }
+    }
+
+    opensyslog();
+
+    fprintf(stderr,"Untangle Lanner LCD-server " VERSION"\n"); 
+    syslog(LOG_INFO, "Untangle Lanner LCD-server " VERSION);
 
     do{
-    	devfd = open("/dev/plcm_drv", O_RDWR);
-    	if(devfd != -1)
-    	{
-		break;
+    	devfd = open(DEVICE, O_RDWR);
+    	if(devfd != -1){
+		  break;
     	}
         usleep(100000);
     }while(devfd == -1 && devfd_tries--);
     if(devfd == -1){
-	printf("Can't open /dev/plcm_drv\n");
+        printf("Can't open " DEVICE "\n");
+        syslog(LOG_INFO, "Can't open " DEVICE);
+        closesyslog();
         return -1;
     }
 
@@ -186,5 +217,6 @@ int main(int argc, char* argv[]) {
     }
 
     close(devfd);
+    closesyslog();
     return 0;
 }
