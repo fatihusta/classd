@@ -6,7 +6,7 @@ Build-Depends: debhelper (>> 3.0.0), libc6 (>= 2.3.2), gcc, make, fakeroot
 Standards-Version: 3.7.2
 
 Package: untangle-portwell-lcd
-Architecture: any
+Architecture: i386 amd64
 Conflicts: untangle-lcd
 Replaces: untangle-lcd
 Provides: untangle-lcd
