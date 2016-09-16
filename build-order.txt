@@ -1,0 +1,9 @@
+untangle-lanner-lcd            jessie
+untangle-portwell-lcd          jessie
+untangle-default-site          jessie
+untangle-squid-config          jessie
+untangle-bdamserver            jessie
+untangle-spamcatd	       jessie
+untangle-classd                jessie
+untangle-oem-tangent           jessie
+untangle-google-connector      jessie
