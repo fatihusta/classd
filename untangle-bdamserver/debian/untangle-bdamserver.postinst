@@ -24,7 +24,7 @@ function commentOutOption
 }
 
 # this sets the license for anti-virus
-setOption "LicenseSerial" "B98B967084E39CC6BF9C"
+setOption "LicenseSerial" "270E71F04AE673CC4034"
 
 # No longer needed since we aren't using their anti-spam component
 #setOption "LicenseAntispam" "174FFC1C-4C61-47E5-8A73-700BBB1EE655"
