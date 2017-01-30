@@ -4,8 +4,10 @@
 rsync -Ha /usr/share/untangle-oem-*/ /
 
 # rename grub titles
-sed -i 's|^\(title.*\)Debian GNU/Linux, kernel|\1Kernel|' /boot/grub/menu.lst
-sed -i 's|^\(title.*\)-untangle|\1|' /boot/grub/menu.lst
+if [ -f /boot/grub/menu.lst ] ; then
+    sed -i 's|^\(title.*\)Debian GNU/Linux, kernel|\1Kernel|' /boot/grub/menu.lst
+    sed -i 's|^\(title.*\)-untangle|\1|' /boot/grub/menu.lst
+fi
 
 # change startup messages
 sed -i 's|OEM_NAME=.*|OEM_NAME=\"WebHawk\"|' /etc/init.d/untangle-vm
