@@ -1,5 +1,5 @@
 {
     "javaClass": "com.untangle.uvm.OemSettings",
-    "oemName": "APC(r) by Schneider Electric NG Firewall Complete, Powered by Untangle",
+    "oemName": "APC-NGFirewall",
     "oemUrl": "http://www.apc.com"
 }
