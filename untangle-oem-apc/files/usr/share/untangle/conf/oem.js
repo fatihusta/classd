@@ -1,5 +1,5 @@
 {
     "javaClass": "com.untangle.uvm.OemSettings",
-    "oemName": "APC-NGFirewall",
+    "oemName": "APC UTM",
     "oemUrl": "http://www.apc.com"
 }
