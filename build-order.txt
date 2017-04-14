@@ -5,7 +5,6 @@ untangle-squid-config          jessie
 untangle-bdamserver            jessie
 untangle-spamcatd	       jessie
 untangle-classd                jessie
-untangle-oem-tangent           jessie
 untangle-oem-apc	       jessie
 untangle-oem-adtran	       jessie
 untangle-google-connector      jessie
