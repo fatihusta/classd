@@ -22,7 +22,4 @@ if [ ! -f /etc/hostname ] ; then
     hostname "adtran.example.com"
 fi
 
-# set bootsplash
-update-initramfs -u
-
 exit 0

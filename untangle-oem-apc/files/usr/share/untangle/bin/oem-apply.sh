@@ -22,7 +22,4 @@ if [ ! -f /etc/hostname ] ; then
     hostname "apc.example.com"
 fi
 
-# set bootsplash
-update-initramfs -u
-
 exit 0
