@@ -1,7 +1,0 @@
-#! /bin/bash
-
-# ssh server keys
-rm /etc/ssh/ssh_host_*key*
-dpkg-reconfigure openssh-server
-
-# apache
