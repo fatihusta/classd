@@ -75,6 +75,6 @@ rm -r -f /var/cache/untangle-bdamserver/spam
 touch /var/cache/untangle-bdamserver/virus/2/Plugins/cache.000
 
 # disable untangle-bdamserver at startup (now handled by nodes)
-update-rc.d untangle-bdamserver disable >/dev/null 2>&1
+update-rc.d -f untangle-bdamserver disable >/dev/null 2>&1
 
 exit 0
