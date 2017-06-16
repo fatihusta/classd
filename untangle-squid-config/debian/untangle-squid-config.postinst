@@ -51,6 +51,6 @@ setOption never_direct "allow all"
 find /usr/share/squid/errors/ -type f -exec sed -i 's/Squid/WebCache/' {} \; >/dev/null 2>&1
 
 # remove squid from startup
-update-rc.d squid disable
+update-rc.d -f squid disable
 
 exit 0
