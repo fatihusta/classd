@@ -11,3 +11,4 @@ Architecture: i386 amd64
 Depends: spamc
 Description: Mailshell antispam daemon
  Mailshell spamcatd and spamassassin plugin.
+

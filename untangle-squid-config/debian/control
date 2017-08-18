@@ -11,3 +11,4 @@ Architecture: all
 Depends: squid, bc
 Description: The Untangle Squid config
  The Untangle Squid config.
+

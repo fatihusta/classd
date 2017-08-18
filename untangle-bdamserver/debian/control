@@ -10,3 +10,4 @@ Package: untangle-bdamserver
 Architecture: i386 amd64
 Description: Bitdefender anti-malware package for VirusBlocker and SpamBlocker.
  Bitdefender bdamserver and spamassassin plugin.
+

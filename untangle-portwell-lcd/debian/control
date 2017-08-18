@@ -13,3 +13,4 @@ Provides: untangle-lcd
 Depends: ${shlibs:Depends}, dash
 Description: The Untangle Appliance LCD driver
  The Untangle Appliance LCD driver daemon
+

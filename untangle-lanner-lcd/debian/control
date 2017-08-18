@@ -10,3 +10,4 @@ Architecture: i386 amd64
 Depends: ${shlibs:Depends}, ${misc:Depends}, dash, python2.7, lanner-lcd-kernel
 Description: The Untangle Lanner Appliance LCD driver
  The Untangle Lanner Appliance LCD driver daemon
+
