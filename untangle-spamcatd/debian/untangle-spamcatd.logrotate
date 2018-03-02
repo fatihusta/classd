@@ -1,8 +1,0 @@
-/var/log/spamcatd.log {
-	rotate 2
-	missingok
-	size 100k
-	compress
-	notifempty
-	copytruncate
-}

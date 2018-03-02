@@ -1,9 +1,0 @@
-#!/bin/bash
-
-service untangle-spamcatd stop
-
-if [ "$1" = "purge" ]; then
-    rm -rf /etc/spamcatd
-fi
-
-exit 0
