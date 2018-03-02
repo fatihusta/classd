@@ -1,10 +1,13 @@
-FILES = src/ezio 
+SRC_DIR := src
 
-INCLUDEDIR = /usr/include
-CFLAGS =  -g -O0 -I$(INCLUDEDIR)
+DESTDIR ?= /tmp/portwell-lcd
 
-all: $(FILES)
+default:
+	gcc -O2 -I$(SRC_DIR) $(SRC_DIR)/eizo.c -o eizo
 
 clean:
-	rm -f $(FILES) *~ core ezio.o
+	rm -f eizo $(SRC_DIR)/*.o
 
+install:
+	cp eizo $(DESTDIR)/usr/sbin/
+	cp -r -a files/* $(DESTDIR)/

@@ -1,0 +1,11 @@
+[Unit]
+Description=Untangle Portwell LCD
+
+[Service]
+Type=simple
+User=daemon
+ExecStart=/usr/bin/eizo
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
