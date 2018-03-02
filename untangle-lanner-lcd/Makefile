@@ -9,5 +9,6 @@ clean:
 	rm -f lanner-lcd $(SRC_DIR)/*.o
 
 install:
-	cp lanner-lcd $(DEFAULT)/usr/sbin/
-	cp -r -a files/* $(DEFAULT)/
+	mkdir -p $(DEFAULT)/usr/sbin
+	cp lanner-lcd $(DESTDIR)/usr/sbin/
+	cp -r -a files/* $(DESTDIR)/

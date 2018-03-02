@@ -4,7 +4,7 @@ Description=Untangle Portwell LCD
 [Service]
 Type=simple
 User=daemon
-ExecStart=/usr/bin/eizo
+ExecStart=/usr/sbin/eizo
 Restart=always
 
 [Install]

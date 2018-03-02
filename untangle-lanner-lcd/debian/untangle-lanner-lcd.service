@@ -4,7 +4,7 @@ Description=Untangle Lanner LCD
 [Service]
 Type=simple
 User=daemon
-ExecStart=/usr/bin/lanner-lcd
+ExecStart=/usr/sbin/lanner-lcd
 Restart=always
 
 [Install]
