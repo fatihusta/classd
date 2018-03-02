@@ -1,0 +1,11 @@
+[Unit]
+Description=Untangle Lanner LCD
+
+[Service]
+Type=simple
+User=daemon
+ExecStart=/usr/bin/lanner-lcd
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
