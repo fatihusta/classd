@@ -11,13 +11,3 @@ DEST_DIR := $(CURDIR)/debian/untangle-bdamserver
 
 override_dh_gencontrol:
 	if [ -f debian/version ] ; then dh_gencontrol -- -v"`cat debian/version`" ; else dh_gencontrol ; fi
-
-override_dh_install:
-	mkdir -p $(DEST_DIR)
-	cp -ra files/* $(DEST_DIR)
-
-override_dh_system_enable:
-	dh_systemd_enable --no-enable
-
-override_dh_system_start:
-	dh_systemd_start --no-start
