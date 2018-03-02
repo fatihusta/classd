@@ -9,6 +9,6 @@ clean:
 	rm -f eizo $(SRC_DIR)/*.o
 
 install:
-	mkdir -p $(DEFAULT)/usr/sbin
+	mkdir -p $(DESTDIR)/usr/sbin
 	cp eizo $(DESTDIR)/usr/sbin/
 	cp -r -a files/* $(DESTDIR)/
