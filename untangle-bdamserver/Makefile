@@ -4,7 +4,7 @@ ARCH := $(shell dpkg-architecture -qDEB_BUILD_ARCH)
 ifeq ($(ARCH),amd64)
   ARCH_GLIBC := x86_64-glibc23
 else
-  BDAMTAR := x86-glibc22
+  ARCH_GLIBC := x86-glibc22
 endif
 
 BDAMTAR := ./clientserver-$(VERSION)-linux-$(ARCH_GLIBC).tar.gz
