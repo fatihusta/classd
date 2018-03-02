@@ -51,15 +51,13 @@ setOption "ProtocolSPAMD" "antimalware"
 
 setOption "Daemon" "1"
 
-ARCH=`arch`
-
-case "$ARCH" in
-  "x86_64")
+case $(dpkg-architecture -qDEB_BUILD_ARCH) in
+  amd64)
     setOption "UpdateURLAntivirus" "http:\/\/bd.untangle.com\/av64bit"
 #    setOption "UpdateURLAntispam" "http:\/\/bd.untangle.com\/as_linux64"
     commentOutOption "UpdateURLAntispam"
     ;;
-  "i686")
+  i386)
     setOption "UpdateURLAntivirus" "http:\/\/bd.untangle.com\/av32bit"
 #    setOption "UpdateURLAntispam" "http:\/\/bd.untangle.com\/as_linux32"
     commentOutOption "UpdateURLAntispam"
@@ -74,7 +72,8 @@ esac
 rm -r -f /var/cache/untangle-bdamserver/spam
 touch /var/cache/untangle-bdamserver/virus/2/Plugins/cache.000
 
-# disable untangle-bdamserver at startup (now handled by nodes)
-update-rc.d -f untangle-bdamserver disable >/dev/null 2>&1
+chown -R daemon:daemon /var/cache/untangle-bdamserver
+
+#DEBHELPER#
 
 exit 0

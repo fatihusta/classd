@@ -1,6 +1,6 @@
 #!/bin/bash
 
-/etc/init.d/untangle-bdamserver stop
+#DEBHELPER#
 
 # we only delete the signatures and other stuff
 # if the package is being completely removed

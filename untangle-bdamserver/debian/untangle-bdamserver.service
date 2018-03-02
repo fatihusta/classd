@@ -1,0 +1,12 @@
+[Unit]
+Description=Untangle Bit Defender Anti Malware
+
+[Service]
+Type=simple
+User=daemon
+ExecStartPre=bash -c 'd=/var/cache/untangle-bdamserver/virus/2/Plugins ; [ -d $d ] || touch $d/cache.000'
+ExecStart=/usr/lib/bdamserver -c /etc/bdamserver/bdamserver.conf
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
