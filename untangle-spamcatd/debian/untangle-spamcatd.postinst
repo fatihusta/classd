@@ -45,6 +45,8 @@ setOption "force_msgbl" "yes" $SPAMCATCHER_CONFFILE
 setOption "tmpdir" "/tmp" $SPAMCATCHER_CONFFILE
 setOption "stat_file_upload_url" "http://untanglestat.mailshell.net/mailsh.cgi?untangle" $SPAMCATCHER_CONFFILE
 
+rm -f /etc/init.d/${DPKG_MAINTSCRIPT_PACKAGE}
+
 #DEBHELPER#
 
 exit 0

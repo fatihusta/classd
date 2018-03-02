@@ -74,6 +74,8 @@ touch /var/cache/untangle-bdamserver/virus/2/Plugins/cache.000
 
 chown -R daemon:daemon /var/cache/untangle-bdamserver
 
+rm -f /etc/init.d/${DPKG_MAINTSCRIPT_PACKAGE}
+
 #DEBHELPER#
 
 exit 0
