@@ -33,14 +33,12 @@ install: build
 	mkdir -p $(DESTDIR)/usr/bin $(DESTDIR)/etc/spamcatd $(DESTDIR)/usr/share/perl5/Mail/SpamAssassin/Plugin
 	mkdir -p $(DESTDIR)/etc/spamassassin $(DESTDIR)/usr/lib/spamcatd
 
-	cp -r -a files/* $(DESTDIR)
-
 	cp $(TMPDIR)/spamcatd/spamcatd $(DESTDIR)/usr/bin/spamcatd
 	chmod 755 $(DESTDIR)/usr/bin/*
 
 	cp $(TMPDIR)/spamcatd/*.conf $(DESTDIR)/etc/spamcatd
 	cp $(TMPDIR)/spamcatd/conf/*.conf $(DESTDIR)/etc/spamcatd
-	cp -a $(TMPDIR)/spamcatchersdk/lib/libspamcatcher.so* $(DESTDIR)/usr/lib/spamcatd/
+	cp -a $(TMPDIR)/spamcatchersdk/lib/libspamcatcher.so* $(DESTDIR)/usr/lib/
 
 	cp ./plugin/MailShell.pm $(DESTDIR)/usr/share/perl5/Mail/SpamAssassin/Plugin
 	cp ./plugin/mailshell.pre $(DESTDIR)/etc/spamassassin

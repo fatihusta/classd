@@ -4,7 +4,7 @@ Description=Untangle Spamcat
 [Service]
 Type=simple
 User=daemon
-ExecStart=/usr/bin/spamcatd.sh /etc/spamcatd/spamcatd.conf
+ExecStart=/usr/bin/spamcatd /etc/spamcatd/spamcatd.conf
 Restart=always
 
 [Install]
