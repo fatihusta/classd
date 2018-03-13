@@ -8,7 +8,8 @@ Standards-Version: 3.8.0
 
 Package: untangle-spamcatd
 Architecture: i386 amd64
-Depends: spamc
+Depends: spamc, systemd-sysv
+Conflicts: sysvinit-core
 Description: Mailshell antispam daemon
  Mailshell spamcatd and spamassassin plugin.
 

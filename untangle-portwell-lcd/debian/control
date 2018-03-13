@@ -10,7 +10,8 @@ Architecture: i386 amd64
 Conflicts: untangle-lcd
 Replaces: untangle-lcd
 Provides: untangle-lcd
-Depends: ${shlibs:Depends}, dash
+Depends: ${shlibs:Depends}, dash, systemd-sysv
+Conflicts: sysvinit-core
 Description: The Untangle Appliance LCD driver
  The Untangle Appliance LCD driver daemon
 

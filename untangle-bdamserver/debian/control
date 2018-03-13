@@ -8,6 +8,8 @@ Standards-Version: 3.8.0
 
 Package: untangle-bdamserver
 Architecture: i386 amd64
+Depends: systemd-sysv
+Conflicts: sysvinit-core
 Description: Bitdefender anti-malware package for VirusBlocker and SpamBlocker.
  Bitdefender bdamserver and spamassassin plugin.
 
