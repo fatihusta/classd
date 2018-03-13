@@ -7,11 +7,10 @@ Standards-Version: 3.7.2
 
 Package: untangle-portwell-lcd
 Architecture: i386 amd64
-Conflicts: untangle-lcd
+Conflicts: untangle-lcd, sysvinit-core
 Replaces: untangle-lcd
 Provides: untangle-lcd
 Depends: ${shlibs:Depends}, dash, systemd-sysv
-Conflicts: sysvinit-core
 Description: The Untangle Appliance LCD driver
  The Untangle Appliance LCD driver daemon
 
