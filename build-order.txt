@@ -1,9 +1,8 @@
-untangle-lanner-lcd            jessie,stretch
-untangle-portwell-lcd          jessie,stretch
-untangle-squid-config          jessie,stretch
-untangle-bdamserver            jessie,stretch
-untangle-spamcatd	       jessie,stretch
-untangle-classd                jessie,stretch
-untangle-oem-apc	       jessie,stretch
-untangle-oem-adtran	       jessie,stretch
-untangle-google-connector      jessie,stretch
+untangle-lanner-lcd            stretch
+untangle-portwell-lcd          stretch
+untangle-bdamserver            stretch
+untangle-spamcatd	       stretch
+untangle-classd                stretch
+untangle-oem-apc	       stretch
+untangle-oem-adtran	       stretch
+untangle-google-connector      stretch
