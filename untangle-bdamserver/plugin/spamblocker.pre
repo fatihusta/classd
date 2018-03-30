@@ -1,3 +1,0 @@
-# SpamBlocker - check the Untangle Spam Blocker for mail classifications
-#
-loadplugin Mail::SpamAssassin::Plugin::SpamBlocker

@@ -11,5 +11,5 @@ Architecture: i386 amd64
 Depends: systemd-sysv
 Conflicts: sysvinit-core
 Description: Bitdefender anti-malware package for VirusBlocker and SpamBlocker.
- Bitdefender bdamserver and spamassassin plugin.
+ Bitdefender bdamserver.
 
