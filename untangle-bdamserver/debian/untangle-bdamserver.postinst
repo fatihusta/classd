@@ -29,30 +29,21 @@ function commentOutOption
 # this sets the license for anti-virus
 setOption "LicenseSerial" "270E71F04AE673CC4034"
 
-# No longer needed since we aren't using their anti-spam component
-#setOption "LicenseAntispam" "174FFC1C-4C61-47E5-8A73-700BBB1EE655"
-
-# These are the old 1.15 path options
-#setOption "PathDatabase" "\/var\/cache\/untangle-bdamserver\/virus"
-#setOption "PathAntispam" "\/var\/cache\/untangle-bdamserver\/spam"
-commentOutOption "PathDatabase" 
-commentOutOption "PathAntispam" 
-
-# These are the new 1.16 path options and we only need virus
-# since we no longer use ther anti-spam stuff
+# set the location for the virus definition cache and comment
+# the anti-spam definition cache since we don't use it
 setOption "PathAntimalwareRoot" "\/var\/cache\/untangle-bdamserver\/virus"
-#setOption "PathAntispamRoot" "\/var\/cache\/untangle-bdamserver\/spam"
 commentOutOption "PathAntispamRoot" 
 
+# set path for the pid and log files and other options
 setOption "PathPid" "\/var\/run\/bdamserver\/bdamserver.pid"
 setOption "PathLog" "\/var\/log\/bdamserver.log"
 setOption "LogAppend" "1"
 setOption "MaxClients" "10"
 
 # only need the antimalwar protocol we don't use their anti-spam
-#setOption "ProtocolSPAMD" "antimalware,antispam"
 setOption "ProtocolSPAMD" "antimalware"
 
+# set the daemon mode flag
 setOption "Daemon" "1"
 
 case $(dpkg-architecture -qDEB_BUILD_ARCH) in
@@ -72,16 +63,16 @@ case $(dpkg-architecture -qDEB_BUILD_ARCH) in
 esac
 
 # Make the directories for the virus signatures
-mkdir /var/cache/untangle-bdamserver
-mkdir /var/cache/untangle-bdamserver/virus
-mkdir /var/cache/untangle-bdamserver/virus/2
-mkdir /var/cache/untangle-bdamserver/virus/2/Plugins
+mkdir /var/cache/untangle-bdamserver >/dev/null 2>&1
+mkdir /var/cache/untangle-bdamserver/virus >/dev/null 2>&1
+mkdir /var/cache/untangle-bdamserver/virus/2 >/dev/null 2>&1
+mkdir /var/cache/untangle-bdamserver/virus/2/Plugins >/dev/null 2>&1
 
 # Set the owner to the user we created
 chown -R $USERNAME:$GROUPNAME /var/cache/untangle-bdamserver
 
 # Create the directory for the PID file
-mkdir /var/run/bdamserver
+mkdir /var/run/bdamserver >/dev/null 2>&1
 chown $USERNAME:$GROUPNAME /var/run/bdamserver
 
 # Enable the on-disk cache mode by creating a special file which
