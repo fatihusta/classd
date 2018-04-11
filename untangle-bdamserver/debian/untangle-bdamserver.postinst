@@ -86,6 +86,10 @@ chown $USERNAME:$GROUPNAME /var/log/bdamserver.log
 
 rm -f /etc/init.d/${DPKG_MAINTSCRIPT_PACKAGE}
 
+# 14.0 remove old files
+rm -f /etc/spamassassin/spamblocker.cf
+rm -f /etc/spamassassin/spamblocker.pre
+
 #DEBHELPER#
 
 exit 0
