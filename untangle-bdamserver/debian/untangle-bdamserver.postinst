@@ -27,7 +27,7 @@ function commentOutOption
 }
 
 # this sets the license for anti-virus
-setOption "LicenseSerial" "270E71F04AE673CC4034"
+setOption "LicenseSerial" "323ACDDA24FDC1E51B5A"
 
 # set the location for the virus definition cache and comment
 # the anti-spam definition cache since we don't use it
