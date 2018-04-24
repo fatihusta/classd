@@ -1,3 +1,4 @@
+untangle-extjs                 stretch
 untangle-lanner-lcd            stretch
 untangle-portwell-lcd          stretch
 untangle-bdamserver            stretch

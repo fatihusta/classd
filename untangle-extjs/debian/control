@@ -1,0 +1,14 @@
+Source: untangle-extjs
+Section: admin
+Priority: optional
+Maintainer: Sebastien Delafond <seb@untangle.com>
+Uploaders: Untangle Buildbot <buildbot@untangle.com>
+Build-Depends: debhelper
+Standards-Version: 3.8.0
+
+Package: untangle-extjs
+Architecture: all
+Breaks: untangle-apache2-config (<< 14.0.0.20180424T011824.df98fd1d6-1stretch)
+Replaces: untangle-apache2-config (<< 14.0.0.20180424T011824.df98fd1d6-1stretch)
+Description: The Untangle PyConnector
+ Connector for the Untangle Cloud 
