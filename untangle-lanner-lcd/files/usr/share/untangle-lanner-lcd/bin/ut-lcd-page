@@ -71,14 +71,14 @@ elif (page == 4):
         uid = runCmd(' cat /usr/share/untangle/conf/uid | sed -e \'s/-//g\' ')
         print center(uid)
 elif (page == 5):
-    intf = json.loads(open('/var/lib/untangle-netd/interface-1-status.js').read())
+    intf = json.loads(open('/var/lib/interface-status/interface-1-status.js').read())
     if intf.get('v4Address') != None:
         if (line == 1):
             print "*** External ***"
         else:
             print center(intf.get('v4Address'))
 elif (page == 6):
-    intf = json.loads(open('/var/lib/untangle-netd/interface-2-status.js').read())
+    intf = json.loads(open('/var/lib/interface-status/interface-2-status.js').read())
     if intf.get('v4Address') != None:
         if (line == 1):
             print "*** Internal ***"
