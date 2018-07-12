@@ -50,10 +50,11 @@ elif (page == 2):
     if (line == 1):
         print "***  Memory  ***"
     else:
-        used = float(runCmd('free -m | grep \'buffers/cache\' | awk \'{print $3}\''))
-        free = float(runCmd('free -m | grep \'buffers/cache\' | awk \'{print $4}\''))
-        totalGigs = str(int(round((used + free)/1000))) + " Gb"
-        percentFree = str(int(round((free/(used + free))*100.0))) + "%"
+        total = float(runCmd('free -m | grep \'Mem\' | awk \'{print $2}\''))
+        free = float(runCmd('free -m | grep \'Mem\' | awk \'{print $4}\''))
+        buffcache = float(runCmd('free -m | grep \'Mem\' | awk \'{print $6}\''))
+        totalGigs = str(int(round(total/1000))) + " Gb"
+        percentFree = str(int(round(((free + buffcache)/total)*100.0))) + "%"
         print center(totalGigs + " " + percentFree + " free")
 elif (page == 3):
     if (line == 1):
