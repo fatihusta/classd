@@ -3,7 +3,7 @@ Section: non-free/admin
 Priority: optional
 Maintainer: Sebastien Delafond <seb@untangle.com>
 Build-Depends: debhelper, dh-systemd
-Standards-Version: 3.7.2
+Standards-Version: 3.9.8
 
 Package: untangle-lanner-lcd
 Architecture: i386 amd64
