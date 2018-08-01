@@ -2,7 +2,7 @@ Source: untangle-lanner-lcd
 Section: non-free/admin
 Priority: optional
 Maintainer: Sebastien Delafond <seb@untangle.com>
-Build-Depends: ${misc:Depends}, debhelper (>= 10)
+Build-Depends: debhelper (>= 10)
 Standards-Version: 3.9.8
 
 Package: untangle-lanner-lcd

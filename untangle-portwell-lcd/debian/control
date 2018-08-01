@@ -2,7 +2,7 @@ Source: untangle-portwell-lcd
 Section: non-free/admin
 Priority: optional
 Maintainer: Dirk Morris <dmorris@untangle.com>
-Build-Depends: ${misc:Depends}, debhelper (>= 10), libc6 (>= 2.3.2), gcc, make, fakeroot
+Build-Depends: debhelper (>= 10), libc6 (>= 2.3.2), gcc, make, fakeroot
 Standards-Version: 3.9.8
 
 Package: untangle-portwell-lcd

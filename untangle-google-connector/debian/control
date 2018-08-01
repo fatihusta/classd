@@ -3,7 +3,7 @@ Section: admin
 Priority: optional
 Maintainer: Dirk Morris <dmorris@untangle.com>
 Uploaders: Untangle Buildbot <buildbot@untangle.com>
-Build-Depends: ${misc:Depends}, debhelper (>= 10), dpatch, unrar
+Build-Depends: debhelper (>= 10), unrar
 Standards-Version: 3.9.8
 
 Package: untangle-google-connector
