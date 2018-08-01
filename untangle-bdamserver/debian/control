@@ -3,12 +3,12 @@ Section: admin
 Priority: optional
 Maintainer: Sebastien Delafond <sdelafond@gmail.com>
 Uploaders: Untangle Buildbot <buildbot@untangle.com>
-Build-Depends: debhelper (>= 10)
+Build-Depends: ${misc:Depends}, debhelper (>= 10)
 Standards-Version: 3.9.8
 
 Package: untangle-bdamserver
 Architecture: i386 amd64
-Depends: systemd-sysv
+Depends: ${misc:Depends}, systemd-sysv
 Conflicts: sysvinit-core
 Description: Bitdefender anti-malware package for VirusBlocker and SpamBlocker.
  Bitdefender bdamserver.
