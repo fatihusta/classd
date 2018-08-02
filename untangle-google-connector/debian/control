@@ -8,7 +8,7 @@ Standards-Version: 3.9.8
 
 Package: untangle-google-connector
 Architecture: all
-Depends: ${misc:Depends}, drive
+Depends: ${misc:Depends}, drive, python
 Description: Untangle Google API connection utilities
  Untangle Google API connection utilities for Google Drive.
 
