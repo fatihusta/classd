@@ -8,7 +8,8 @@ Standards-Version: 3.9.8
 
 Package: untangle-extjs
 Architecture: all
+Depends: ${misc:Depends}
 Breaks: untangle-apache2-config (<< 14.0.0.20180424T011824.df98fd1d6-1stretch)
 Replaces: untangle-apache2-config (<< 14.0.0.20180424T011824.df98fd1d6-1stretch)
-Description: The Untangle PyConnector
+Description: Untangle PyConnector
  Connector for the Untangle Cloud 
