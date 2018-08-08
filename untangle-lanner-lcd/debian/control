@@ -7,7 +7,7 @@ Standards-Version: 3.7.2
 
 Package: untangle-lanner-lcd
 Architecture: i386 amd64
-Depends: ${shlibs:Depends}, ${misc:Depends}, lanner-lcd-module-4.9.0-6-untangle-amd64 | lanner-lcd-module-4.9.0-6-untangle-686-pae, systemd-sysv
+Depends: ${shlibs:Depends}, ${misc:Depends}, lanner-lcd-module-4.9.0-7-untangle-amd64 | lanner-lcd-module-4.9.0-7-untangle-686-pae, systemd-sysv
 Conflicts: sysvinit-core
 Description: The Untangle Lanner Appliance LCD driver
  The Untangle Lanner Appliance LCD driver daemon
