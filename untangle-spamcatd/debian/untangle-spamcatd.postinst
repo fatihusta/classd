@@ -47,6 +47,9 @@ setOption "stat_file_upload_url" "http://untanglestat.mailshell.net/mailsh.cgi?u
 
 rm -f /etc/init.d/${DPKG_MAINTSCRIPT_PACKAGE}
 
+mkdir /var/cache/untangle-spamcatd
+chown daemon:daemon /var/cache/untangle-spamcatd
+
 #DEBHELPER#
 
 exit 0
