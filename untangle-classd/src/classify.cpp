@@ -121,6 +121,9 @@ sem_post(&g_classify_sem);
 			if (ret != 0) sysmessage(LOG_ERR,"Error %d returned from navl_conn_destroy(%" PRIu64 ")\n",navl_error_get(l_navl_handle),wagon->index);
 			else log_vineyard(session,"DESTROY",0,NULL,0);
 
+			// delete the session object from the hash table
+			g_sessiontable->DeleteObject(session);
+
 			break;
 
 		case MSG_CLIENT:
