@@ -415,8 +415,11 @@ session = dynamic_cast<SessionObject*>(g_sessiontable->SearchObject(hashcode));
 	g_messagequeue->PushMessage(new MessageWagon(MSG_REMOVE,hashcode));
 	}
 
-// delete the session object from the hash table
-g_sessiontable->DeleteObject(session);
+	// for anything else we delete the session object here
+	else
+	{
+	g_sessiontable->DeleteObject(session);
+	}
 
 // have to return something even though the node currently does not use it
 replyoff = sprintf(replybuff,"REMOVED: %" PRIu64 "\r\n\r\n",hashcode);
