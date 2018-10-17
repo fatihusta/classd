@@ -2,7 +2,7 @@
 
 import subprocess
 
-SUBTREES = { 'untangle-classd': 'git@github.com:untangle/classd.git' }
+SUBTREES = { 'untangle-classd': 'https://github.com/untangle/classd.git' }
 
 branch = subprocess.getoutput('git symbolic-ref --short HEAD')
 
