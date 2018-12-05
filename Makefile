@@ -14,7 +14,7 @@ MUSL ?= $(shell test -f /lib/ld-musl* ; echo $$?)
 
 LIBFILES = -lnavl
 PLATFORM = -D__LINUX__
-CXXFLAGS = $(DEBUG) $(GPROF) $(SPEED) -Wall
+CXXFLAGS += $(DEBUG) $(GPROF) $(SPEED) -Wall
 
 ifneq (,$(findstring mvebu,$(CFLAGS)))
   ARCH := $(shell echo $(CFLAGS) | sed -e 's/.*-mcpu=\(.*\) .*/\1/')
@@ -49,7 +49,7 @@ CXXFLAGS += -DPLATFORM=\"$(PLATFORM)\"
 OBJFILES := $(patsubst src/%.cpp,src/%.o,$(wildcard src/*.cpp))
 
 classd : $(OBJFILES)
-	$(CXX) $(DEBUG) $(GPROF) $(SPEED) $(OBJFILES) -L$(LIBDIR) $(LIBFILES) -o classd
+	$(CXX) $(OBJFILES) -L$(LIBDIR) $(LIBFILES) -o classd
 
 install: classd
 	mkdir -p $(DESTDIR)/usr/bin $(DESTDIR)/usr/lib $(DESTDIR)/usr/share/untangle-classd/plugins
