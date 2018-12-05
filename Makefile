@@ -37,12 +37,12 @@ else # Debian
   endif
 endif
 
-BUILDID := $(shell date -u "+%G/%m/%d %H:%M:%S UTC")
+BUILDID := "$(shell date -u '+%G/%m/%d %H:%M:%S UTC')"
 VERSION := $(shell date -u "+%s")
 
-CXXFLAGS += -DVERSION="$(VERSION)"
-CXXFLAGS += -DBUILDID="$(BUILDID)"
-CXXFLAGS += -DPLATFORM="$(PLATFORM)"
+CXXFLAGS += -DVERSION=\"$(VERSION)\"
+CXXFLAGS += -DBUILDID=\"$(BUILDID)\"
+CXXFLAGS += -DPLATFORM=\"$(PLATFORM)\"
 
 OBJFILES := $(patsubst src/%.cpp,src/%.o,$(wildcard src/*.cpp))
 
