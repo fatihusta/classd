@@ -14,10 +14,15 @@ LIBFILES = -lnavl
 PLATFORM = -D__LINUX__
 CXXFLAGS += $(DEBUG) $(GPROF) $(SPEED) -Wall
 
-ifneq (,$(findstring mvebu,$(CFLAGS)))
-  ARCH := $(shell echo $(CFLAGS) | sed -e 's/.*-mcpu=\(.*\) .*/\1/')
-  LIBDIR := $(SRC_DIR)/lib$(ARCH)-openwrt1806-libmusl
-  PLUGDIR := $(SRC_DIR)/plugins$(ARCH)/
+ifeq ($(OPENWRT_BUILD),1)
+  ARCH := $(shell echo $(STAGING_DIR) | sed -e 's/.*target-\(.*\)_eabi/\1/')
+  ifeq ($(ARCH),arm_cortex-a9+vfpv3_musl)
+    LIBDIR := $(SRC_DIR)/libmvebu-openwrt1806-libmusl
+    PLUGDIR := $(SRC_DIR)/pluginsmvebu-openwrt1806-libmusl
+  else # assume x64+musl
+    LIBDIR := $(SRC_DIR)/lib64-openwrt1806-libmusl
+    PLUGDIR := $(SRC_DIR)/pluginslib64-openwrt1806-libmusl
+  endif
 else # Debian
   CXXFLAGS += -pthread
   LIBFILES += -lpthread -ldl
@@ -47,8 +52,6 @@ CXXFLAGS += -DPLATFORM=\"$(PLATFORM)\"
 OBJFILES := $(patsubst src/%.cpp,src/%.o,$(wildcard src/*.cpp))
 
 classd : $(OBJFILES)
-	echo $(CFLAGS)
-	env
 	$(CXX) $(OBJFILES) -L$(LIBDIR) $(LIBFILES) -o classd
 
 install: classd
