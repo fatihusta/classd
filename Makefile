@@ -3,14 +3,12 @@
 # All Rights Reserved
 # Written by Michael A. Hotz
 
-DEBUG = -g3 -ggdb
+#DEBUG = -g3 -ggdb
 #GPROF = -pg
 SPEED = -O2
 
 SRC_DIR := src/vineyard
 DESTDIR ?= /tmp/vineyard
-
-MUSL ?= $(shell test -f /lib/ld-musl* ; echo $$?)
 
 LIBFILES = -lnavl
 PLATFORM = -D__LINUX__
@@ -42,13 +40,15 @@ endif
 BUILDID := "$(shell date -u "+%G/%m/%d %H:%M:%S UTC")"
 VERSION := $(shell date -u "+%s")
 
-CXXFLAGS += -DVERSION=\"$(VERSION)\"
-CXXFLAGS += -DBUILDID=\"$(BUILDID)\"
-CXXFLAGS += -DPLATFORM=\"$(PLATFORM)\"
+CXXFLAGS += -DVERSION="$(VERSION)"
+CXXFLAGS += -DBUILDID="$(BUILDID)"
+CXXFLAGS += -DPLATFORM="$(PLATFORM)"
 
 OBJFILES := $(patsubst src/%.cpp,src/%.o,$(wildcard src/*.cpp))
 
 classd : $(OBJFILES)
+	echo $(CFLAGS)
+	env
 	$(CXX) $(OBJFILES) -L$(LIBDIR) $(LIBFILES) -o classd
 
 install: classd
