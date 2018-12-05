@@ -13,10 +13,15 @@ DESTDIR ?= /tmp/vineyard
 MUSL ?= $(shell test -f /lib/ld-musl* ; echo $$?)
 
 LIBFILES = -lnavl
+PLATFORM = -D__LINUX__
+CXXFLAGS = $(DEBUG) $(GPROF) $(SPEED) -Wall
 
-ifeq ($(MUSL),1)
-  # assume Linux
-  PLATFORM = -D__LINUX__
+ifneq (,$(findstring mvebu,$(CFLAGS)))
+  ARCH := $(shell echo $(CFLAGS) | sed -e 's/.*-mcpu=\(.*\) .*/\1/')
+  LIBDIR := $(SRC_DIR)/lib$(ARCH)-openwrt1806-libmusl
+  PLUGDIR := $(SRC_DIR)/plugins$(ARCH)/
+else # Debian
+  CXXFLAGS += -pthread
   LIBFILES += -lpthread -ldl
   ARCH := $(shell dpkg-architecture -qDEB_BUILD_ARCH)
   ifeq ($(ARCH),amd64)
@@ -32,17 +37,10 @@ ifeq ($(MUSL),1)
     LIBDIR := $(SRC_DIR)/lib
     PLUGDIR := $(SRC_DIR)/plugins/
   endif
-else
-  # ARCH := 64
-  ARCH := mvebu
-  LIBDIR := $(SRC_DIR)/lib$(ARCH)-openwrt1806-libmusl
-  PLUGDIR := $(SRC_DIR)/plugins$(ARCH)/
 endif
 
 BUILDID := "$(shell date -u "+%G/%m/%d %H:%M:%S UTC")"
 VERSION := $(shell date -u "+%s")
-
-CXXFLAGS = $(DEBUG) $(GPROF) $(SPEED) -Wall -pthread
 
 CXXFLAGS += -DVERSION=\"$(VERSION)\"
 CXXFLAGS += -DBUILDID=\"$(BUILDID)\"
