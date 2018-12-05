@@ -10,7 +10,7 @@ SPEED = -O2
 SRC_DIR := src/vineyard
 DESTDIR ?= /tmp/vineyard
 
-MUSL := $(shell test -f /lib/ld-musl* ; echo $$?)
+MUSL ?= $(shell test -f /lib/ld-musl* ; echo $$?)
 
 LIBFILES = -lnavl
 
