@@ -37,7 +37,7 @@ else # Debian
   endif
 endif
 
-BUILDID := "$(shell date -u "+%G/%m/%d %H:%M:%S UTC")"
+BUILDID := $(shell date -u "+%G/%m/%d %H:%M:%S UTC")
 VERSION := $(shell date -u "+%s")
 
 CXXFLAGS += -DVERSION="$(VERSION)"
