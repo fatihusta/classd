@@ -33,8 +33,10 @@ ifeq ($(MUSL),1)
     PLUGDIR := $(SRC_DIR)/plugins/
   endif
 else
-  LIBDIR := $(SRC_DIR)/lib64-openwrt1806-libmusl
-  PLUGDIR := $(SRC_DIR)/plugins64/
+  # ARCH := 64
+  ARCH := mvebu
+  LIBDIR := $(SRC_DIR)/lib$(ARCH)-openwrt1806-libmusl
+  PLUGDIR := $(SRC_DIR)/plugins$(ARCH)/
 endif
 
 BUILDID := "$(shell date -u "+%G/%m/%d %H:%M:%S UTC")"
