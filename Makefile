@@ -14,7 +14,6 @@ LIBFILES = -lnavl
 PLATFORM = -D__LINUX__
 CXXFLAGS += $(DEBUG) $(GPROF) $(SPEED) -Wall
 CXXFLAGS += -pthread
-LIBFILES += -lpthread -ldl
 
 ifeq ($(OPENWRT_BUILD),1)
   ARCH := $(shell echo $(STAGING_DIR) | sed -e 's/.*target-\(.*\)_eabi/\1/')
@@ -27,6 +26,7 @@ ifeq ($(OPENWRT_BUILD),1)
   endif
 else # Debian
   ARCH := $(shell dpkg-architecture -qDEB_BUILD_ARCH)
+  LIBFILES += -lpthread -ldl
   ifeq ($(ARCH),amd64)
     LIBDIR := $(SRC_DIR)/lib64
     PLUGDIR := $(SRC_DIR)/plugins64/
