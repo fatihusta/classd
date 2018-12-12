@@ -35,6 +35,6 @@ file(GLOB STATIC "files/*")
 file(GLOB LIBS "${LIB_NAVL_DIR}/*")
 
 # install targets
-install(TARGETS classd RUNTIME DESTINATION $ENV{DESTDIR}/bin)
+install(TARGETS classd RUNTIME DESTINATION $ENV{DESTDIR}/usr/bin)
 install(FILES ${LIBS} DESTINATION $ENV{DESTDIR}/usr/lib)
 install(DIRECTORY ${STATIC} DESTINATION $ENV{DESTDIR}/)
