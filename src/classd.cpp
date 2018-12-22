@@ -518,7 +518,7 @@ cfg_tcp_timeout = atoi(work);
 grab_config_item(filedata,"CLASSD_UDP_TIMEOUT",work,sizeof(work),"600");
 cfg_udp_timeout = atoi(work);
 
-grab_config_item(filedata,"CLASSD_IP_TIMEOUT",work,sizeof(work),"7200");
+grab_config_item(filedata,"CLASSD_IP_TIMEOUT",work,sizeof(work),"300");
 cfg_ip_timeout = atoi(work);
 
 grab_config_item(filedata,"CLASSD_HTTP_LIMIT",work,sizeof(work),"0");

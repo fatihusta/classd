@@ -184,25 +184,12 @@ removed = 0;
 		{
 			for(work = table[x];work != NULL;work = work->next)
 			{
-			kill = 0;
-
-			// look for stale TCP objects
-			if ((work->netprotocol == IPPROTO_TCP) && (aStamp > work->timeout)) kill++;
-
-			// look for stale UDP objects
-			if ((work->netprotocol == IPPROTO_UDP) && (aStamp > work->timeout)) kill++;
-
-			// look for stale IP objects
-			if ((work->netprotocol == IPPROTO_IP) && (aStamp > work->timeout)) kill++;
-
-			// look for stale IPV6 objects
-			if ((work->netprotocol == IPPROTO_IPV6) && (aStamp > work->timeout)) kill++;
-
-			if (kill == 0) continue;
-
-			// if stale post a remove message to the classify thread
-			g_messagequeue->PushMessage(new MessageWagon(MSG_REMOVE,work->netsession));
-			removed++;
+			// look for stale objects
+			if ((work->timeout > 0) && (aStamp > work->timeout)) {
+			  // if stale post a remove message to the classify thread
+			  g_messagequeue->PushMessage(new MessageWagon(MSG_REMOVE,work->netsession));
+			  removed++;
+			}
 			}
 		}
 
