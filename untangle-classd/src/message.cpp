@@ -1,4 +1,4 @@
-// MESSAGE.CPP
+// MESSAGE.CPP 
 // Traffic Classification Engine
 // Copyright (c) 2011-2018 Untangle, Inc.
 // All Rights Reserved

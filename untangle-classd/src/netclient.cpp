@@ -633,6 +633,7 @@ replyoff+=sprintf(&replybuff[replyoff],"  CLASSD_HASH_BUCKETS ............ %d\r\
 replyoff+=sprintf(&replybuff[replyoff],"  CLASSD_IP_DEFRAG ............... %d\r\n",cfg_navl_defrag);
 replyoff+=sprintf(&replybuff[replyoff],"  CLASSD_TCP_TIMEOUT ............. %d\r\n",cfg_tcp_timeout);
 replyoff+=sprintf(&replybuff[replyoff],"  CLASSD_UDP_TIMEOUT ............. %d\r\n",cfg_udp_timeout);
+replyoff+=sprintf(&replybuff[replyoff],"  CLASSD_IP_TIMEOUT .............. %d\r\n",cfg_ip_timeout);
 replyoff+=sprintf(&replybuff[replyoff],"  CLASSD_HTTP_LIMIT .............. %d\r\n",cfg_http_limit);
 replyoff+=sprintf(&replybuff[replyoff],"  CLASSD_CLIENT_PORT ............. %d\r\n",cfg_client_port);
 replyoff+=sprintf(&replybuff[replyoff],"  CLASSD_PACKET_TIMEOUT .......... %d\r\n",cfg_packet_timeout);
