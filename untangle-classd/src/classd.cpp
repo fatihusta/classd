@@ -86,6 +86,9 @@ pthread_attr_destroy(&attr);
 	freopen("/dev/null","w",stdout);
 	freopen("/dev/null","w",stderr);
 	}
+	else {
+	  printf("[ CLASSD ] Daemon %d started successfully\n\n",ret);
+	}
 
 signal(SIGALRM,sighandler);
 signal(SIGTERM,sighandler);
