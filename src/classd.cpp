@@ -67,7 +67,7 @@ pthread_attr_destroy(&attr);
 	if (g_logfile == NULL) openlog("classd",LOG_NDELAY,LOG_DAEMON);
 
 	if (g_nofork == 0) ret = fork();
-	else ret = 1;
+	else ret = 0;
 
 		if (ret > 0)
 		{
@@ -85,6 +85,9 @@ pthread_attr_destroy(&attr);
 	freopen("/dev/null","r",stdin);
 	freopen("/dev/null","w",stdout);
 	freopen("/dev/null","w",stderr);
+	}
+	else {
+	  printf("[ CLASSD ] Daemon %d started successfully\n\n",ret);
 	}
 
 signal(SIGALRM,sighandler);
