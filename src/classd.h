@@ -321,6 +321,7 @@ DATALOC int					g_shutdown;
 DATALOC int					g_console;
 DATALOC int					g_nolimit;
 DATALOC int					g_nofork;
+DATALOC int					g_naked;
 DATALOC int					g_debug;
 DATALOC char				cfg_navl_plugins[256];
 DATALOC char				cfg_dump_path[256];

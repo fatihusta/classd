@@ -169,7 +169,6 @@ int HashTable::PurgeStaleObjects(time_t aStamp)
 {
 HashObject	*work;
 int			removed;
-int			kill;
 int			x;
 
 removed = 0;
