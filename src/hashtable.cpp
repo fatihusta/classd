@@ -183,12 +183,12 @@ removed = 0;
 		{
 			for(work = table[x];work != NULL;work = work->next)
 			{
-			// look for stale objects
-			if ((work->timeout > 0) && (aStamp > work->timeout)) {
-			  // if stale post a remove message to the classify thread
-			  g_messagequeue->PushMessage(new MessageWagon(MSG_REMOVE,work->netsession));
-			  removed++;
-			}
+			// ignore objects that aren't stale
+			if (work->timeout < aStamp) continue;
+
+			// object is stale so post a remove message to the classify thread
+			g_messagequeue->PushMessage(new MessageWagon(MSG_REMOVE,work->netsession));
+			removed++;
 			}
 		}
 

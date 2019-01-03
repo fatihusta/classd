@@ -70,10 +70,12 @@ sem_post(&g_classify_sem);
 
 		switch(wagon->command)
 		{
+		// used to let us know the daemon is shutting down
 		case MSG_SHUTDOWN:
 			g_shutdown = 1;
 			break;
 
+		// only sent from netclient for TCP and UDP sessions to allow navl connection state init
 		case MSG_CREATE:
 			LOGMESSAGE(CAT_SESSION,LOG_DEBUG,"SESSION CREATE %" PRIu64 "\n",wagon->index);
 
@@ -103,6 +105,8 @@ sem_post(&g_classify_sem);
 
 			break;
 
+		// sent by both netclient and the hashtable stale cleanup function
+		// sent for ALL sessions to allow navl cleanup when required
 		case MSG_REMOVE:
 			LOGMESSAGE(CAT_SESSION,LOG_DEBUG,"SESSION REMOVE %" PRIu64 "\n",wagon->index);
 
@@ -116,13 +120,20 @@ sem_post(&g_classify_sem);
 				break;
 				}
 
-			// destroy the vineyard connection state object
-			ret = navl_conn_destroy(l_navl_handle,session->vinestat);
-			if (ret != 0) sysmessage(LOG_ERR,"Error %d returned from navl_conn_destroy(%" PRIu64 ")\n",navl_error_get(l_navl_handle),wagon->index);
-			else log_vineyard(session,"DESTROY",0,NULL,0);
+				// if the session has a vineyard connection state clean it up
+				if (session->vinestat != NULL)
+				{
+				ret = navl_conn_destroy(l_navl_handle,session->vinestat);
+				if (ret != 0) sysmessage(LOG_ERR,"Error %d returned from navl_conn_destroy(%" PRIu64 ")\n",navl_error_get(l_navl_handle),wagon->index);
+				else log_vineyard(session,"DESTROY",0,NULL,0);
+				}
+
+			// delete the session object from the table
+			g_sessiontable->DeleteObject(session);
 
 			break;
 
+		// this is called to classify TCP or UDP data from the client to the server
 		case MSG_CLIENT:
 			LOGMESSAGE(CAT_SESSION,LOG_DEBUG,"SESSION CLIENT %" PRIu64 " %d BYTES\n",wagon->index,wagon->length);
 
@@ -154,6 +165,7 @@ sem_post(&g_classify_sem);
 
 			break;
 
+		// this is called to classify TCP or UDP data from the server to the client
 		case MSG_SERVER:
 			LOGMESSAGE(CAT_SESSION,LOG_DEBUG,"SESSION SERVER %" PRIu64 " %d BYTES\n",wagon->index,wagon->length);
 
@@ -185,6 +197,7 @@ sem_post(&g_classify_sem);
 
 			break;
 
+		// this is called to classify raw IPv4 or IPv6 data
 		case MSG_PACKET:
 			LOGMESSAGE(CAT_SESSION,LOG_DEBUG,"SESSION PACKET %" PRIu64 " %d BYTES\n",wagon->index,wagon->length);
 
