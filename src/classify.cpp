@@ -85,7 +85,7 @@ sem_post(&g_classify_sem);
 				// missing session means something has gone haywire
 				if (session == NULL)
 				{
-				sysmessage(LOG_WARNING,"MSG_CREATE: Unable to locate %" PRIu64 " in session table\n",wagon->index);
+				if (g_naked == 0) sysmessage(LOG_WARNING,"MSG_CREATE: Unable to locate %" PRIu64 " in session table\n",wagon->index);
 				break;
 				}
 
@@ -116,7 +116,7 @@ sem_post(&g_classify_sem);
 				// missing session means something has gone haywire
 				if (session == NULL)
 				{
-				sysmessage(LOG_WARNING,"MSG_REMOVE: Unable to locate %" PRIu64 " in session table\n",wagon->index);
+				if (g_naked == 0) sysmessage(LOG_WARNING,"MSG_REMOVE: Unable to locate %" PRIu64 " in session table\n",wagon->index);
 				break;
 				}
 
@@ -152,7 +152,7 @@ sem_post(&g_classify_sem);
 				// missing session means something has gone haywire
 				if (session == NULL)
 				{
-				sysmessage(LOG_WARNING,"MSG_CLIENT: Unable to locate %" PRIu64 " in session table\n",wagon->index);
+				if (g_naked == 0) sysmessage(LOG_WARNING,"MSG_CLIENT: Unable to locate %" PRIu64 " in session table\n",wagon->index);
 				break;
 				}
 
@@ -184,7 +184,7 @@ sem_post(&g_classify_sem);
 				// missing session means something has gone haywire
 				if (session == NULL)
 				{
-				sysmessage(LOG_WARNING,"MSG_SERVER: Unable to locate %" PRIu64 " in session table\n",wagon->index);
+				if (g_naked == 0) sysmessage(LOG_WARNING,"MSG_SERVER: Unable to locate %" PRIu64 " in session table\n",wagon->index);
 				break;
 				}
 
@@ -216,7 +216,7 @@ sem_post(&g_classify_sem);
 				// missing session means something has gone haywire
 				if (session == NULL)
 				{
-				sysmessage(LOG_WARNING,"MSG_PACKET: Unable to locate %" PRIu64 " in session table\n",wagon->index);
+				if (g_naked == 0) sysmessage(LOG_WARNING,"MSG_PACKET: Unable to locate %" PRIu64 " in session table\n",wagon->index);
 				break;
 				}
 
