@@ -380,6 +380,7 @@ session = new SessionObject(hashcode,protocol,&client,&server);
 g_sessiontable->InsertObject(session);
 
 	// for TCP and UDP post the create message to the classify thread
+	// so the navl connection state handle can be initialized
 	if ((protocol == IPPROTO_TCP) || (protocol == IPPROTO_UDP))
 	{
 	g_messagequeue->PushMessage(new MessageWagon(MSG_CREATE,hashcode));

@@ -40,6 +40,7 @@ setrlimit(RLIMIT_CORE,&core);
 	if (strncasecmp(argv[x],"-F",2) == 0) g_nofork++;
 	if (strncasecmp(argv[x],"-M",2) == 0) g_nolimit++;
 	if (strncasecmp(argv[x],"-L",2) == 0) g_console++;
+	if (strncasecmp(argv[x],"-N",2) == 0) g_naked++;
 
 		if (strncasecmp(argv[x],"-D",2) == 0)
 		{
@@ -85,9 +86,6 @@ pthread_attr_destroy(&attr);
 	freopen("/dev/null","r",stdin);
 	freopen("/dev/null","w",stdout);
 	freopen("/dev/null","w",stderr);
-	}
-	else {
-	  printf("[ CLASSD ] Daemon %d started successfully\n\n",ret);
 	}
 
 signal(SIGALRM,sighandler);
@@ -318,6 +316,16 @@ if ((priority == LOG_DEBUG) && (g_debug == 0)) return;
 	// if running on the console display log messages there
 	if (g_console != 0)
 	{
+	itolevel(priority,string);
+
+		// if the naked flag is set don't add the timestamp
+		if (g_naked != 0)
+		{
+		printf("%s %s",string,message);
+		fflush(stdout);
+		return;
+		}
+
 	gettimeofday(&nowtime,NULL);
 
 	rr = ((double)g_runtime.tv_sec * (double)1000000.00);
@@ -328,7 +336,6 @@ if ((priority == LOG_DEBUG) && (g_debug == 0)) return;
 
 	ee = ((nn - rr) / (double)1000000.00);
 
-	itolevel(priority,string);
 	printf("[%.6f] %s %s",ee,string,message);
 
 	fflush(stdout);
