@@ -85,7 +85,7 @@ sem_post(&g_classify_sem);
 				// missing session means something has gone haywire
 				if (session == NULL)
 				{
-				if (g_naked == 0) sysmessage(LOG_WARNING,"MSG_CREATE: Unable to locate %" PRIu64 " in session table\n",wagon->index);
+				sysmessage(LOG_WARNING,"MSG_CREATE: Unable to locate %" PRIu64 " in session table\n",wagon->index);
 				break;
 				}
 
@@ -116,7 +116,7 @@ sem_post(&g_classify_sem);
 				// missing session means something has gone haywire
 				if (session == NULL)
 				{
-				if (g_naked == 0) sysmessage(LOG_WARNING,"MSG_REMOVE: Unable to locate %" PRIu64 " in session table\n",wagon->index);
+				sysmessage(LOG_WARNING,"MSG_REMOVE: Unable to locate %" PRIu64 " in session table\n",wagon->index);
 				break;
 				}
 
@@ -152,7 +152,7 @@ sem_post(&g_classify_sem);
 				// missing session means something has gone haywire
 				if (session == NULL)
 				{
-				if (g_naked == 0) sysmessage(LOG_WARNING,"MSG_CLIENT: Unable to locate %" PRIu64 " in session table\n",wagon->index);
+				sysmessage(LOG_WARNING,"MSG_CLIENT: Unable to locate %" PRIu64 " in session table\n",wagon->index);
 				break;
 				}
 
@@ -184,7 +184,7 @@ sem_post(&g_classify_sem);
 				// missing session means something has gone haywire
 				if (session == NULL)
 				{
-				if (g_naked == 0) sysmessage(LOG_WARNING,"MSG_SERVER: Unable to locate %" PRIu64 " in session table\n",wagon->index);
+				sysmessage(LOG_WARNING,"MSG_SERVER: Unable to locate %" PRIu64 " in session table\n",wagon->index);
 				break;
 				}
 
@@ -216,7 +216,7 @@ sem_post(&g_classify_sem);
 				// missing session means something has gone haywire
 				if (session == NULL)
 				{
-				if (g_naked == 0) sysmessage(LOG_WARNING,"MSG_PACKET: Unable to locate %" PRIu64 " in session table\n",wagon->index);
+				sysmessage(LOG_WARNING,"MSG_PACKET: Unable to locate %" PRIu64 " in session table\n",wagon->index);
 				break;
 				}
 
@@ -497,6 +497,27 @@ for(x = 0;x < g_protocount;x++) free(g_protostats[x]);
 free(g_protostats);
 }
 /*--------------------------------------------------------------------------*/
+void vineyard_classify(SessionObject *argSession,const void *argBuffer,int argLength)
+{
+int					ret;
+
+ret = 9999;
+
+	// send IPv6 traffic to vineyard for classification
+	if (argSession->GetNetProtocol() == IPPROTO_IPV6)
+	{
+	ret = navl_classify(l_navl_handle,NAVL_ENCAP_IP6,argBuffer,argLength,NULL,0,navl_callback,argSession);
+	}
+
+	// send IPv4 traffic to vineyard for classification
+	if (argSession->GetNetProtocol() == IPPROTO_IP)
+	{
+	ret = navl_classify(l_navl_handle,NAVL_ENCAP_IP,argBuffer,argLength,NULL,0,navl_callback,argSession);
+	}
+
+if (ret != 0) sysmessage(LOG_ERR,"Error %d returned from navl_classify(PACKET:%" PRIu64 ")\n",navl_error_get(l_navl_handle),argSession->GetNetSession());
+}
+/*--------------------------------------------------------------------------*/
 int vineyard_config(const char *key,int value)
 {
 char		work[32];
@@ -580,7 +601,7 @@ write(l_navl_logfile,buffer,len);
 return(len);
 }
 /*--------------------------------------------------------------------------*/
-void log_vineyard(SessionObject *session,const char *message,int direction,void *rawdata,int rawsize)
+void log_vineyard(SessionObject *session,const char *message,int direction,const void *rawdata,int rawsize)
 {
 const char		*pname;
 const char		*work;

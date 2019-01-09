@@ -98,8 +98,8 @@ private:
 	void HandleCreate(void);
 	void HandleRemove(void);
 
-	u_int64_t HandleChunk(u_int8_t argMessage);
 	u_int64_t ExtractNetworkSession(const char *argBuffer);
+	SessionObject* HandleChunk(u_int8_t argMessage);
 
 	int ProcessRequest(void);
 	int TransmitReply(void);
@@ -234,6 +234,7 @@ public:
 	navl_host_t				clientinfo;
 	navl_host_t				serverinfo;
 	navl_conn_t				vinestat;
+	int						wipeflag;
 
 private:
 
@@ -278,8 +279,9 @@ void attr_callback(navl_handle_t handle,navl_conn_t conn,int attr_type,int attr_
 int navl_callback(navl_handle_t handle,navl_result_t result,navl_state_t state,navl_conn_t conn,void *arg,int error);
 void vineyard_shutdown(void);
 void vineyard_debug(const char *dumpfile);
+void vineyard_classify(SessionObject *argSession,const void *argBuffer,int argLength);
 void navl_bind_externals(void);
-void log_vineyard(SessionObject *session,const char *message,int direction,void *rawdata,int rawsize);
+void log_vineyard(SessionObject *session,const char *message,int direction,const void *rawdata,int rawsize);
 int vineyard_startup(void);
 int vineyard_config(const char *key,int value);
 int	vineyard_logger(const char *level,const char *func,const char *format,...);
@@ -320,8 +322,8 @@ DATALOC int					g_logrecycle;
 DATALOC int					g_shutdown;
 DATALOC int					g_console;
 DATALOC int					g_nolimit;
+DATALOC int					g_mfwflag;
 DATALOC int					g_nofork;
-DATALOC int					g_naked;
 DATALOC int					g_debug;
 DATALOC char				cfg_navl_plugins[256];
 DATALOC char				cfg_dump_path[256];
