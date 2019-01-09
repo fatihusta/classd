@@ -149,16 +149,19 @@ if (strcasecmp(querybuff,"QUIT") == 0) 		{ return(0); }
 	}
 
 hashcode = 0;
+local = NULL;
 
 // client and server data will be passed to the classify message queue
-if (strncasecmp(querybuff,"CLIENT|",7) == 0) hashcode = HandleChunk(MSG_CLIENT);
-if (strncasecmp(querybuff,"SERVER|",7) == 0) hashcode = HandleChunk(MSG_SERVER);
-if (strncasecmp(querybuff,"PACKET|",7) == 0) hashcode = HandleChunk(MSG_PACKET);
+if (strncasecmp(querybuff,"CLIENT|",7) == 0) local = HandleChunk(MSG_CLIENT);
+if (strncasecmp(querybuff,"SERVER|",7) == 0) local = HandleChunk(MSG_SERVER);
+if (strncasecmp(querybuff,"PACKET|",7) == 0) local = HandleChunk(MSG_PACKET);
 
-// if we don't have a hashcode yet then this is probably a console query
-if (hashcode == 0) hashcode = ExtractNetworkSession(querybuff);
-
-local = dynamic_cast<SessionObject*>(g_sessiontable->SearchObject(hashcode));
+	// if we don't have a session yet then this is probably a console query
+	if (local == NULL)
+	{
+	hashcode = ExtractNetworkSession(querybuff);
+	local = dynamic_cast<SessionObject*>(g_sessiontable->SearchObject(hashcode));
+	}
 
 	// if we have a hit return the found result
 	if (local != NULL)
@@ -172,6 +175,9 @@ local = dynamic_cast<SessionObject*>(g_sessiontable->SearchObject(hashcode));
 	replyoff+=sprintf(&replybuff[replyoff],"DETAIL: %s\r\n",local->GetDetail());
 	replyoff+=sprintf(&replybuff[replyoff],"CONFIDENCE: %d\r\n",local->GetConfidence());
 	replyoff+=sprintf(&replybuff[replyoff],"STATE: %d\r\n\r\n",local->GetState());
+
+	// if the wipeflag is set we have to delete the session
+	if (local->wipeflag != 0) delete(local);
 
 	client_hitcount++;
 	}
@@ -417,34 +423,61 @@ g_messagequeue->PushMessage(new MessageWagon(MSG_REMOVE,hashcode));
 replyoff = sprintf(replybuff,"REMOVED: %" PRIu64 "\r\n\r\n",hashcode);
 }
 /*--------------------------------------------------------------------------*/
-u_int64_t NetworkClient::HandleChunk(u_int8_t argMessage)
+SessionObject* NetworkClient::HandleChunk(u_int8_t argMessage)
 {
+SessionObject	*local;
 struct timeval	tv;
 u_int64_t		hashcode;
 fd_set			tester;
-char			*aa,*bb;
+int				rawproto;
+char			*aa,*bb,*cc;
 long			length,ret;
 
-// we receive data to classify from the java code with a simple text header
-// that includes the source, session, and length followed by the raw data
+// We receive data to classify from the NGFW code with a simple text header
+// that includes the source, session, and length followed by the raw data.
+// MFW includes the protocol in the header as either IP4 or IP6
 //
 // SOURCE|SESSIONID|LENGTH
+// SOURCE|SESSIONID|PROTOCOL|LENGTH
 //
 // example client and server messages
 //
 // CLIENT|95324669281375|191
 // SERVER|95324669281375|370
+// PACKET|95324669281375|IP4|627
 
 aa = strchr(querybuff,'|');		// points to session id
-if (aa == NULL) return(0);
+if (aa == NULL) return(NULL);
 *aa++=0;
+hashcode = ExtractNetworkSession(aa);
 
-bb = strchr(aa,'|');			// points to data length
-if (bb == NULL) return(0);
+bb = strchr(aa,'|');			// points to next field
+if (bb == NULL) return(NULL);
 *bb++=0;
 
-hashcode = ExtractNetworkSession(aa);
-length = strtol(bb,NULL,10);
+	// under NGFW we find the session in the table
+	if (g_mfwflag == 0)
+	{
+	length = strtol(bb,NULL,10);
+	local = dynamic_cast<SessionObject*>(g_sessiontable->SearchObject(hashcode));
+	}
+
+	// under MFW we create a session object and set the special wipe flag
+	else
+	{
+	rawproto = 9999;
+	if (strncmp(bb,"IP4",3) == 0) rawproto = IPPROTO_IP;
+	if (strncmp(bb,"IP6",3) == 0) rawproto = IPPROTO_IPV6;
+	if (rawproto == 9999) return(NULL);
+
+	cc = strchr(bb,'|');
+	if (cc == NULL) return(NULL);
+	*cc++=0;
+	length = strtol(cc,NULL,10);
+
+	local = new SessionObject(hashcode,rawproto,NULL,NULL);
+	local->wipeflag = 1;
+	}
 
 // prepare to receive the chunk of data
 replyoff = 0;
@@ -478,23 +511,29 @@ replyoff = 0;
 		if (ret == 0)
 		{
 		sysmessage(LOG_WARNING,"Unexpected netclient disconnect reading from %s\n",netname);
-		return(hashcode);
+		return(local);
 		}
 
 		if (ret < 0)
 		{
 		sysmessage(LOG_WARNING,"Error %d reading from netclient %s\n",ret,netname);
-		return(hashcode);
+		return(local);
 		}
 
 	// add the byte count we just received to the buffer offset
 	replyoff = (replyoff + ret);
 	}
 
-// push the data into the classify queue
-g_messagequeue->PushMessage(new MessageWagon(argMessage,hashcode,replybuff,replyoff));
+	// when running on MFW we do the classification inline
+	if (g_mfwflag != 0)
+	{
+	vineyard_classify(local,replybuff,replyoff);
+	return(local);
+	}
 
-return(hashcode);
+// for NGFW we push the data into the classify queue
+g_messagequeue->PushMessage(new MessageWagon(argMessage,hashcode,replybuff,replyoff));
+return(local);
 }
 /*--------------------------------------------------------------------------*/
 u_int64_t NetworkClient::ExtractNetworkSession(const char *argBuffer)

@@ -38,9 +38,9 @@ setrlimit(RLIMIT_CORE,&core);
 	if (strncasecmp(argv[x],"-H",2) == 0) show_usage();
 	if (strncasecmp(argv[x],"-?",2) == 0) show_usage();
 	if (strncasecmp(argv[x],"-F",2) == 0) g_nofork++;
-	if (strncasecmp(argv[x],"-M",2) == 0) g_nolimit++;
+	if (strncasecmp(argv[x],"-U",2) == 0) g_nolimit++;
 	if (strncasecmp(argv[x],"-L",2) == 0) g_console++;
-	if (strncasecmp(argv[x],"-N",2) == 0) g_naked++;
+	if (strncasecmp(argv[x],"-MFW",4) == 0) g_mfwflag++;
 
 		if (strncasecmp(argv[x],"-D",2) == 0)
 		{
@@ -101,29 +101,35 @@ sysmessage(LOG_NOTICE,"STARTUP Untangle CLASSd %d-Bit Version %s Build %s\n",(in
 
 if (g_console != 0) sysmessage(LOG_NOTICE,"Running on console - Use ENTER or CTRL+C to terminate\n");
 
-// create the main message queue
-sysmessage(LOG_INFO,"Creating system message queue\n");
-g_messagequeue = new MessageQueue();
-
-// create our session table
-sysmessage(LOG_INFO,"Creating session hash table\n");
-g_sessiontable = new HashTable(cfg_hash_buckets);
-
-// start the vineyard classification thread
-sem_init(&g_classify_sem,0,0);
-pthread_attr_init(&attr);
-pthread_attr_setstacksize(&attr,g_stacksize);
-ret = pthread_create(&g_classify_tid,NULL,classify_thread,NULL);
-pthread_attr_destroy(&attr);
-
-	if (ret != 0)
+	// We only need the message queue, session table, and classify thread
+	// when running on NGFW platforms. For MFW we initialize and call the
+	// NAVL classify function directly from the network handler thread
+	if (g_mfwflag == 0)
 	{
-	sysmessage(LOG_ERR,"Error %d returned from pthread_create(classify)\n",ret);
-	g_shutdown = 1;
-	}
+	// create the main message queue
+	sysmessage(LOG_INFO,"Creating system message queue\n");
+	g_messagequeue = new MessageQueue();
 
-// wait for the thread to signal init complete
-sem_wait(&g_classify_sem);
+	// create our session table
+	sysmessage(LOG_INFO,"Creating session hash table\n");
+	g_sessiontable = new HashTable(cfg_hash_buckets);
+
+	// start the vineyard classification thread
+	sem_init(&g_classify_sem,0,0);
+	pthread_attr_init(&attr);
+	pthread_attr_setstacksize(&attr,g_stacksize);
+	ret = pthread_create(&g_classify_tid,NULL,classify_thread,NULL);
+	pthread_attr_destroy(&attr);
+
+		if (ret != 0)
+		{
+		sysmessage(LOG_ERR,"Error %d returned from pthread_create(classify)\n",ret);
+		g_shutdown = 1;
+		}
+
+	// wait for the thread to signal init complete
+	sem_wait(&g_classify_sem);
+	}
 
 // create the network server
 g_netserver = new NetworkServer();
@@ -151,14 +157,20 @@ currtime = lasttime = time(NULL);
 		sleep(1);
 		}
 
-	// periodically perform hashtable cleanup
+	// periodically perform maintenance and cleanup
 	currtime = time(NULL);
 
 		if (currtime > (lasttime + 60))
 		{
 		lasttime = currtime;
-		ret = g_sessiontable->PurgeStaleObjects(currtime);
-		LOGMESSAGE(CAT_LOGIC,LOG_DEBUG,"Removed %d stale objects from session table\n",ret);
+
+			// we only do hashtable cleanup when the mfwflag is not set
+			if (g_mfwflag == 0)
+			{
+			ret = g_sessiontable->PurgeStaleObjects(currtime);
+			LOGMESSAGE(CAT_LOGIC,LOG_DEBUG,"Removed %d stale objects from session table\n",ret);
+			}
+
 		if (g_nolimit == 0) periodic_checkup();
 		}
 
@@ -172,26 +184,30 @@ currtime = lasttime = time(NULL);
 // set the global shutdown flag
 g_shutdown = 1;
 
-// post a shutdown message to the main message queue
-g_messagequeue->PushMessage(new MessageWagon(MSG_SHUTDOWN));
-
-// the five second alarm gives all threads time to shut down cleanly
-// if any get stuck the abort() in the signal handler should do the trick
-if (g_nolimit == 0) alarm(5);
-pthread_join(g_classify_tid,NULL);
-if (g_nolimit == 0) alarm(0);
-
-// clean up the thread semaphores
-sem_destroy(&g_classify_sem);
-
 // cleanup the network server
 delete(g_netserver);
 
-// cleanup all the global objects we created
-sysmessage(LOG_INFO,"Deleting session hash table\n");
-delete(g_sessiontable);
-sysmessage(LOG_INFO,"Deleting system message queue\n");
-delete(g_messagequeue);
+	if (g_mfwflag == 0)
+	{
+	// post a shutdown message to the main message queue
+	g_messagequeue->PushMessage(new MessageWagon(MSG_SHUTDOWN));
+
+	// the five second alarm gives all threads time to shut down cleanly
+	// if any get stuck the abort() in the signal handler should do the trick
+	if (g_nolimit == 0) alarm(5);
+	pthread_join(g_classify_tid,NULL);
+	if (g_nolimit == 0) alarm(0);
+
+	// clean up the thread semaphores
+	sem_destroy(&g_classify_sem);
+
+	// cleanup all the global objects we created
+	sysmessage(LOG_INFO,"Deleting session hash table\n");
+	delete(g_sessiontable);
+
+	sysmessage(LOG_INFO,"Deleting system message queue\n");
+	delete(g_messagequeue);
+	}
 
 sysmessage(LOG_NOTICE,"GOODBYE Untangle CLASSd Version %s Build %s\n",VERSION,BUILDID);
 
@@ -318,8 +334,8 @@ if ((priority == LOG_DEBUG) && (g_debug == 0)) return;
 	{
 	itolevel(priority,string);
 
-		// if the naked flag is set don't add the timestamp
-		if (g_naked != 0)
+		// if the mfwflag is set don't add the timestamp
+		if (g_mfwflag != 0)
 		{
 		printf("%s %s",string,message);
 		fflush(stdout);

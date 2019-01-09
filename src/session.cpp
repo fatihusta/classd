@@ -28,9 +28,13 @@ detail_str[1][0] = 0;
 detail_idx = 0;
 
 vinestat = NULL;
+wipeflag = 0;
 
-memcpy(&clientinfo,aClient,sizeof(clientinfo));
-memcpy(&serverinfo,aServer,sizeof(serverinfo));
+if (aClient != NULL) memcpy(&clientinfo,aClient,sizeof(clientinfo));
+else memset(&clientinfo,0,sizeof(clientinfo));
+
+if (aServer != NULL) memcpy(&serverinfo,aServer,sizeof(serverinfo));
+else memset(&serverinfo,0,sizeof(serverinfo));
 
 // set the initial state that will be returned to clients while waiting
 // for the classify thread to process the initial chunk of data
