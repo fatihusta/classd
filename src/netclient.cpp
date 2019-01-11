@@ -605,23 +605,27 @@ replyoff+=sprintf(&replybuff[replyoff],"  Debug Level ..................... 0x%0
 replyoff+=sprintf(&replybuff[replyoff],"  No Fork Flag .................... %d\r\n",g_nofork);
 replyoff+=sprintf(&replybuff[replyoff],"  No Limit Flag ................... %d\r\n",g_nolimit);
 replyoff+=sprintf(&replybuff[replyoff],"  Console Flag .................... %d\r\n",g_console);
+replyoff+=sprintf(&replybuff[replyoff],"  MFW Flag ........................ %d\r\n",g_mfwflag);
 replyoff+=sprintf(&replybuff[replyoff],"  Client Hit Count ................ %s\r\n",pad(temp,client_hitcount));
 replyoff+=sprintf(&replybuff[replyoff],"  Client Miss Count ............... %s\r\n",pad(temp,client_misscount));
 replyoff+=sprintf(&replybuff[replyoff],"  Message Queue Counter ........... %s\r\n",pad(temp,msg_totalcount));
 replyoff+=sprintf(&replybuff[replyoff],"  Message Queue Timeout ........... %s\r\n",pad(temp,msg_timedrop));
 replyoff+=sprintf(&replybuff[replyoff],"  Message Queue Overrun ........... %s\r\n",pad(temp,msg_sizedrop));
 
-// get the details for the message queue
-g_messagequeue->GetQueueSize(count,bytes,hicnt,himem);
-replyoff+=sprintf(&replybuff[replyoff],"  Message Queue Current Count ..... %s\r\n",pad(temp,count));
-replyoff+=sprintf(&replybuff[replyoff],"  Message Queue Current Bytes ..... %s\r\n",pad(temp,bytes));
-replyoff+=sprintf(&replybuff[replyoff],"  Message Queue Highest Count ..... %s\r\n",pad(temp,hicnt));
-replyoff+=sprintf(&replybuff[replyoff],"  Message Queue Highest Bytes ..... %s\r\n",pad(temp,himem));
+	if (g_mfwflag == 0)
+	{
+	// get the details for the message queue
+	g_messagequeue->GetQueueSize(count,bytes,hicnt,himem);
+	replyoff+=sprintf(&replybuff[replyoff],"  Message Queue Current Count ..... %s\r\n",pad(temp,count));
+	replyoff+=sprintf(&replybuff[replyoff],"  Message Queue Current Bytes ..... %s\r\n",pad(temp,bytes));
+	replyoff+=sprintf(&replybuff[replyoff],"  Message Queue Highest Count ..... %s\r\n",pad(temp,hicnt));
+	replyoff+=sprintf(&replybuff[replyoff],"  Message Queue Highest Bytes ..... %s\r\n",pad(temp,himem));
 
-// get the total size of the session table
-g_sessiontable->GetTableSize(count,bytes);
-replyoff+=sprintf(&replybuff[replyoff],"  Session Hash Table Items ........ %s\r\n",pad(temp,count));
-replyoff+=sprintf(&replybuff[replyoff],"  Session Hash Table Bytes ........ %s\r\n",pad(temp,bytes));
+	// get the total size of the session table
+	g_sessiontable->GetTableSize(count,bytes);
+	replyoff+=sprintf(&replybuff[replyoff],"  Session Hash Table Items ........ %s\r\n",pad(temp,count));
+	replyoff+=sprintf(&replybuff[replyoff],"  Session Hash Table Bytes ........ %s\r\n",pad(temp,bytes));
+	}
 
 replyoff+=sprintf(&replybuff[replyoff],"  Vineyard NO MEMORY Errors ....... %s\r\n",pad(temp,err_nomem));
 replyoff+=sprintf(&replybuff[replyoff],"  Vineyard NO FLOW Errors ......... %s\r\n",pad(temp,err_nobufs));
@@ -724,17 +728,29 @@ fputs(replybuff,stream);
 BuildConfiguration();
 fputs(replybuff,stream);
 
-// dump everything in the session hash table
-fprintf(stream,"========== CLASSD SESSION HASH TABLE ==========\r\n");
-g_sessiontable->DumpDetail(stream);
-fprintf(stream,"\r\n");
+	// if the mfwflag is not set dump everything in the session hash table
+	if (g_mfwflag == 0)
+	{
+	fprintf(stream,"========== CLASSD SESSION HASH TABLE ==========\r\n");
+	g_sessiontable->DumpDetail(stream);
+	fprintf(stream,"\r\n");
+	}
 
 // flush and close the dump file
 fflush(stream);
 fclose(stream);
 
-// tell the classify thread to dump the vineyard debug info
-g_messagequeue->PushMessage(new MessageWagon(MSG_DEBUG,dumpfile));
+	// if the mfwflag is clear tell the classify thread to dump the vineyard debug info
+	if (g_mfwflag == 0)
+	{
+	g_messagequeue->PushMessage(new MessageWagon(MSG_DEBUG,dumpfile));
+	}
+
+	// in MFW mode we call the debug function directly
+	else
+	{
+	vineyard_debug(dumpfile);
+	}
 
 replyoff = sprintf(replybuff,"========== DUMP FILE CREATED ==========\r\n");
 replyoff+=sprintf(&replybuff[replyoff],"  FILE: %s\r\n",dumpfile);
