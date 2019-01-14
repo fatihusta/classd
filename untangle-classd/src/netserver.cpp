@@ -75,6 +75,7 @@ ret = listen(netsock,8);
 	g_shutdown = 1;
 	return;
 	}
+
 }
 /*--------------------------------------------------------------------------*/
 NetworkServer::~NetworkServer(void)
@@ -154,6 +155,17 @@ int					ret,val,max;
 
 sysmessage(LOG_INFO,"The netserver thread is starting\n");
 
+	// when running on MFW we have to handle the vineyard startup
+	if (g_mfwflag != 0)
+	{
+	ret = vineyard_startup();
+		if (ret != 0)
+		{
+		sysmessage(LOG_ERR,"Error %d returned from vineyard_startup()\n",ret);
+		g_shutdown = 1;
+		}
+	}
+
 	while (g_shutdown == 0)
 	{
 	// watch the thread signal for termination
@@ -211,6 +223,12 @@ sysmessage(LOG_INFO,"The netserver thread is starting\n");
 
 		curr = next;
 		}
+	}
+
+	// when running on MFW we have to handle the vineyard shutdown
+	if (g_mfwflag != 0)
+	{
+	vineyard_shutdown();
 	}
 
 sysmessage(LOG_INFO,"The netserver thread has finished\n");
