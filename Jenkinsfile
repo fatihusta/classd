@@ -3,7 +3,7 @@ pipeline {
 
   stages {
     stage('Build') {
-      agent any
+      agent { label 'mfw' }
       steps {
         sh "docker pull untangleinc/classd:build"
         sh "docker-compose -f docker-compose.build.yml -p classd_debian run build"
@@ -11,7 +11,7 @@ pipeline {
     }
 
     stage('Test') {
-      agent any
+      agent { label 'mfw' }
       steps {
 	sh "true" // FIXME
       }
