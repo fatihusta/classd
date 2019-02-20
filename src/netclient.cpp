@@ -157,7 +157,7 @@ if (strncasecmp(querybuff,"SERVER|",7) == 0) local = HandleChunk(MSG_SERVER);
 if (strncasecmp(querybuff,"PACKET|",7) == 0) local = HandleChunk(MSG_PACKET);
 
 	// if we don't have a session yet then this is probably a console query
-	if (local == NULL)
+	if ((local == NULL) && (g_mfwflag == 0))
 	{
 	hashcode = ExtractNetworkSession(querybuff);
 	local = dynamic_cast<SessionObject*>(g_sessiontable->SearchObject(hashcode));
