@@ -131,9 +131,6 @@ sem_post(&g_classify_sem);
 			// delete the session object from the table
 			g_sessiontable->DeleteObject(session);
 
-			// delete the session object from the hash table
-			g_sessiontable->DeleteObject(session);
-
 			break;
 
 		// this is called to classify TCP or UDP data from the client to the server

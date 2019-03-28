@@ -416,17 +416,8 @@ session = dynamic_cast<SessionObject*>(g_sessiontable->SearchObject(hashcode));
 	return;
 	}
 
-	// for TCP and UDP post the remove message to the classify thread
-	if ((session->GetNetProtocol() == IPPROTO_TCP) || (session->GetNetProtocol() == IPPROTO_UDP))
-	{
-	g_messagequeue->PushMessage(new MessageWagon(MSG_REMOVE,hashcode));
-	}
-
-	// for anything else we delete the session object here
-	else
-	{
-	g_sessiontable->DeleteObject(session);
-	}
+// the classify thread handles all session removes so it can do navl cleanup
+g_messagequeue->PushMessage(new MessageWagon(MSG_REMOVE,hashcode));
 
 // have to return something even though the node currently does not use it
 replyoff = sprintf(replybuff,"REMOVED: %" PRIu64 "\r\n\r\n",hashcode);
