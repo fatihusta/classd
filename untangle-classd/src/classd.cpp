@@ -68,7 +68,7 @@ pthread_attr_destroy(&attr);
 	if (g_logfile == NULL) openlog("classd",LOG_NDELAY,LOG_DAEMON);
 
 	if (g_nofork == 0) ret = fork();
-	else ret = 1;
+	else ret = 0;
 
 		if (ret > 0)
 		{
