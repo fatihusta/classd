@@ -1,0 +1,13 @@
+version: '2'
+services:
+    build:
+      image: untangleinc/classd:build
+      volumes:
+        - ./:/opt/untangle/classd
+
+    build-local:
+      build:
+        context: .
+        dockerfile: Dockerfile.build
+      volumes:
+        - ./:/opt/untangle/classd
