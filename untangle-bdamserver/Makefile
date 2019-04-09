@@ -1,4 +1,4 @@
-VERSION := 2.3.70.85
+VERSION := 2.4.71.156
 
 ARCH := $(shell dpkg-architecture -qDEB_BUILD_ARCH)
 ifeq ($(ARCH),amd64)
