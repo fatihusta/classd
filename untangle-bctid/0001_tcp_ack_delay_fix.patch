@@ -1,0 +1,18 @@
+diff -ur bcti-sdk-linux-5.26.2.orig/src/Daemon/main.cpp bcti-sdk-linux-5.26.2/src/Daemon/main.cpp
+--- bcti-sdk-linux-5.26.2.orig/src/Daemon/main.cpp	2018-07-18 14:46:08.000000000 -0700
++++ bcti-sdk-linux-5.26.2.new/src/Daemon/main.cpp	2019-04-08 07:34:27.706710514 -0700
+@@ -113,12 +113,9 @@
+ 	size_t msgByteCount = msg.size();
+ 
+ 	// Send message size (in bytes).
+-	char buf[16];
+-	snprintf(buf, sizeof(buf), "<%d>", (int)msgByteCount);
++	char buf[msg.size() + 16];
++	snprintf(buf, sizeof(buf), "<%d>%s", (int)msgByteCount, msg.c_str());
+ 	send(socket, buf, strlen(buf), MSG_NOSIGNAL);
+-
+-	// Send message bytes.
+-	send(socket, msg.c_str(), msgByteCount, MSG_NOSIGNAL);
+ }
+ 
+ static void SendErr(int socket, const char* errText, bool printFormatted = false)
