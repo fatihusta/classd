@@ -7,7 +7,7 @@ Build-Depends: debhelper (>= 10), libssl-dev, libidn2-dev
 Standards-Version: 3.9.8
 
 Package: untangle-bctid
-Architecture: i386 amd64
+Architecture: amd64
 Depends: ${misc:Depends}, ${shlibs:Depends}, systemd-sysv
 Conflicts: sysvinit-core
 Description: Webroot Brightcloud daemon for lookups
