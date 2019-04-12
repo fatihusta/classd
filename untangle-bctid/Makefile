@@ -16,7 +16,7 @@ all: build
 build:
 	rm -rf $(TMPDIR)
 	mkdir -p $(TMPDIR)
-	tar -C $(TMPDIR) -xavf ${BCI_SDK_TAR}
+	tar -C $(TMPDIR) -xaf ${BCI_SDK_TAR}
 
 	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0001_tcp_ack_delay_fix.patch
 	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0002_catid_option.patch
