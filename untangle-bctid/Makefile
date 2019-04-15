@@ -20,6 +20,7 @@ build:
 
 	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0001_tcp_ack_delay_fix.patch
 	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0002_catid_option.patch
+	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0003_client_elapsed_time.patch
 
 	make -C $(TMPDIR)/${BCI_SDK_DIR}/src Daemon
 
