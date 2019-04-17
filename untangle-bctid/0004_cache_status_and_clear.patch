@@ -1,0 +1,104 @@
+diff -ur bcti-sdk-linux-5.26.2.current/src/Daemon/Daemon.cpp bcti-sdk-linux-5.26.2/src/Daemon/Daemon.cpp
+--- bcti-sdk-linux-5.26.2.current/src/Daemon/Daemon.cpp	2018-07-18 12:39:37.000000000 -0700
++++ bcti-sdk-linux-5.26.2/src/Daemon/Daemon.cpp	2019-04-16 12:10:48.000000000 -0700
+@@ -274,6 +274,10 @@
+ 	char buf[PATH_MAX + 1];
+ 	snprintf(buf, sizeof(buf), "%d.%d.%d", major, minor, update);
+ 	Json::AddString(statusObj, "url_database_version", buf);
++	Json::AddNumber(statusObj, "url_cache_maximum_size", config->GetUrlCacheSizeMB() * 1048576);
++	int cacheCount = 0;
++	GetUrlCacheRecordCount(cacheCount);
++	Json::AddNumber(statusObj, "url_cache_current_size", cacheCount);
+ 
+ 	char url[PATH_MAX + 1] = { 0 };
+ 	GetUrlFileName(url, PATH_MAX);
+diff -ur bcti-sdk-linux-5.26.2.current/src/Daemon/Daemon.h bcti-sdk-linux-5.26.2/src/Daemon/Daemon.h
+--- bcti-sdk-linux-5.26.2.current/src/Daemon/Daemon.h	2019-04-16 12:44:32.909503158 -0700
++++ bcti-sdk-linux-5.26.2/src/Daemon/Daemon.h	2019-04-16 12:18:52.000000000 -0700
+@@ -286,6 +286,7 @@
+ 	DAEMON_SDK_DECL(GetUrlInfo)
+ 	DAEMON_SDK_DECL(GetUrlReputation)
+ 	DAEMON_SDK_DECL(GetUrlWhoIs)
++	DAEMON_SDK_DECL(ClearUrlCache)
+ };
+ }
+ 
+diff -ur bcti-sdk-linux-5.26.2.current/src/Daemon/DaemonUrl.cpp bcti-sdk-linux-5.26.2/src/Daemon/DaemonUrl.cpp
+--- bcti-sdk-linux-5.26.2.current/src/Daemon/DaemonUrl.cpp	2019-04-16 12:44:32.909503158 -0700
++++ bcti-sdk-linux-5.26.2/src/Daemon/DaemonUrl.cpp	2019-04-16 12:31:43.000000000 -0700
+@@ -379,4 +379,11 @@
+ 		return Json::ErrorObj(errStr.c_str());
+ 	}
+ }
++
++DAEMON_SDK_DEFN(DaemonUrl::ClearUrlCache)
++{
++	cJSON* clearCacheObj = cJSON_CreateObject();
++	Json::AddBool(clearCacheObj, "cleared", SetUrlCacheClear());
++	return clearCacheObj;
++}
+ }
+diff -ur bcti-sdk-linux-5.26.2.current/src/Daemon/main.cpp bcti-sdk-linux-5.26.2/src/Daemon/main.cpp
+--- bcti-sdk-linux-5.26.2.current/src/Daemon/main.cpp	2019-04-16 12:44:27.792946286 -0700
++++ bcti-sdk-linux-5.26.2/src/Daemon/main.cpp	2019-04-16 12:21:03.000000000 -0700
+@@ -327,6 +327,7 @@
+ 	s_sdkFns["url/getphishscore"] = DaemonPhishing::GetPhishingScore;
+ 	s_sdkFns["url/getrepinfo"] = DaemonUrl::GetUrlReputation;
+ 	s_sdkFns["url/getwhoisinfo"] = DaemonUrl::GetUrlWhoIs;
++	s_sdkFns["url/clearcache"] = DaemonUrl::ClearUrlCache;
+ 	s_sdkFns["url/submitphishquery"] = DaemonPhishing::SubmitPhishingQuery;
+ }
+ 
+diff -ur bcti-sdk-linux-5.26.2.current/src/IsisSdkUrl/IsisSdkUrl.cpp bcti-sdk-linux-5.26.2/src/IsisSdkUrl/IsisSdkUrl.cpp
+--- bcti-sdk-linux-5.26.2.current/src/IsisSdkUrl/IsisSdkUrl.cpp	2018-04-05 12:28:02.000000000 -0700
++++ bcti-sdk-linux-5.26.2/src/IsisSdkUrl/IsisSdkUrl.cpp	2019-04-16 12:40:09.000000000 -0700
+@@ -248,6 +248,23 @@
+ 	return UrlCache::Instance()->GetVersion(major, minor, update);
+ }
+ 
++bool GetUrlCacheRecordCount(int& count)
++{
++	count = 0;
++	if (!Configuration::Instance()->UrlEnabled())
++		return false;
++	count = UrlCache::Instance()->GetCacheRecordCount();
++	return true;
++}
++
++bool SetUrlCacheClear()
++{
++	if (!Configuration::Instance()->UrlEnabled())
++		return false;
++	UrlCache::Instance()->Initialize();
++	return true;
++}
++
+ bool GetUrlFileName(char* buf, size_t len)
+ {
+ 	if (!Configuration::Instance()->UrlEnabled())
+diff -ur bcti-sdk-linux-5.26.2.current/src/IsisSdkUrl/IsisSdkUrl.h bcti-sdk-linux-5.26.2/src/IsisSdkUrl/IsisSdkUrl.h
+--- bcti-sdk-linux-5.26.2.current/src/IsisSdkUrl/IsisSdkUrl.h	2018-04-05 12:28:02.000000000 -0700
++++ bcti-sdk-linux-5.26.2/src/IsisSdkUrl/IsisSdkUrl.h	2019-04-16 12:31:49.000000000 -0700
+@@ -314,6 +314,18 @@
+ 	Returns true and the version numbers if a database is loaded
+ */
+ ISISAPI bool GetUrlDatabaseVersion(int& major, int& minor, int& update);
++
++//! GetUrlCacheRecordCount
++/*!
++	Returns true and the current number of entries in the cache.
++*/
++ISISAPI bool GetUrlCacheRecordCount(int& count);
++
++//! SetUrlCacheClear
++/*!
++	Clear URL cache
++*/
++ISISAPI bool SetUrlCacheClear();
+ } // namespace Isis
+ 
+ #endif // IsisSdk_IsisSdkUrl_h
+Only in bcti-sdk-linux-5.26.2/src/IsisSdkUrl: libIsisSdkUrl.a
+Only in bcti-sdk-linux-5.26.2/src/IsisSdkUrl: .obj
+Only in bcti-sdk-linux-5.26.2/src/IsisUrl: libIsisUrl.a
+Only in bcti-sdk-linux-5.26.2/src/IsisUrl: .obj
