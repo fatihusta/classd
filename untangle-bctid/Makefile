@@ -1,4 +1,4 @@
-VERSION := 5.26.2
+VERSION := 5.27.1
 
 BCI_SDK_DIR := bcti-sdk-linux-${VERSION}
 BCI_SDK_TAR := ./${BCI_SDK_DIR}.tgz
@@ -18,10 +18,11 @@ build:
 	mkdir -p $(TMPDIR)
 	tar -C $(TMPDIR) -xaf ${BCI_SDK_TAR}
 
-	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0001_tcp_ack_delay_fix.patch
-	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0002_catid_option.patch
-	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0003_client_elapsed_time.patch
+	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0001_load_db.patch
+	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0002_client_send_performance.patch
+	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0003_threatmaskfile.patch
 	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0004_cache_status_and_clear.patch
+	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0005_client_elapsed_time.patch
 
 	make -C $(TMPDIR)/${BCI_SDK_DIR}/src Daemon
 
