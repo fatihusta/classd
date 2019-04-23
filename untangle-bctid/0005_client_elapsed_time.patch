@@ -1,0 +1,46 @@
+diff -ur bcti-sdk-linux-5.27.1.orig/src/IsisSdkCore/hrtimer.h bcti-sdk-linux-5.27.1/src/IsisSdkCore/hrtimer.h
+--- bcti-sdk-linux-5.27.1.orig/src/IsisSdkCore/hrtimer.h	2019-04-03 14:00:29.000000000 -0700
++++ bcti-sdk-linux-5.27.1/src/IsisSdkCore/hrtimer.h	2019-04-23 12:37:46.000000000 -0700
+@@ -18,6 +18,7 @@
+ #ifndef IsisSdk_hrtimer_h
+ #define IsisSdk_hrtimer_h
+ 
++#include <stdint.h>
+ #include <stdlib.h>
+ #include <string>
+ #ifdef _WIN32
+@@ -122,18 +123,30 @@
+ 		(char* str, size_t maxLength, bool truncateMicroseconds = false, bool countDays = false)
+ 		const
+ 	{
++#if UINTPTR_MAX == 0xffffffff
++		long unsigned int microsecs = (long unsigned int)getElapsedMicroseconds();
++		long unsigned int days;
++		long unsigned int hours;
++		long unsigned int mins;
++		long unsigned int secs;
++#else
+ 		uint64_t microsecs = (uint64_t)getElapsedMicroseconds();
+-		uint64_t days;
++ 		uint64_t days;
++		uint64_t hours;
++		uint64_t mins;
++		uint64_t secs;
++#endif
+ 		if (countDays)
+ 		{
+ 			days = microsecs / 86400000000uL;
+ 			microsecs %= 86400000000uL;
+ 		}
+-		uint64_t hours = microsecs / 3600000000uL;
++
++		hours = microsecs / 3600000000uL;
+ 		microsecs %= 3600000000uL;
+-		uint64_t mins = microsecs / 60000000uL;
++		mins = microsecs / 60000000uL;
+ 		microsecs %= 60000000uL;
+-		uint64_t secs = microsecs / 1000000uL;
++		secs = microsecs / 1000000uL;
+ 		microsecs %= 1000000uL;
+ 
+ 		char d[16] = { '\0' };

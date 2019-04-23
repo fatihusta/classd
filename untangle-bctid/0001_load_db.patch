@@ -1,0 +1,29 @@
+diff -ur bcti-sdk-linux-5.27.1.orig/src/Daemon/main.cpp bcti-sdk-linux-5.27.1/src/Daemon/main.cpp
+--- bcti-sdk-linux-5.27.1.orig/src/Daemon/main.cpp	2019-04-03 14:00:29.000000000 -0700
++++ bcti-sdk-linux-5.27.1/src/Daemon/main.cpp	2019-04-22 12:29:13.000000000 -0700
+@@ -186,12 +186,19 @@
+ 				break;
+ 			case 3:
+ 				{
+-					writePipe(pipePW, "Loading local databases... ");
+-					DbType dbs = (DbType)(DbType::DbIp | DbType::DbUrl);
+-					if (LoadDb(dbs, 60u) == dbs)
+-						writePipe(pipePW, "OK\n");
+-					else
+-						errStr = "FAILED";
++					DbType dbs = DbNone;
++					if(Configuration::Instance()->UrlDbEnabled())
++						dbs = (DbType)(dbs | DbType::DbUrl);
++					if(Configuration::Instance()->IpDbEnabled())
++						dbs = (DbType)(dbs | DbType::DbIp);
++					if(dbs != DbNone){
++						writePipe(pipePW, "Loading local databases... ");
++						if (LoadDb(dbs, 60u) == dbs)
++							writePipe(pipePW, "OK\n");
++						else
++							errStr = "FAILED";
++
++					}
+ 				}
+ 				break;
+ 			default:

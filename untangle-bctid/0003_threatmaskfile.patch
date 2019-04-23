@@ -1,0 +1,21 @@
+diff -ur bcti-sdk-linux-5.27.1.orig/src/Daemon/Daemon.cpp bcti-sdk-linux-5.27.1/src/Daemon/Daemon.cpp
+--- bcti-sdk-linux-5.27.1.orig/src/Daemon/Daemon.cpp	2019-04-03 14:00:29.000000000 -0700
++++ bcti-sdk-linux-5.27.1/src/Daemon/Daemon.cpp	2019-04-23 06:57:55.000000000 -0700
+@@ -153,11 +153,12 @@
+ 			for (int x = 0; x < 32; ++x)
+ 				if (ipmask & (1 << x))
+ 				{
+-					ThreatMaskFile(x, valBuf, sizeof(valBuf));
+-					if (strlen(valBuf))
+-					{
+-						snprintf(nameBuf, sizeof(nameBuf), "%02d", x);
+-						r.String(nameBuf, valBuf);
++					if(ThreatMaskFile(x, valBuf, sizeof(valBuf))){
++						if (strlen(valBuf))
++						{
++							snprintf(nameBuf, sizeof(nameBuf), "%02d", x);
++							r.String(nameBuf, valBuf);
++						}
+ 					}
+ 				}
+ 		}
