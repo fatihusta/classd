@@ -281,8 +281,16 @@ log_vineyard(session,"CALLBACK",0,NULL,0);
 		{
 		case ENOMEM:	err_nomem++;	break;
 		case ENOBUFS:	err_nobufs++;	break;
-		case ENOSR:		err_nosr++;		break;
+		case EPROTO:	err_proto++;	break;
 		case ENOTCONN:	err_notconn++;	break;
+		case EBUSY:		err_busy++;		break;
+		case EEXIST:	err_exist++;	break;
+		case EINVAL:	err_inval++;	break;
+		case ECANCELED:	err_canceled++;	break;
+		case ENOENT:	err_noent++;	break;
+		case EPROTONOSUPPORT:	err_protonosupport++; break;
+		case ENOSYS:	err_nosys++;	break;
+		case ECHILD:	err_child++;	break;
 		default:		err_unknown++;	break;
 		}
 
@@ -393,29 +401,41 @@ l_navl_handle = navl_open(cfg_navl_plugins);
 	{
 	ret = navl_error_get(0);
 	sysmessage(LOG_ERR,"Error %d returned from navl_open()\n",ret);
-	return(1);
+	return(10);
 	}
 
-// disable session timeout for TCP and UDP since we do the session management
-if (vineyard_config("tcp.timeout",0) != 0) return(2);
-if (vineyard_config("udp.timeout",0) != 0) return(3);
+	// NGFW - disable session timeout for TCP and UDP since we do the session management
+	if (g_mfwflag == 0)
+	{
+	if (vineyard_config("tcp.timeout",0) != 0) return(20);
+	if (vineyard_config("udp.timeout",0) != 0) return(30);
+	}
+	// MFW - set TCP and UDP timeout low since we only pass initial session traffic
+	else
+	{
+	if (vineyard_config("tcp.timeout",60) != 0) return(20);
+	if (vineyard_config("udp.timeout",60) != 0) return(30);
+	}
+
+// set the flag to use best effort classification when TCP handshake was not seen
+if (vineyard_config("tcp.accept_nohandshake",1) != 0) return(40);
 
 // set the vineyard system loglevel parameter
-if (vineyard_config("system.loglevel",cfg_navl_debug) != 0) return(4);
+if (vineyard_config("system.loglevel",cfg_navl_debug) != 0) return(50);
 
 // set the number of of http request+response pairs to analyze before giving up
-if (vineyard_config("http.maxpersist",cfg_http_limit) != 0) return(5);
+if (vineyard_config("http.maxpersist",cfg_http_limit) != 0) return(60);
 
 // enable IP fragment processing
-if (vineyard_config("ip.defrag",cfg_navl_defrag) != 0) return(6);
+if (vineyard_config("ip.defrag",cfg_navl_defrag) != 0) return(70);
 
 // set all the low level skype parameters
-if (vineyard_config("skype.confidence_thresh",cfg_skype_confidence_thresh) != 0) return(7);
-if (vineyard_config("skype.packet_thresh",cfg_skype_packet_thresh) != 0) return(8);
-if (vineyard_config("skype.probe_thresh",cfg_skype_probe_thresh) != 0) return(9);
-if (vineyard_config("skype.random_thresh",cfg_skype_random_thresh) != 0) return(10);
-if (vineyard_config("skype.require_history",cfg_skype_require_history) != 0) return(11);
-if (vineyard_config("skype.seq_cache_time",cfg_skype_seq_cache_time) != 0) return(12);
+if (vineyard_config("skype.confidence_thresh",cfg_skype_confidence_thresh) != 0) return(80);
+if (vineyard_config("skype.packet_thresh",cfg_skype_packet_thresh) != 0) return(90);
+if (vineyard_config("skype.probe_thresh",cfg_skype_probe_thresh) != 0) return(100);
+if (vineyard_config("skype.random_thresh",cfg_skype_random_thresh) != 0) return(110);
+if (vineyard_config("skype.require_history",cfg_skype_require_history) != 0) return(120);
+if (vineyard_config("skype.seq_cache_time",cfg_skype_seq_cache_time) != 0) return(130);
 
 // initialize the vineyard handle for the active thread
 ret = navl_init(l_navl_handle);
@@ -423,7 +443,7 @@ ret = navl_init(l_navl_handle);
 	if (ret != 0)
 	{
 	sysmessage(LOG_ERR,"Error %d returned from navl_init()\n",ret);
-	return(13);
+	return(140);
 	}
 
 if ((navl_attr_callback_set(l_navl_handle,l_name_facebook_app,attr_callback) != 0)) problem|=0x01;
@@ -432,7 +452,7 @@ if ((navl_attr_callback_set(l_navl_handle,l_name_tls_hostname,attr_callback) != 
 	if (problem != 0)
 	{
 	sysmessage(LOG_ERR,"Error 0x%02X enabling metadata callbacks\n",problem);
-	return(14);
+	return(150);
 	}
 
 // get the total number of protocols from the vineyard library
@@ -441,7 +461,7 @@ ret = navl_proto_max_index(l_navl_handle);
 	if (ret == -1)
 	{
 	sysmessage(LOG_ERR,"Error calling navl_proto_max_index()\n");
-	return(15);
+	return(160);
 	}
 
 // create the array of protocol statistics
@@ -544,7 +564,11 @@ l_navl_logfile = fileno(stream);
 
 fprintf(stream,"========== VINEYARD SYSTEM INFO ==========\r\n");
 fflush(stream);
-navl_diag(l_navl_handle,"SYSTEM","");
+navl_diag(l_navl_handle,"SYSTEM","1");
+
+fprintf(stream,"========== VINEYARD MEMORY INFO ==========\r\n");
+fflush(stream);
+navl_diag(l_navl_handle,"MEMORY","1");
 
 fprintf(stream,"========== VINEYARD TCP INFO ==========\r\n");
 fflush(stream);

@@ -627,12 +627,19 @@ replyoff+=sprintf(&replybuff[replyoff],"  Message Queue Overrun ........... %s\r
 	replyoff+=sprintf(&replybuff[replyoff],"  Session Hash Table Bytes ........ %s\r\n",pad(temp,bytes));
 	}
 
-replyoff+=sprintf(&replybuff[replyoff],"  Vineyard NO MEMORY Errors ....... %s\r\n",pad(temp,err_nomem));
-replyoff+=sprintf(&replybuff[replyoff],"  Vineyard NO FLOW Errors ......... %s\r\n",pad(temp,err_nobufs));
-replyoff+=sprintf(&replybuff[replyoff],"  Vineyard NO RESOURCE Errors ..... %s\r\n",pad(temp,err_nosr));
-replyoff+=sprintf(&replybuff[replyoff],"  Vineyard NO CONNECTION Errors ... %s\r\n",pad(temp,err_notconn));
+replyoff+=sprintf(&replybuff[replyoff],"  Vineyard EPROTONOSUPPORT Errors . %s\r\n",pad(temp,err_protonosupport));
+replyoff+=sprintf(&replybuff[replyoff],"  Vineyard ECANCELED Errors........ %s\r\n",pad(temp,err_canceled));
+replyoff+=sprintf(&replybuff[replyoff],"  Vineyard ENOBUFS Errors.......... %s\r\n",pad(temp,err_nobufs));
+replyoff+=sprintf(&replybuff[replyoff],"  Vineyard ENOTCONN Errors ........ %s\r\n",pad(temp,err_notconn));
+replyoff+=sprintf(&replybuff[replyoff],"  Vineyard EPROTO Errors .......... %s\r\n",pad(temp,err_proto));
+replyoff+=sprintf(&replybuff[replyoff],"  Vineyard ENOMEM Errors .......... %s\r\n",pad(temp,err_nomem));
+replyoff+=sprintf(&replybuff[replyoff],"  Vineyard ENOENT Errors .......... %s\r\n",pad(temp,err_noent));
+replyoff+=sprintf(&replybuff[replyoff],"  Vineyard ENOSYS Errors .......... %s\r\n",pad(temp,err_nosys));
+replyoff+=sprintf(&replybuff[replyoff],"  Vineyard ECHILD Errors .......... %s\r\n",pad(temp,err_child));
+replyoff+=sprintf(&replybuff[replyoff],"  Vineyard EEXIST Errors .......... %s\r\n",pad(temp,err_exist));
+replyoff+=sprintf(&replybuff[replyoff],"  Vineyard EINVAL Errors .......... %s\r\n",pad(temp,err_inval));
+replyoff+=sprintf(&replybuff[replyoff],"  Vineyard EBUSY Errors ........... %s\r\n",pad(temp,err_busy));
 replyoff+=sprintf(&replybuff[replyoff],"  Vineyard UNKNOWN Errors ......... %s\r\n",pad(temp,err_unknown));
-
 replyoff+=sprintf(&replybuff[replyoff],"  Vineyard App Invalid............. %s\r\n",pad(temp,vineyard_appfail));
 replyoff+=sprintf(&replybuff[replyoff],"  Vineyard Proto Invalid .......... %s\r\n",pad(temp,vineyard_protofail));
 
