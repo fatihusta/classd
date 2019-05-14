@@ -20,7 +20,7 @@ pthread_attr_t		attr;
 rlimit				core;
 fd_set				tester;
 time_t				currtime,lasttime;
-int					ret,x;
+int					val,ret,x;
 
 printf("[ CLASSD ] Untangle Traffic Classification Engine Version %s\n",VERSION);
 
@@ -37,15 +37,21 @@ setrlimit(RLIMIT_CORE,&core);
 	{
 	if (strncasecmp(argv[x],"-H",2) == 0) show_usage();
 	if (strncasecmp(argv[x],"-?",2) == 0) show_usage();
+	if (strncasecmp(argv[x],"-MFW",4) == 0) g_mfwflag++;
 	if (strncasecmp(argv[x],"-F",2) == 0) g_nofork++;
 	if (strncasecmp(argv[x],"-U",2) == 0) g_nolimit++;
 	if (strncasecmp(argv[x],"-L",2) == 0) g_console++;
-	if (strncasecmp(argv[x],"-MFW",4) == 0) g_mfwflag++;
 
 		if (strncasecmp(argv[x],"-D",2) == 0)
 		{
 		g_debug = atoi(&argv[x][2]);
 		if (g_debug == 0) g_debug = 0xFFFF;
+		}
+
+		if (strncasecmp(argv[x],"-W",2) == 0)
+		{
+		val = atoi(&argv[x][2]);
+		if (val != 0) cfg_mem_limit = val;
 		}
 	}
 
@@ -661,7 +667,7 @@ mem = atoi(find);
 	return;
 	}
 
-sysmessage(LOG_ERR,"Setting shutdown flag due to high memory usage of %d kB\n",mem);
+sysmessage(LOG_ERR,"Memory size %d kB exceeds %d kB limit - Setting shutdown flag\n",mem,cfg_mem_limit);
 g_shutdown++;
 }
 /*--------------------------------------------------------------------------*/
@@ -670,9 +676,11 @@ void show_usage(void)
 printf("\n");
 printf("/----------------- OPTION SUMMARY -----------------\\\n");
 printf("|  -D[xxxx]  set debug level to all or hex value   |\n");
+printf("|  -W[xxxx]  set memory watchdog threshold         |\n");
+printf("|  -MFW      activate MicroFirewall mode           |\n");
 printf("|  -F        run as foreground daemon (no fork)    |\n");
 printf("|  -L        run as program rather than daemon     |\n");
-printf("|  -M        disable memory usage limit            |\n");
+printf("|  -U        disable memory usage watchdog         |\n");
 printf("\\--------------------------------------------------/\n");
 printf("\n");
 printf("[ CLASSD ] Runtime arguments displayed. Application exiting.\n");
