@@ -413,8 +413,8 @@ l_navl_handle = navl_open(cfg_navl_plugins);
 	// MFW - set TCP and UDP timeout low since we only pass initial session traffic
 	else
 	{
-	if (vineyard_config("tcp.timeout",60) != 0) return(20);
-	if (vineyard_config("udp.timeout",60) != 0) return(30);
+	if (vineyard_config("tcp.timeout",300) != 0) return(20);
+	if (vineyard_config("udp.timeout",300) != 0) return(30);
 	}
 
 // set the flag to use best effort classification when TCP handshake was not seen
