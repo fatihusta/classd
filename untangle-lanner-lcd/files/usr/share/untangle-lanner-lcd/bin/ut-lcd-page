@@ -1,89 +1,95 @@
-#!/usr/bin/python
+#!/usr/bin/python3
+"""Display to the LCD"""
+# pylint: disable=bare-except
+# pylint: disable=too-many-statements
+# pylint: disable=too-many-branches
+import sys
+import subprocess
+import json
 
-import sys;
-import subprocess;
-import simplejson as json
+def center(display_string):
+    """center the string"""
+    if len(display_string) >= 16:
+        return display_string
+    padding = " " * int((16 - len(display_string))/2)
+    return padding + display_string + padding
 
-def center(str):
-    if (len(str) >= 16):
-        return str;
-    padding = " " * ((16 - len(str))/2)
-    return padding + str + padding
+def run_cmd(cmd):
+    """run the command and return the output"""
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    s_out = p.stdout.read()
+    p.wait()
+    return s_out.rstrip().decode("utf-8")
 
-def runCmd(cmd):
-    proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    std_out = proc.stdout.read();
-    ret_code = proc.wait();
-    return std_out.rstrip();
-
-if (len(sys.argv) < 3):
-    print "Usage ",sys.argv[0],": <page> <line>"
-    sys.exit(1);
-
-    proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    std_out = proc.stdout.read();
- 
-page = int(sys.argv[1])
-line = int(sys.argv[2])
-
-#print "Page: ",page
-#print "Line: ",line
-
-if (page == 0):
-    if (line == 1):
-        print "*** Untangle ***"
-    else:
-        print center(runCmd("hostname -s"))
-elif (page == 1):
-    if (line == 1):
-        print "*** CPU Load ***"
-    else:
-        cpu1f = float(runCmd('cat /proc/loadavg | awk \'{print $1}\''))
-        cpuCount = float(runCmd('cat /proc/cpuinfo | grep processor | wc -l'))
-        cpuLoadText = "low"
-        if (cpu1f - cpuCount > 1.0):
-            cpuLoadText = "medium"
-        if (cpu1f - cpuCount > 4.0):
-            cpuLoadText = "high"
-        print center(cpuLoadText + " (" + str(cpu1f) + ")")
-elif (page == 2):
-    if (line == 1):
-        print "***  Memory  ***"
-    else:
-        total = float(runCmd('free -m | grep \'Mem\' | awk \'{print $2}\''))
-        free = float(runCmd('free -m | grep \'Mem\' | awk \'{print $4}\''))
-        buffcache = float(runCmd('free -m | grep \'Mem\' | awk \'{print $6}\''))
-        totalGigs = str(int(round(total/1000))) + " Gb"
-        percentFree = str(int(round(((free + buffcache)/total)*100.0))) + "%"
-        print center(totalGigs + " " + percentFree + " free")
-elif (page == 3):
-    if (line == 1):
-        print "***   Disk   ***"
-    else:
-        diskSize = runCmd('df -h / | grep \'dev\' | awk \'{print $2}\'')
-        percentUsed = float(runCmd('df -h / | grep \'dev\' | awk \'{print $5}\'').strip("%"))
-        percentFree = str(100.0 - percentUsed) + "%"
-        print center(diskSize + " " + percentFree + " free")
-elif (page == 4):
-    if (line == 1):
-        print "***   UID    ***"
-    else:
-        uid = runCmd(' cat /usr/share/untangle/conf/uid | sed -e \'s/-//g\' ')
-        print center(uid)
-elif (page == 5):
-    intf = json.loads(open('/var/lib/interface-status/interface-1-status.js').read())
-    if intf.get('v4Address') != None:
-        if (line == 1):
-            print "*** External ***"
+def display(page, line):
+    """print the the specified line of the specified page"""
+    if page == 0:
+        if line == 1:
+            print("*** Untangle ***")
         else:
-            print center(intf.get('v4Address'))
-elif (page == 6):
-    intf = json.loads(open('/var/lib/interface-status/interface-2-status.js').read())
-    if intf.get('v4Address') != None:
-        if (line == 1):
-            print "*** Internal ***"
+            print(center(run_cmd("hostname -s")))
+    elif page == 1:
+        if line == 1:
+            print("*** CPU Load ***")
         else:
-            print center(intf.get('v4Address'))
+            cpu1f = float(run_cmd('cat /proc/loadavg | awk \'{print $1}\''))
+            cpu_count = float(run_cmd('cat /proc/cpuinfo | grep processor | wc -l'))
+            cpu_load_text = "low"
+            if cpu1f - cpu_count > 1.0:
+                cpu_load_text = "medium"
+            if cpu1f - cpu_count > 4.0:
+                cpu_load_text = "high"
+            print(center(cpu_load_text + " (" + str(cpu1f) + ")"))
+    elif page == 2:
+        if line == 1:
+            print("***  Memory  ***")
+        else:
+            total = float(run_cmd('free -m | grep \'Mem\' | awk \'{print $2}\''))
+            free = float(run_cmd('free -m | grep \'Mem\' | awk \'{print $4}\''))
+            buffcache = float(run_cmd('free -m | grep \'Mem\' | awk \'{print $6}\''))
+            total_gigs = str(int(round(total/1000))) + " Gb"
+            percent_free = str(int(round(((free + buffcache)/total)*100.0))) + "%"
+            print(center(total_gigs + " " + percent_free + " free"))
+    elif page == 3:
+        if line == 1:
+            print("***   Disk   ***")
+        else:
+            disk_size = run_cmd('df -h / | grep \'dev\' | awk \'{print $2}\'')
+            percent_used = float(run_cmd('df -h / | grep \'dev\' | awk \'{print $5}\'').strip("%"))
+            percent_free = str(100.0 - percent_used) + "%"
+            print(center(disk_size + " " + percent_free + " free"))
+    elif page == 4:
+        if line == 1:
+            print("***   UID    ***")
+        else:
+            uid = open('/usr/share/untangle/conf/uid').read().replace("-", "")
+            print(center(uid))
+    elif page == 5:
+        intf = json.loads(open('/var/lib/interface-status/interface-1-status.js').read())
+        if intf.get('v4Address') != None:
+            if line == 1:
+                print("*** External ***")
+            else:
+                print(center(intf.get('v4Address')))
+    elif page == 6:
+        intf = json.loads(open('/var/lib/interface-status/interface-2-status.js').read())
+        if intf.get('v4Address') != None:
+            if line == 1:
+                print("*** Internal ***")
+            else:
+                print(center(intf.get('v4Address')))
+    elif page == 7:
+        s = open('/var/lib/interface-status/interface-2-status.js').read()
+        if line == 1:
+            print("***  Serial  ***")
+        else:
+            print(center(s))
 
-                       
-    
+if len(sys.argv) < 3:
+    print("Usage ", sys.argv[0], ": <page> <line>")
+    sys.exit(1)
+
+try:
+    display(int(sys.argv[1]), int(sys.argv[2]))
+except:
+    pass

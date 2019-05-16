@@ -11,7 +11,7 @@
 #define DEVICE "/dev/plcm_drv"
 #define UNTANGLE_LCD_PAGE "/usr/share/untangle-lanner-lcd/bin/ut-lcd-page"
 #define LINE_LENGTH 16
-#define NUM_PAGES 7
+#define NUM_PAGES 8
 
 #define CYCLE_TIME_SECONDS 5
 #define REFRESH_TIME_SECONDS 10
