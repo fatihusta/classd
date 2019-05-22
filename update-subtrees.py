@@ -6,10 +6,7 @@ import argparse
 import subprocess
 
 # constants
-SUBTREES = {
-    'untangle-python-sync-settings': 'git@github.com:untangle/sync-settings.git',
-    'untangle-python-runtests': 'git@github.com:untangle/runtests.git'
-}
+SUBTREES = { 'untangle-classd': 'https://github.com/untangle/classd.git' }
 
 # CL args
 parser = argparse.ArgumentParser(description="Update subtrees, and optionally push result back to origin")
