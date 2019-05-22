@@ -4,9 +4,10 @@
 
 import argparse
 import subprocess
+import yaml
 
 # constants
-SUBTREES = { 'untangle-classd': 'https://github.com/untangle/classd.git' }
+SUBTREES = yaml.load(open("subtrees.yaml"))['subtrees']
 
 # CL args
 parser = argparse.ArgumentParser(description="Update subtrees, and optionally push result back to origin")
