@@ -5,6 +5,7 @@ pipeline {
     stage('Build') {
       agent { label 'mfw' }
       steps {
+        sh "hostname"
         sh "docker pull untangleinc/classd:build"
         sh "docker-compose -f docker-compose.build.yml -p classd_debian run build"
       }
