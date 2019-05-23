@@ -23,6 +23,7 @@ build:
 	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0003_threatmaskfile.patch
 	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0004_cache_status_and_clear.patch
 	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0005_client_elapsed_time.patch
+	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0006_host_colon.patch
 
 	make -C $(TMPDIR)/${BCI_SDK_DIR}/src Daemon
 
