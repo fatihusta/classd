@@ -1,24 +1,3 @@
-diff -ur bcti-sdk-linux-5.27.1.orig/src/Daemon/Daemon.h bcti-sdk-linux-5.27.1/src/Daemon/Daemon.h
---- bcti-sdk-linux-5.27.1.orig/src/Daemon/Daemon.h	2019-04-03 14:00:29.000000000 -0700
-+++ bcti-sdk-linux-5.27.1/src/Daemon/Daemon.h	2019-04-22 12:37:21.000000000 -0700
-@@ -220,7 +220,7 @@
- 				}
- 			}
- 			if (d->batchSize > 1u)
--				msleep(2u);
-+				msleep(.250);
- 		}
- 
- 		{
-@@ -282,7 +282,7 @@
- 			}
- 
- 			while (!batchReq.isDone.value())
--				msleep(2u);
-+				msleep(.250);
- 
- /*
- 			switch (taskResult)
 diff -ur bcti-sdk-linux-5.27.1.orig/src/Daemon/DaemonJsonResponder.cpp bcti-sdk-linux-5.27.1/src/Daemon/DaemonJsonResponder.cpp
 --- bcti-sdk-linux-5.27.1.orig/src/Daemon/DaemonJsonResponder.cpp	2019-04-03 14:00:29.000000000 -0700
 +++ bcti-sdk-linux-5.27.1/src/Daemon/DaemonJsonResponder.cpp	2019-04-22 12:41:58.000000000 -0700
