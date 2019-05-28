@@ -25,6 +25,7 @@ build:
 	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0005_client_elapsed_time.patch
 	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0006_host_colon.patch
 	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0007_status.patch
+	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0008_on_error.patch
 
 	make -C $(TMPDIR)/${BCI_SDK_DIR}/src Daemon
 
