@@ -1,0 +1,328 @@
+diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkCdb/CdbConnectionTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkCdb/CdbConnectionTask.cpp
+--- bcti-sdk-linux-5.27.1.last/src/IsisSdkCdb/CdbConnectionTask.cpp	2019-04-03 14:00:29.000000000 -0700
++++ bcti-sdk-linux-5.27.1/src/IsisSdkCdb/CdbConnectionTask.cpp	2019-05-28 10:30:02.000000000 -0700
+@@ -44,7 +44,12 @@
+ 	if (m_query.HasQuery())
+ 	{
+ 		IncrementNet();
+-		return m_query.Start(this);
++		if(m_query.Start(this) == false){
++			OnError();
++			return false;
++		}else{
++			return true;
++		}
+ 	}
+ 	else
+ 	{
+diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkCdb/CdbStatsTask.h bcti-sdk-linux-5.27.1/src/IsisSdkCdb/CdbStatsTask.h
+--- bcti-sdk-linux-5.27.1.last/src/IsisSdkCdb/CdbStatsTask.h	2019-04-03 14:00:29.000000000 -0700
++++ bcti-sdk-linux-5.27.1/src/IsisSdkCdb/CdbStatsTask.h	2019-05-28 10:30:13.000000000 -0700
+@@ -45,7 +45,12 @@
+ 		if (m_query.HasQuery())
+ 		{
+ 			IncrementNet();
+-			return m_query.Start(this);
++			if(m_query.Start(this) == false){
++				OnError();
++				return false;
++			}else{
++				return true;
++			}
+ 		}
+ 		else
+ 		{
+diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkCore/StatsTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkCore/StatsTask.cpp
+--- bcti-sdk-linux-5.27.1.last/src/IsisSdkCore/StatsTask.cpp	2019-04-03 14:00:29.000000000 -0700
++++ bcti-sdk-linux-5.27.1/src/IsisSdkCore/StatsTask.cpp	2019-05-28 10:29:28.000000000 -0700
+@@ -51,7 +51,12 @@
+ 	if (m_query.HasQuery())
+ 	{
+ 		m_query.SetProtocol(m_proto);
+-		return m_query.Start(this);
++		if(m_query.Start(this) == false){
++			OnError();
++			return false;
++		}else{
++			return true;
++		}
+ 	}
+ 	return false;
+ }
+diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkCore/TCPConnection.cpp bcti-sdk-linux-5.27.1/src/IsisSdkCore/TCPConnection.cpp
+--- bcti-sdk-linux-5.27.1.last/src/IsisSdkCore/TCPConnection.cpp	2019-04-03 14:00:29.000000000 -0700
++++ bcti-sdk-linux-5.27.1/src/IsisSdkCore/TCPConnection.cpp	2019-05-28 10:47:42.000000000 -0700
+@@ -319,14 +319,17 @@
+ 	if (IpAddress::Protocol::Undefined == GetProtocol())
+ 	{
+ 		Log(LOG_Error, "Cannot determine Internet Protocol for host %s", host.c_str());
++		++s_errors;
+ 		return ConnectError();
+ 	}
+ 
+ 	m_error = 0;
+ 	if (defer)
+ 		m_addr.SetName(host);
+-	else if (!m_addr.Resolve(host, m_protocol))
++	else if (!m_addr.Resolve(host, m_protocol)){
++		++s_errors;
+ 		return ConnectError();
++	}
+ 	m_port = port;
+ 	if (defer)
+ 		return true;
+diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkFile/Md5FileTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkFile/Md5FileTask.cpp
+--- bcti-sdk-linux-5.27.1.last/src/IsisSdkFile/Md5FileTask.cpp	2019-04-03 14:00:29.000000000 -0700
++++ bcti-sdk-linux-5.27.1/src/IsisSdkFile/Md5FileTask.cpp	2019-05-28 10:29:37.000000000 -0700
+@@ -122,7 +122,12 @@
+ 	if (m_query.HasQuery())
+ 	{
+ 		IncrementNet();
+-		return m_query.Start(this);
++		if(m_query.Start(this) == false){
++			OnError();
++			return false;
++		}else{
++			return true;
++		}
+ 	}
+ 	return false;
+ }
+diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkIp/IpGeoTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkIp/IpGeoTask.cpp
+--- bcti-sdk-linux-5.27.1.last/src/IsisSdkIp/IpGeoTask.cpp	2019-04-03 14:00:29.000000000 -0700
++++ bcti-sdk-linux-5.27.1/src/IsisSdkIp/IpGeoTask.cpp	2019-05-28 10:28:43.000000000 -0700
+@@ -103,7 +103,12 @@
+ 	if (m_query.HasQuery())
+ 	{
+ 		IncrementNet();
+-		return m_query.Start(this);
++		if(m_query.Start(this) == false){
++			OnError();
++			return false;
++		}else{
++			return true;
++		}
+ 	}
+ 	return false;
+ }
+diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkIp/IpReputationTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkIp/IpReputationTask.cpp
+--- bcti-sdk-linux-5.27.1.last/src/IsisSdkIp/IpReputationTask.cpp	2019-04-03 14:00:29.000000000 -0700
++++ bcti-sdk-linux-5.27.1/src/IsisSdkIp/IpReputationTask.cpp	2019-05-28 10:28:38.000000000 -0700
+@@ -101,7 +101,12 @@
+ 	if (m_query.HasQuery())
+ 	{
+ 		IncrementNet();
+-		return m_query.Start(this);
++		if(m_query.Start(this) == false){
++			OnError();
++			return false;
++		}else{
++			return true;
++		}
+ 	}
+ 	return false;
+ }
+diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkIp/IpThreatListTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkIp/IpThreatListTask.cpp
+--- bcti-sdk-linux-5.27.1.last/src/IsisSdkIp/IpThreatListTask.cpp	2019-04-03 14:00:29.000000000 -0700
++++ bcti-sdk-linux-5.27.1/src/IsisSdkIp/IpThreatListTask.cpp	2019-05-28 10:28:53.000000000 -0700
+@@ -45,7 +45,12 @@
+ {
+ 	if (m_query.HasQuery())
+ 	{
+-		return m_query.Start(this);
++		if(m_query.Start(this) == false){
++			OnError();
++			return false;
++		}else{
++			return true;
++		}
+ 	}
+ 	else
+ 	{
+diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkIp/IpThreatTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkIp/IpThreatTask.cpp
+--- bcti-sdk-linux-5.27.1.last/src/IsisSdkIp/IpThreatTask.cpp	2019-04-03 14:00:29.000000000 -0700
++++ bcti-sdk-linux-5.27.1/src/IsisSdkIp/IpThreatTask.cpp	2019-05-28 10:28:47.000000000 -0700
+@@ -111,7 +111,12 @@
+ {
+ 	if (m_query.HasQuery())
+ 	{
+-		return m_query.Start(this);
++		if(m_query.Start(this) == false){
++			OnError();
++			return false;
++		}else{
++			return true;
++		}
+ 	}
+ 	return false;
+ }
+diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkIp/IpUpdateTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkIp/IpUpdateTask.cpp
+--- bcti-sdk-linux-5.27.1.last/src/IsisSdkIp/IpUpdateTask.cpp	2019-04-03 14:00:29.000000000 -0700
++++ bcti-sdk-linux-5.27.1/src/IsisSdkIp/IpUpdateTask.cpp	2019-05-28 10:29:03.000000000 -0700
+@@ -54,7 +54,12 @@
+ 	Log(LOG_Trace, "IpUpdateTask: DoNetwork");
+ 	if (m_query.HasQuery())
+ 	{
+-		return m_query.Start(this);
++		if(m_query.Start(this) == false){
++			OnError();
++			return false;
++		}else{
++			return true;
++		}
+ 	}
+ 	else
+ 	{
+diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkMobileApps/MobileTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkMobileApps/MobileTask.cpp
+--- bcti-sdk-linux-5.27.1.last/src/IsisSdkMobileApps/MobileTask.cpp	2019-04-03 14:00:29.000000000 -0700
++++ bcti-sdk-linux-5.27.1/src/IsisSdkMobileApps/MobileTask.cpp	2019-05-28 10:28:34.000000000 -0700
+@@ -128,7 +128,12 @@
+ 	if (m_query.HasQuery())
+ 	{
+ 		IncrementNet();
+-		return m_query.Start(this);
++		if(m_query.Start(this) == false){
++			OnError();
++			return false;
++		}else{
++			return true;
++		}
+ 	}
+ 	return false;
+ }
+diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkPhishing/PhishingRequestTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkPhishing/PhishingRequestTask.cpp
+--- bcti-sdk-linux-5.27.1.last/src/IsisSdkPhishing/PhishingRequestTask.cpp	2019-04-03 14:00:29.000000000 -0700
++++ bcti-sdk-linux-5.27.1/src/IsisSdkPhishing/PhishingRequestTask.cpp	2019-05-28 10:29:22.000000000 -0700
+@@ -91,7 +91,12 @@
+ {
+ 	if (m_query.HasQuery())
+ 	{
+-		return m_query.Start(this);
++		if(m_query.Start(this) == false){
++			OnError();
++			return false;
++		}else{
++			return true;
++		}
+ 	}
+ 	else
+ 	{
+diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkPhishing/PhishingResponseTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkPhishing/PhishingResponseTask.cpp
+--- bcti-sdk-linux-5.27.1.last/src/IsisSdkPhishing/PhishingResponseTask.cpp	2019-04-03 14:00:29.000000000 -0700
++++ bcti-sdk-linux-5.27.1/src/IsisSdkPhishing/PhishingResponseTask.cpp	2019-05-28 10:29:09.000000000 -0700
+@@ -69,7 +69,12 @@
+ {
+ 	if (m_query.HasQuery())
+ 	{
+-		return m_query.Start(this);
++		if(m_query.Start(this) == false){
++			OnError();
++			return false;
++		}else{
++			return true;
++		}
+ 	}
+ 	else
+ 	{
+diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkPhishing/PhishingScoreTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkPhishing/PhishingScoreTask.cpp
+--- bcti-sdk-linux-5.27.1.last/src/IsisSdkPhishing/PhishingScoreTask.cpp	2019-04-03 14:00:29.000000000 -0700
++++ bcti-sdk-linux-5.27.1/src/IsisSdkPhishing/PhishingScoreTask.cpp	2019-05-28 10:29:18.000000000 -0700
+@@ -146,7 +146,12 @@
+ 	if (m_query.HasQuery())
+ 	{
+ 		IncrementNet();
+-		return m_query.Start(this);
++		if(m_query.Start(this) == false){
++			OnError();
++			return false;
++		}else{
++			return true;
++		}
+ 	}
+ 	return false;
+ }
+diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkUrl/CatListTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkUrl/CatListTask.cpp
+--- bcti-sdk-linux-5.27.1.last/src/IsisSdkUrl/CatListTask.cpp	2019-04-03 14:00:29.000000000 -0700
++++ bcti-sdk-linux-5.27.1/src/IsisSdkUrl/CatListTask.cpp	2019-05-28 10:29:41.000000000 -0700
+@@ -45,7 +45,12 @@
+ {
+ 	if (m_query.HasQuery())
+ 	{
+-		return m_query.Start(this);
++		if(m_query.Start(this) == false){
++			OnError();
++			return false;
++		}else{
++			return true;
++		}
+ 	}
+ 	return false;
+ }
+diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkUrl/UrlInfoTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkUrl/UrlInfoTask.cpp
+--- bcti-sdk-linux-5.27.1.last/src/IsisSdkUrl/UrlInfoTask.cpp	2019-05-23 08:19:55.000000000 -0700
++++ bcti-sdk-linux-5.27.1/src/IsisSdkUrl/UrlInfoTask.cpp	2019-05-28 10:44:47.000000000 -0700
+@@ -173,7 +173,12 @@
+ 	if (m_query.HasQuery())
+ 	{
+ 		IncrementNet();
+-		return m_query.Start(this);
++		if(m_query.Start(this) == false){
++			OnError();
++			return false;
++		}else{
++			return true;
++		}
+ 	}
+ 	return false;
+ }
+diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkUrl/UrlRepTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkUrl/UrlRepTask.cpp
+--- bcti-sdk-linux-5.27.1.last/src/IsisSdkUrl/UrlRepTask.cpp	2019-04-03 14:00:29.000000000 -0700
++++ bcti-sdk-linux-5.27.1/src/IsisSdkUrl/UrlRepTask.cpp	2019-05-28 10:29:51.000000000 -0700
+@@ -77,7 +77,12 @@
+ {
+ 	if (m_query.HasQuery())
+ 	{
+-		return m_query.Start(this);
++		if(m_query.Start(this) == false){
++			OnError();
++			return false;
++		}else{
++			return true;
++		}
+ 	}
+ 	return false;
+ }
+diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkUrl/UrlUpdateTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkUrl/UrlUpdateTask.cpp
+--- bcti-sdk-linux-5.27.1.last/src/IsisSdkUrl/UrlUpdateTask.cpp	2019-04-03 14:00:29.000000000 -0700
++++ bcti-sdk-linux-5.27.1/src/IsisSdkUrl/UrlUpdateTask.cpp	2019-05-28 10:29:46.000000000 -0700
+@@ -50,7 +50,12 @@
+ {
+ 	if (m_query.HasQuery())
+ 	{
+-		return m_query.Start(this);
++		if(m_query.Start(this) == false){
++			OnError();
++			return false;
++		}else{
++			return true;
++		}
+ 	}
+ 	return false;
+ }
+diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkUrl/WhoisBasicTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkUrl/WhoisBasicTask.cpp
+--- bcti-sdk-linux-5.27.1.last/src/IsisSdkUrl/WhoisBasicTask.cpp	2019-04-03 14:00:29.000000000 -0700
++++ bcti-sdk-linux-5.27.1/src/IsisSdkUrl/WhoisBasicTask.cpp	2019-05-28 10:29:57.000000000 -0700
+@@ -48,7 +48,12 @@
+ {
+ 	if (m_query.HasQuery())
+ 	{
+-		return m_query.Start(this);
++		if(m_query.Start(this) == false){
++			OnError();
++			return false;
++		}else{
++			return true;
++		}
+ 	}
+ 	else
+ 	{
