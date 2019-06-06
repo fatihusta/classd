@@ -13,6 +13,8 @@ set(LIB_NAVL navl)
 if ("${CMAKE_LIBRARY_ARCHITECTURE}" STREQUAL "") # OpenWrt
   if (CMAKE_C_FLAGS MATCHES "cortex-a9")
     set(LIB_NAVL_DIR ./src/vineyard/lib-mvebu-openwrt-musl)
+  elseif (CMAKE_C_FLAGS MATCHES "cortex-a53")
+    set(LIB_NAVL_DIR ./src/vineyard/lib-aarch64-openwrt-musl)
   else ()
     set(LIB_NAVL_DIR ./src/vineyard/lib-x86_64-openwrt-musl)
   endif (CMAKE_C_FLAGS MATCHES "cortex-a9")
