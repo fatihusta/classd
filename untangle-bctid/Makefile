@@ -1,4 +1,4 @@
-VERSION := 5.27.1
+VERSION := 5.27.2
 
 BCI_SDK_DIR := bcti-sdk-linux-${VERSION}
 BCI_SDK_TAR := ./${BCI_SDK_DIR}.tgz
@@ -20,12 +20,10 @@ build:
 
 	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0001_load_db.patch
 	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0002_client_send_performance.patch
-	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0003_threatmaskfile.patch
-	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0004_cache_status_and_clear.patch
-	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0005_client_elapsed_time.patch
 	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0006_host_colon.patch
-	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0007_status.patch
 	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0008_on_error.patch
+	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0009_status.patch
+	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0010_status_ip_error.patch
 
 	make -C $(TMPDIR)/${BCI_SDK_DIR}/src Daemon
 

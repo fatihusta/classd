@@ -1,6 +1,6 @@
-diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkCdb/CdbConnectionTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkCdb/CdbConnectionTask.cpp
---- bcti-sdk-linux-5.27.1.last/src/IsisSdkCdb/CdbConnectionTask.cpp	2019-04-03 14:00:29.000000000 -0700
-+++ bcti-sdk-linux-5.27.1/src/IsisSdkCdb/CdbConnectionTask.cpp	2019-05-28 10:30:02.000000000 -0700
+diff -ur bcti-sdk-linux-5.27.2.orig/src/IsisSdkCdb/CdbConnectionTask.cpp bcti-sdk-linux-5.27.2/src/IsisSdkCdb/CdbConnectionTask.cpp
+--- bcti-sdk-linux-5.27.2.orig/src/IsisSdkCdb/CdbConnectionTask.cpp	2019-04-03 19:45:56.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/IsisSdkCdb/CdbConnectionTask.cpp	2019-06-14 10:23:46.000000000 -0400
 @@ -44,7 +44,12 @@
  	if (m_query.HasQuery())
  	{
@@ -15,9 +15,9 @@ diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkCdb/CdbConnectionTask.cpp bcti-sd
  	}
  	else
  	{
-diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkCdb/CdbStatsTask.h bcti-sdk-linux-5.27.1/src/IsisSdkCdb/CdbStatsTask.h
---- bcti-sdk-linux-5.27.1.last/src/IsisSdkCdb/CdbStatsTask.h	2019-04-03 14:00:29.000000000 -0700
-+++ bcti-sdk-linux-5.27.1/src/IsisSdkCdb/CdbStatsTask.h	2019-05-28 10:30:13.000000000 -0700
+diff -ur bcti-sdk-linux-5.27.2.orig/src/IsisSdkCdb/CdbStatsTask.h bcti-sdk-linux-5.27.2/src/IsisSdkCdb/CdbStatsTask.h
+--- bcti-sdk-linux-5.27.2.orig/src/IsisSdkCdb/CdbStatsTask.h	2019-04-03 19:45:52.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/IsisSdkCdb/CdbStatsTask.h	2019-06-14 10:24:07.000000000 -0400
 @@ -45,7 +45,12 @@
  		if (m_query.HasQuery())
  		{
@@ -32,9 +32,9 @@ diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkCdb/CdbStatsTask.h bcti-sdk-linux
  		}
  		else
  		{
-diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkCore/StatsTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkCore/StatsTask.cpp
---- bcti-sdk-linux-5.27.1.last/src/IsisSdkCore/StatsTask.cpp	2019-04-03 14:00:29.000000000 -0700
-+++ bcti-sdk-linux-5.27.1/src/IsisSdkCore/StatsTask.cpp	2019-05-28 10:29:28.000000000 -0700
+diff -ur bcti-sdk-linux-5.27.2.orig/src/IsisSdkCore/StatsTask.cpp bcti-sdk-linux-5.27.2/src/IsisSdkCore/StatsTask.cpp
+--- bcti-sdk-linux-5.27.2.orig/src/IsisSdkCore/StatsTask.cpp	2019-04-18 17:05:37.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/IsisSdkCore/StatsTask.cpp	2019-06-14 10:22:04.000000000 -0400
 @@ -51,7 +51,12 @@
  	if (m_query.HasQuery())
  	{
@@ -49,31 +49,9 @@ diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkCore/StatsTask.cpp bcti-sdk-linux
  	}
  	return false;
  }
-diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkCore/TCPConnection.cpp bcti-sdk-linux-5.27.1/src/IsisSdkCore/TCPConnection.cpp
---- bcti-sdk-linux-5.27.1.last/src/IsisSdkCore/TCPConnection.cpp	2019-04-03 14:00:29.000000000 -0700
-+++ bcti-sdk-linux-5.27.1/src/IsisSdkCore/TCPConnection.cpp	2019-05-28 10:47:42.000000000 -0700
-@@ -319,14 +319,17 @@
- 	if (IpAddress::Protocol::Undefined == GetProtocol())
- 	{
- 		Log(LOG_Error, "Cannot determine Internet Protocol for host %s", host.c_str());
-+		++s_errors;
- 		return ConnectError();
- 	}
- 
- 	m_error = 0;
- 	if (defer)
- 		m_addr.SetName(host);
--	else if (!m_addr.Resolve(host, m_protocol))
-+	else if (!m_addr.Resolve(host, m_protocol)){
-+		++s_errors;
- 		return ConnectError();
-+	}
- 	m_port = port;
- 	if (defer)
- 		return true;
-diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkFile/Md5FileTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkFile/Md5FileTask.cpp
---- bcti-sdk-linux-5.27.1.last/src/IsisSdkFile/Md5FileTask.cpp	2019-04-03 14:00:29.000000000 -0700
-+++ bcti-sdk-linux-5.27.1/src/IsisSdkFile/Md5FileTask.cpp	2019-05-28 10:29:37.000000000 -0700
+diff -ur bcti-sdk-linux-5.27.2.orig/src/IsisSdkFile/Md5FileTask.cpp bcti-sdk-linux-5.27.2/src/IsisSdkFile/Md5FileTask.cpp
+--- bcti-sdk-linux-5.27.2.orig/src/IsisSdkFile/Md5FileTask.cpp	2019-04-03 19:45:56.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/IsisSdkFile/Md5FileTask.cpp	2019-06-14 10:22:23.000000000 -0400
 @@ -122,7 +122,12 @@
  	if (m_query.HasQuery())
  	{
@@ -88,9 +66,9 @@ diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkFile/Md5FileTask.cpp bcti-sdk-lin
  	}
  	return false;
  }
-diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkIp/IpGeoTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkIp/IpGeoTask.cpp
---- bcti-sdk-linux-5.27.1.last/src/IsisSdkIp/IpGeoTask.cpp	2019-04-03 14:00:29.000000000 -0700
-+++ bcti-sdk-linux-5.27.1/src/IsisSdkIp/IpGeoTask.cpp	2019-05-28 10:28:43.000000000 -0700
+diff -ur bcti-sdk-linux-5.27.2.orig/src/IsisSdkIp/IpGeoTask.cpp bcti-sdk-linux-5.27.2/src/IsisSdkIp/IpGeoTask.cpp
+--- bcti-sdk-linux-5.27.2.orig/src/IsisSdkIp/IpGeoTask.cpp	2019-04-03 19:45:56.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/IsisSdkIp/IpGeoTask.cpp	2019-06-14 10:20:07.000000000 -0400
 @@ -103,7 +103,12 @@
  	if (m_query.HasQuery())
  	{
@@ -105,9 +83,9 @@ diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkIp/IpGeoTask.cpp bcti-sdk-linux-5
  	}
  	return false;
  }
-diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkIp/IpReputationTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkIp/IpReputationTask.cpp
---- bcti-sdk-linux-5.27.1.last/src/IsisSdkIp/IpReputationTask.cpp	2019-04-03 14:00:29.000000000 -0700
-+++ bcti-sdk-linux-5.27.1/src/IsisSdkIp/IpReputationTask.cpp	2019-05-28 10:28:38.000000000 -0700
+diff -ur bcti-sdk-linux-5.27.2.orig/src/IsisSdkIp/IpReputationTask.cpp bcti-sdk-linux-5.27.2/src/IsisSdkIp/IpReputationTask.cpp
+--- bcti-sdk-linux-5.27.2.orig/src/IsisSdkIp/IpReputationTask.cpp	2019-04-03 19:45:56.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/IsisSdkIp/IpReputationTask.cpp	2019-06-14 10:19:53.000000000 -0400
 @@ -101,7 +101,12 @@
  	if (m_query.HasQuery())
  	{
@@ -122,9 +100,9 @@ diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkIp/IpReputationTask.cpp bcti-sdk-
  	}
  	return false;
  }
-diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkIp/IpThreatListTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkIp/IpThreatListTask.cpp
---- bcti-sdk-linux-5.27.1.last/src/IsisSdkIp/IpThreatListTask.cpp	2019-04-03 14:00:29.000000000 -0700
-+++ bcti-sdk-linux-5.27.1/src/IsisSdkIp/IpThreatListTask.cpp	2019-05-28 10:28:53.000000000 -0700
+diff -ur bcti-sdk-linux-5.27.2.orig/src/IsisSdkIp/IpThreatListTask.cpp bcti-sdk-linux-5.27.2/src/IsisSdkIp/IpThreatListTask.cpp
+--- bcti-sdk-linux-5.27.2.orig/src/IsisSdkIp/IpThreatListTask.cpp	2019-04-03 19:45:56.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/IsisSdkIp/IpThreatListTask.cpp	2019-06-14 10:20:26.000000000 -0400
 @@ -45,7 +45,12 @@
  {
  	if (m_query.HasQuery())
@@ -139,9 +117,9 @@ diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkIp/IpThreatListTask.cpp bcti-sdk-
  	}
  	else
  	{
-diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkIp/IpThreatTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkIp/IpThreatTask.cpp
---- bcti-sdk-linux-5.27.1.last/src/IsisSdkIp/IpThreatTask.cpp	2019-04-03 14:00:29.000000000 -0700
-+++ bcti-sdk-linux-5.27.1/src/IsisSdkIp/IpThreatTask.cpp	2019-05-28 10:28:47.000000000 -0700
+diff -ur bcti-sdk-linux-5.27.2.orig/src/IsisSdkIp/IpThreatTask.cpp bcti-sdk-linux-5.27.2/src/IsisSdkIp/IpThreatTask.cpp
+--- bcti-sdk-linux-5.27.2.orig/src/IsisSdkIp/IpThreatTask.cpp	2019-04-03 19:45:56.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/IsisSdkIp/IpThreatTask.cpp	2019-06-14 10:20:44.000000000 -0400
 @@ -111,7 +111,12 @@
  {
  	if (m_query.HasQuery())
@@ -156,9 +134,9 @@ diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkIp/IpThreatTask.cpp bcti-sdk-linu
  	}
  	return false;
  }
-diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkIp/IpUpdateTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkIp/IpUpdateTask.cpp
---- bcti-sdk-linux-5.27.1.last/src/IsisSdkIp/IpUpdateTask.cpp	2019-04-03 14:00:29.000000000 -0700
-+++ bcti-sdk-linux-5.27.1/src/IsisSdkIp/IpUpdateTask.cpp	2019-05-28 10:29:03.000000000 -0700
+diff -ur bcti-sdk-linux-5.27.2.orig/src/IsisSdkIp/IpUpdateTask.cpp bcti-sdk-linux-5.27.2/src/IsisSdkIp/IpUpdateTask.cpp
+--- bcti-sdk-linux-5.27.2.orig/src/IsisSdkIp/IpUpdateTask.cpp	2019-04-03 19:45:56.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/IsisSdkIp/IpUpdateTask.cpp	2019-06-14 10:20:57.000000000 -0400
 @@ -54,7 +54,12 @@
  	Log(LOG_Trace, "IpUpdateTask: DoNetwork");
  	if (m_query.HasQuery())
@@ -173,9 +151,9 @@ diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkIp/IpUpdateTask.cpp bcti-sdk-linu
  	}
  	else
  	{
-diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkMobileApps/MobileTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkMobileApps/MobileTask.cpp
---- bcti-sdk-linux-5.27.1.last/src/IsisSdkMobileApps/MobileTask.cpp	2019-04-03 14:00:29.000000000 -0700
-+++ bcti-sdk-linux-5.27.1/src/IsisSdkMobileApps/MobileTask.cpp	2019-05-28 10:28:34.000000000 -0700
+diff -ur bcti-sdk-linux-5.27.2.orig/src/IsisSdkMobileApps/MobileTask.cpp bcti-sdk-linux-5.27.2/src/IsisSdkMobileApps/MobileTask.cpp
+--- bcti-sdk-linux-5.27.2.orig/src/IsisSdkMobileApps/MobileTask.cpp	2019-04-03 19:45:56.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/IsisSdkMobileApps/MobileTask.cpp	2019-06-14 10:19:02.000000000 -0400
 @@ -128,7 +128,12 @@
  	if (m_query.HasQuery())
  	{
@@ -190,9 +168,9 @@ diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkMobileApps/MobileTask.cpp bcti-sd
  	}
  	return false;
  }
-diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkPhishing/PhishingRequestTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkPhishing/PhishingRequestTask.cpp
---- bcti-sdk-linux-5.27.1.last/src/IsisSdkPhishing/PhishingRequestTask.cpp	2019-04-03 14:00:29.000000000 -0700
-+++ bcti-sdk-linux-5.27.1/src/IsisSdkPhishing/PhishingRequestTask.cpp	2019-05-28 10:29:22.000000000 -0700
+diff -ur bcti-sdk-linux-5.27.2.orig/src/IsisSdkPhishing/PhishingRequestTask.cpp bcti-sdk-linux-5.27.2/src/IsisSdkPhishing/PhishingRequestTask.cpp
+--- bcti-sdk-linux-5.27.2.orig/src/IsisSdkPhishing/PhishingRequestTask.cpp	2019-04-03 19:45:56.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/IsisSdkPhishing/PhishingRequestTask.cpp	2019-06-14 10:21:42.000000000 -0400
 @@ -91,7 +91,12 @@
  {
  	if (m_query.HasQuery())
@@ -207,9 +185,9 @@ diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkPhishing/PhishingRequestTask.cpp 
  	}
  	else
  	{
-diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkPhishing/PhishingResponseTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkPhishing/PhishingResponseTask.cpp
---- bcti-sdk-linux-5.27.1.last/src/IsisSdkPhishing/PhishingResponseTask.cpp	2019-04-03 14:00:29.000000000 -0700
-+++ bcti-sdk-linux-5.27.1/src/IsisSdkPhishing/PhishingResponseTask.cpp	2019-05-28 10:29:09.000000000 -0700
+diff -ur bcti-sdk-linux-5.27.2.orig/src/IsisSdkPhishing/PhishingResponseTask.cpp bcti-sdk-linux-5.27.2/src/IsisSdkPhishing/PhishingResponseTask.cpp
+--- bcti-sdk-linux-5.27.2.orig/src/IsisSdkPhishing/PhishingResponseTask.cpp	2019-04-03 19:45:56.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/IsisSdkPhishing/PhishingResponseTask.cpp	2019-06-14 10:21:18.000000000 -0400
 @@ -69,7 +69,12 @@
  {
  	if (m_query.HasQuery())
@@ -224,9 +202,9 @@ diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkPhishing/PhishingResponseTask.cpp
  	}
  	else
  	{
-diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkPhishing/PhishingScoreTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkPhishing/PhishingScoreTask.cpp
---- bcti-sdk-linux-5.27.1.last/src/IsisSdkPhishing/PhishingScoreTask.cpp	2019-04-03 14:00:29.000000000 -0700
-+++ bcti-sdk-linux-5.27.1/src/IsisSdkPhishing/PhishingScoreTask.cpp	2019-05-28 10:29:18.000000000 -0700
+diff -ur bcti-sdk-linux-5.27.2.orig/src/IsisSdkPhishing/PhishingScoreTask.cpp bcti-sdk-linux-5.27.2/src/IsisSdkPhishing/PhishingScoreTask.cpp
+--- bcti-sdk-linux-5.27.2.orig/src/IsisSdkPhishing/PhishingScoreTask.cpp	2019-04-03 19:45:56.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/IsisSdkPhishing/PhishingScoreTask.cpp	2019-06-14 10:21:30.000000000 -0400
 @@ -146,7 +146,12 @@
  	if (m_query.HasQuery())
  	{
@@ -241,9 +219,9 @@ diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkPhishing/PhishingScoreTask.cpp bc
  	}
  	return false;
  }
-diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkUrl/CatListTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkUrl/CatListTask.cpp
---- bcti-sdk-linux-5.27.1.last/src/IsisSdkUrl/CatListTask.cpp	2019-04-03 14:00:29.000000000 -0700
-+++ bcti-sdk-linux-5.27.1/src/IsisSdkUrl/CatListTask.cpp	2019-05-28 10:29:41.000000000 -0700
+diff -ur bcti-sdk-linux-5.27.2.orig/src/IsisSdkUrl/CatListTask.cpp bcti-sdk-linux-5.27.2/src/IsisSdkUrl/CatListTask.cpp
+--- bcti-sdk-linux-5.27.2.orig/src/IsisSdkUrl/CatListTask.cpp	2019-04-03 19:45:56.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/IsisSdkUrl/CatListTask.cpp	2019-06-14 10:22:38.000000000 -0400
 @@ -45,7 +45,12 @@
  {
  	if (m_query.HasQuery())
@@ -258,9 +236,9 @@ diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkUrl/CatListTask.cpp bcti-sdk-linu
  	}
  	return false;
  }
-diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkUrl/UrlInfoTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkUrl/UrlInfoTask.cpp
---- bcti-sdk-linux-5.27.1.last/src/IsisSdkUrl/UrlInfoTask.cpp	2019-05-23 08:19:55.000000000 -0700
-+++ bcti-sdk-linux-5.27.1/src/IsisSdkUrl/UrlInfoTask.cpp	2019-05-28 10:44:47.000000000 -0700
+diff -ur bcti-sdk-linux-5.27.2.orig/src/IsisSdkUrl/UrlInfoTask.cpp bcti-sdk-linux-5.27.2/src/IsisSdkUrl/UrlInfoTask.cpp
+--- bcti-sdk-linux-5.27.2.orig/src/IsisSdkUrl/UrlInfoTask.cpp	2019-04-03 19:45:56.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/IsisSdkUrl/UrlInfoTask.cpp	2019-06-14 10:23:01.000000000 -0400
 @@ -173,7 +173,12 @@
  	if (m_query.HasQuery())
  	{
@@ -275,9 +253,9 @@ diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkUrl/UrlInfoTask.cpp bcti-sdk-linu
  	}
  	return false;
  }
-diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkUrl/UrlRepTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkUrl/UrlRepTask.cpp
---- bcti-sdk-linux-5.27.1.last/src/IsisSdkUrl/UrlRepTask.cpp	2019-04-03 14:00:29.000000000 -0700
-+++ bcti-sdk-linux-5.27.1/src/IsisSdkUrl/UrlRepTask.cpp	2019-05-28 10:29:51.000000000 -0700
+diff -ur bcti-sdk-linux-5.27.2.orig/src/IsisSdkUrl/UrlRepTask.cpp bcti-sdk-linux-5.27.2/src/IsisSdkUrl/UrlRepTask.cpp
+--- bcti-sdk-linux-5.27.2.orig/src/IsisSdkUrl/UrlRepTask.cpp	2019-04-03 19:45:56.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/IsisSdkUrl/UrlRepTask.cpp	2019-06-14 10:23:12.000000000 -0400
 @@ -77,7 +77,12 @@
  {
  	if (m_query.HasQuery())
@@ -292,9 +270,9 @@ diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkUrl/UrlRepTask.cpp bcti-sdk-linux
  	}
  	return false;
  }
-diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkUrl/UrlUpdateTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkUrl/UrlUpdateTask.cpp
---- bcti-sdk-linux-5.27.1.last/src/IsisSdkUrl/UrlUpdateTask.cpp	2019-04-03 14:00:29.000000000 -0700
-+++ bcti-sdk-linux-5.27.1/src/IsisSdkUrl/UrlUpdateTask.cpp	2019-05-28 10:29:46.000000000 -0700
+diff -ur bcti-sdk-linux-5.27.2.orig/src/IsisSdkUrl/UrlUpdateTask.cpp bcti-sdk-linux-5.27.2/src/IsisSdkUrl/UrlUpdateTask.cpp
+--- bcti-sdk-linux-5.27.2.orig/src/IsisSdkUrl/UrlUpdateTask.cpp	2019-04-03 19:45:56.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/IsisSdkUrl/UrlUpdateTask.cpp	2019-06-14 10:22:50.000000000 -0400
 @@ -50,7 +50,12 @@
  {
  	if (m_query.HasQuery())
@@ -309,9 +287,9 @@ diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkUrl/UrlUpdateTask.cpp bcti-sdk-li
  	}
  	return false;
  }
-diff -ru bcti-sdk-linux-5.27.1.last/src/IsisSdkUrl/WhoisBasicTask.cpp bcti-sdk-linux-5.27.1/src/IsisSdkUrl/WhoisBasicTask.cpp
---- bcti-sdk-linux-5.27.1.last/src/IsisSdkUrl/WhoisBasicTask.cpp	2019-04-03 14:00:29.000000000 -0700
-+++ bcti-sdk-linux-5.27.1/src/IsisSdkUrl/WhoisBasicTask.cpp	2019-05-28 10:29:57.000000000 -0700
+diff -ur bcti-sdk-linux-5.27.2.orig/src/IsisSdkUrl/WhoisBasicTask.cpp bcti-sdk-linux-5.27.2/src/IsisSdkUrl/WhoisBasicTask.cpp
+--- bcti-sdk-linux-5.27.2.orig/src/IsisSdkUrl/WhoisBasicTask.cpp	2019-04-03 19:45:56.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/IsisSdkUrl/WhoisBasicTask.cpp	2019-06-14 10:23:24.000000000 -0400
 @@ -48,7 +48,12 @@
  {
  	if (m_query.HasQuery())

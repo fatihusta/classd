@@ -1,5 +1,6 @@
---- bcti-sdk-linux-5.27.1.current/src/IsisUrl/URL.cpp	2019-04-03 14:00:29.000000000 -0700
-+++ bcti-sdk-linux-5.27.1/src/IsisUrl/URL.cpp	2019-05-23 08:22:24.000000000 -0700
+diff -ur bcti-sdk-linux-5.27.2.orig/src/IsisUrl/URL.cpp bcti-sdk-linux-5.27.2/src/IsisUrl/URL.cpp
+--- bcti-sdk-linux-5.27.2.orig/src/IsisUrl/URL.cpp	2019-04-03 19:45:56.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/IsisUrl/URL.cpp	2019-06-13 15:49:45.000000000 -0400
 @@ -291,7 +291,7 @@
  		return false;
  
@@ -14,8 +15,9 @@
  			{
  				// Only IPv6 addresses may have more than one colon.
 -				if ((s = strchr(l_hostinfo, ':')) && strchr(s + 1, ':'))
+-					return false;
 +				if ((s = strchr(l_hostinfo, ':')) && (s1 = strchr(s + 1, ':')) && ((s1 - s) == 5))
- 					return false;
++ 					return false;
 +				s = 0;
  			}
  			SetHostname(l_hostinfo, s ? s - l_hostinfo : hostLen, &ipAddr);

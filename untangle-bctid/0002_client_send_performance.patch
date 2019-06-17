@@ -1,124 +1,41 @@
-diff -ur bcti-sdk-linux-5.27.1.orig/src/Daemon/Daemon.h bcti-sdk-linux-5.27.1/src/Daemon/Daemon.h
---- bcti-sdk-linux-5.27.1.orig/src/Daemon/Daemon.h	2019-04-03 14:00:29.000000000 -0700
-+++ bcti-sdk-linux-5.27.1/src/Daemon/Daemon.h	2019-04-22 12:37:21.000000000 -0700
-@@ -220,7 +220,7 @@
- 				}
- 			}
- 			if (d->batchSize > 1u)
--				msleep(2u);
-+				msleep(.250);
- 		}
+diff -ur bcti-sdk-linux-5.27.2.orig/src/IsisSdkCore/SocketClient.cpp bcti-sdk-linux-5.27.2/src/IsisSdkCore/SocketClient.cpp
+--- bcti-sdk-linux-5.27.2.orig/src/IsisSdkCore/SocketClient.cpp	2019-05-18 13:17:31.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/IsisSdkCore/SocketClient.cpp	2019-06-13 15:46:10.000000000 -0400
+@@ -38,9 +38,10 @@
+ 		setsockopt(m_sock, IPPROTO_TCP, TCP_NODELAY, &optVal, sizeof optVal);
+ //		setsockopt(m_sock, SOL_SOCKET, TCP_NODELAY, &optVal, sizeof optVal);
+ 		setsockopt(m_sock, SOL_SOCKET, SO_KEEPALIVE, &optVal, sizeof optVal);
++		setsockopt(m_sock, IPPROTO_TCP, TCP_CORK, &optVal, sizeof(optVal));
  
- 		{
-@@ -282,7 +282,7 @@
- 			}
+-		int flags = fcntl(m_sock, F_GETFL, 0);
+-		fcntl(m_sock, F_SETFL, flags | O_NONBLOCK);
++		// int flags = fcntl(m_sock, F_GETFL, 0);
++		// fcntl(m_sock, F_SETFL, flags | O_NONBLOCK);
  
- 			while (!batchReq.isDone.value())
--				msleep(2u);
-+				msleep(.250);
+ 		SetReceiveTimeout(1000);
+ 		SetConsecutiveTimeoutsSleepInterval(250);
+@@ -80,15 +81,23 @@
+ 	if (!IsSocketValid())
+ 		return false;
  
- /*
- 			switch (taskResult)
-diff -ur bcti-sdk-linux-5.27.1.orig/src/Daemon/DaemonJsonResponder.cpp bcti-sdk-linux-5.27.1/src/Daemon/DaemonJsonResponder.cpp
---- bcti-sdk-linux-5.27.1.orig/src/Daemon/DaemonJsonResponder.cpp	2019-04-03 14:00:29.000000000 -0700
-+++ bcti-sdk-linux-5.27.1/src/Daemon/DaemonJsonResponder.cpp	2019-04-22 12:41:58.000000000 -0700
-@@ -34,7 +34,11 @@
- 	vsnprintf(m_sendBuf, sizeof(m_sendBuf), fmt, args);
- 	va_end(args);
- 
--	m_client.Send("%s%s", m_sendBuf, 0u == GetScopeLevel() ? m_client.EOT : "");
-+	if(0u == GetScopeLevel()){
-+		m_client.SendEnd("%s%s", m_sendBuf, m_client.EOT);
-+	}else{
-+		m_client.Send("%s%s", m_sendBuf, "");
-+	}
- }
- 
- bool DaemonJsonResponder::EndScopesWithError(const char* fmt, ...)
-diff -ur bcti-sdk-linux-5.27.1.orig/src/Daemon/main.cpp bcti-sdk-linux-5.27.1/src/Daemon/main.cpp
---- bcti-sdk-linux-5.27.1.orig/src/Daemon/main.cpp	2019-04-03 14:00:29.000000000 -0700
-+++ bcti-sdk-linux-5.27.1/src/Daemon/main.cpp	2019-04-22 12:52:58.000000000 -0700
-@@ -16,6 +16,7 @@
- #include <fcntl.h>
- #include <iostream>
- #include <map>
-+#include <netinet/tcp.h>
- #include <queue>
- #include <stdarg.h>
- #include <sys/poll.h>
-@@ -422,6 +430,7 @@
- 	int sock = ((ClientLoopArgs*)args)->socket;
- 	int optVal = 1;
- 	setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optVal, sizeof(optVal));
-+	setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &optVal, sizeof(optVal));
- 	Options& opts = ((ClientLoopArgs*)args)->options;
- 	hrtimer& daemonUpTimer = ((ClientLoopArgs*)args)->daemonUpTimer;
- 	size_t threadIndex = ((ClientLoopArgs*)args)->threadIndex;
-diff -ur bcti-sdk-linux-5.27.1.orig/src/IsisSdkCore/SocketClient.cpp bcti-sdk-linux-5.27.1/src/IsisSdkCore/SocketClient.cpp
---- bcti-sdk-linux-5.27.1.orig/src/IsisSdkCore/SocketClient.cpp	2019-04-03 14:00:29.000000000 -0700
-+++ bcti-sdk-linux-5.27.1/src/IsisSdkCore/SocketClient.cpp	2019-04-22 12:45:15.000000000 -0700
-@@ -36,11 +36,12 @@
- 	int optVal = 1;
- 	setsockopt(socket, SOL_SOCKET, TCP_NODELAY, &optVal, sizeof(optVal));
- 	setsockopt(socket, SOL_SOCKET, SO_KEEPALIVE, &optVal, sizeof(optVal));
-+	setsockopt(m_sock, IPPROTO_TCP, TCP_CORK, &optVal, sizeof(optVal));
- 
- 	// Set socket to non-blocking, so we can properly gauge receive times.
--	int flags = fcntl(socket, F_GETFL, 0);
--	flags |= O_NONBLOCK;
--	fcntl(socket, F_SETFL, flags);
-+	// int flags = fcntl(socket, F_GETFL, 0);
-+	// flags |= O_NONBLOCK;
-+	// fcntl(socket, F_SETFL, flags);
- 
- 	TimeSends = TimeReceives = false;
- }
-@@ -90,6 +91,37 @@
- 	return result > -1;
- }
- 
-+bool SocketClient::SendEnd(const char* fmt, ...) const
-+{
-+	if (!IsConnected())
-+		return false;
-+
-+	va_list args;
-+	va_start(args, fmt);
-+	vsnprintf(m_sendBuf, sizeof(m_sendBuf), fmt, args);
-+	va_end(args);
-+
-+	if (TimeSends)
-+		m_sendTimer.start();
-+
 +	int state = 0;
-+	setsockopt(m_sock, IPPROTO_TCP, TCP_CORK, &state, sizeof(state));
-+	// Calls to send will block until the outgoing data buffer has sufficient space.
-+	ssize_t result = send(m_sock, m_sendBuf, strlen(m_sendBuf), MSG_NOSIGNAL);
-+	state = 1;
-+	setsockopt(m_sock, IPPROTO_TCP, TCP_CORK, &state, sizeof(state));
-+/*
-+	if (result < 0)
-+		Isis::Log(Isis::LOG_Error, "SocketClient::SendText error: %s", strerror(errno));
-+*/
 +
-+	if (TimeSends)
-+		m_sendTimer.pause();
-+
-+	return result > -1;
-+}
-+
-+
- std::string SocketClient::Receive(bool* outConnectionDropped, AtomicInt* processKilled)
- {
- 	if (!IsConnected())
-diff -ur bcti-sdk-linux-5.27.1.orig/src/IsisSdkCore/SocketClient.h bcti-sdk-linux-5.27.1/src/IsisSdkCore/SocketClient.h
---- bcti-sdk-linux-5.27.1.orig/src/IsisSdkCore/SocketClient.h	2019-04-03 14:00:29.000000000 -0700
-+++ bcti-sdk-linux-5.27.1/src/IsisSdkCore/SocketClient.h	2019-04-22 12:39:14.000000000 -0700
-@@ -50,6 +50,7 @@
- 	void SetReceiveTimeout(size_t milliseconds);
+ 	std::string msg(str);
+-	if (appendEOT)
++	if (appendEOT){
++		setsockopt(m_sock, IPPROTO_TCP, TCP_CORK, &state, sizeof(state));
+ 		msg.append(m_eot);
++	}
+ 	size_t byteCount = msg.size();
  
- 	bool Send(const char* fmt, ...) const;
-+	bool SendEnd(const char* fmt, ...) const;
+ 	if (m_timeSends)
+ 		m_sendTimer.start();
+ 	// Calls to send will block until the outgoing data buffer has sufficient space.
+ 	ssize_t result = send(m_sock, msg.c_str(), byteCount, MSG_NOSIGNAL);
++	if (appendEOT){
++		state = 1;
++		setsockopt(m_sock, IPPROTO_TCP, TCP_CORK, &state, sizeof(state));
++	}
+ 	if (m_timeSends)
+ 		m_sendTimer.pause();
  
- 	// Expects EOT to indicate completion between byte streams.
- 	std::string Receive(bool* outConnectionDropped = 0, AtomicInt* processKilled = 0);

@@ -1,29 +1,29 @@
-diff -ur bcti-sdk-linux-5.27.1.orig/src/Daemon/main.cpp bcti-sdk-linux-5.27.1/src/Daemon/main.cpp
---- bcti-sdk-linux-5.27.1.orig/src/Daemon/main.cpp	2019-04-03 14:00:29.000000000 -0700
-+++ bcti-sdk-linux-5.27.1/src/Daemon/main.cpp	2019-04-22 12:29:13.000000000 -0700
-@@ -186,12 +186,19 @@
- 				break;
+diff -ur bcti-sdk-linux-5.27.2.orig/src/Daemon/main.cpp bcti-sdk-linux-5.27.2/src/Daemon/main.cpp
+--- bcti-sdk-linux-5.27.2.orig/src/Daemon/main.cpp	2019-05-18 13:17:09.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/Daemon/main.cpp	2019-06-13 15:23:19.000000000 -0400
+@@ -99,6 +99,8 @@
+ 
+ static void KillHandler(int sig) { ++s_killDaemon; }
+ 
++ConfigData conf;
++
+ // < 0 = failure, >= 0 = success
+ static ssize_t readPipe(int fd, char* buf, size_t bufferSize)
+ {
+@@ -147,7 +149,6 @@
+ 
+ static bool LoadConfig(Options& opts)
+ {
+-	ConfigData conf;
+ 	if (!conf.ReadConfigFile(opts.configFile.c_str()))
+ 		return false;
+ 
+@@ -186,7 +187,7 @@
  			case 3:
  				{
--					writePipe(pipePW, "Loading local databases... ");
+ 					writePipe(pipePW, "Loading local databases... ");
 -					DbType dbs = (DbType)(DbType::DbIp | DbType::DbUrl);
--					if (LoadDb(dbs, 60u) == dbs)
--						writePipe(pipePW, "OK\n");
--					else
--						errStr = "FAILED";
-+					DbType dbs = DbNone;
-+					if(Configuration::Instance()->UrlDbEnabled())
-+						dbs = (DbType)(dbs | DbType::DbUrl);
-+					if(Configuration::Instance()->IpDbEnabled())
-+						dbs = (DbType)(dbs | DbType::DbIp);
-+					if(dbs != DbNone){
-+						writePipe(pipePW, "Loading local databases... ");
-+						if (LoadDb(dbs, 60u) == dbs)
-+							writePipe(pipePW, "OK\n");
-+						else
-+							errStr = "FAILED";
-+
-+					}
- 				}
- 				break;
- 			default:
++					DbType dbs = (DbType)(DbType::DbIp && conf.ipDbEnabled | DbType::DbUrl && conf.urlDbEnabled);
+ 					unsigned int timeoutSecs = 60;
+ 					if (LoadDb(dbs, timeoutSecs) == dbs)
+ 					{
