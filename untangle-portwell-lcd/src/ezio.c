@@ -8,7 +8,7 @@
 
 #define VERSION "1.0"
 #define LINE_LENGTH 16
-#define NUM_PAGES 7
+#define NUM_PAGES 8
 
 //com port. 0=COM1 or ttyS0
 #define COMPORT 1 
