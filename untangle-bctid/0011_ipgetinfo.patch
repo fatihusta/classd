@@ -1,0 +1,101 @@
+diff -ur bcti-sdk-linux-5.27.2.orig/src/Daemon/DaemonIp.cpp bcti-sdk-linux-5.27.2/src/Daemon/DaemonIp.cpp
+--- bcti-sdk-linux-5.27.2.orig/src/Daemon/DaemonIp.cpp	2019-04-24 12:43:50.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/Daemon/DaemonIp.cpp	2019-07-25 15:04:45.000000000 -0400
+@@ -87,11 +87,11 @@
+ 		}
+ 
+ 		Json::Number(jsonObj, "threat_mask", info.threatMask);
+-		cJSON* jThreatCats = Json::Array(jsonObj, "threat_categories");
+-		char buf[64];
+-		for (size_t b = 0; b < IP_THREAT_MASK_BIT_COUNT; ++b)
+-			if ((info.threatMask & (1LL << b)) && GetIpCategory(b, buf, sizeof buf))
+-				Json::String(jThreatCats, buf);
++		// cJSON* jThreatCats = Json::Array(jsonObj, "threat_categories");
++		// char buf[64];
++		// for (size_t b = 0; b < IP_THREAT_MASK_BIT_COUNT; ++b)
++		// 	if ((info.threatMask & (1LL << b)) && GetIpCategory(b, buf, sizeof buf))
++		// 		Json::String(jThreatCats, buf);
+ 	}
+ 	else
+ 	{
+diff -ur bcti-sdk-linux-5.27.2.orig/src/IsisSdkCore/TCPConnection.cpp bcti-sdk-linux-5.27.2/src/IsisSdkCore/TCPConnection.cpp
+--- bcti-sdk-linux-5.27.2.orig/src/IsisSdkCore/TCPConnection.cpp	2019-05-06 16:28:11.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/IsisSdkCore/TCPConnection.cpp	2019-07-25 15:16:06.000000000 -0400
+@@ -210,6 +210,7 @@
+ {
+ 	if (IsOpen())
+ 	{
++		Log(LOG_Trace, "TCPConnection::Close");
+ 		m_ioHandler->Close();
+ #ifdef _WIN32
+ 		closesocket(m_sock);
+@@ -316,7 +317,7 @@
+ {
+ 	if (IsOpen())
+ 		return true;
+-	Log(LOG_Trace, "TCPConnection::Open(%s, %d)", host.c_str(), port);
++	Log(LOG_Trace, "TCPConnection::Open(%s, %d, %d)", host.c_str(), port, defer);
+ 
+ 	if (IpAddress::Protocol::Undefined == GetProtocol())
+ 	{
+diff -ur bcti-sdk-linux-5.27.2.orig/src/IsisSdkIp/IpDb.cpp bcti-sdk-linux-5.27.2/src/IsisSdkIp/IpDb.cpp
+--- bcti-sdk-linux-5.27.2.orig/src/IsisSdkIp/IpDb.cpp	2019-04-03 19:45:56.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/IsisSdkIp/IpDb.cpp	2019-07-25 14:48:21.000000000 -0400
+@@ -220,8 +220,12 @@
+ 		else
+ 		{
+ 			info.rep = p;
+-			if (c)
++			if (c){
+ 				c->CopyTo(info);
++			}else{
++				info.threatMask = info.rep->threatMask;
++				info.reputation = info.rep->reputation;
++			}
+ 			return true;
+ 		}
+ 	}
+diff -ur bcti-sdk-linux-5.27.2.orig/src/IsisSdkIp/IpReputationQuery.cpp bcti-sdk-linux-5.27.2/src/IsisSdkIp/IpReputationQuery.cpp
+--- bcti-sdk-linux-5.27.2.orig/src/IsisSdkIp/IpReputationQuery.cpp	2019-04-03 19:45:56.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/IsisSdkIp/IpReputationQuery.cpp	2019-07-25 10:55:32.000000000 -0400
+@@ -144,6 +144,8 @@
+ 
+ 	out.threatMask = GetInt(m_info, "threat_mask");
+ 	out.reputation = GetInt(m_info, "reputation");
++	rep->threatMask = GetInt(m_info, "threat_mask");
++	rep->reputation = GetInt(m_info, "reputation");
+ 	rep->threatCount = GetInt(m_info, "threat_count");
+ 	GetString(m_info, "domain", rep->domain);
+ 	const char* str = GetString(m_info, "domain_age");
+diff -ur bcti-sdk-linux-5.27.2.orig/src/IsisSdkIp/IpThreatListQuery.cpp bcti-sdk-linux-5.27.2/src/IsisSdkIp/IpThreatListQuery.cpp
+--- bcti-sdk-linux-5.27.2.orig/src/IsisSdkIp/IpThreatListQuery.cpp	2019-04-03 19:45:56.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/IsisSdkIp/IpThreatListQuery.cpp	2019-07-25 14:55:14.000000000 -0400
+@@ -79,6 +79,7 @@
+ 				m_result = m_result->child;
+ 
+ 			m_queries = cJSON_GetObjectItem(m_result, "queries");
++			m_queries = cJSON_GetObjectItem(m_queries, "getthreatlist");
+ 
+ 			m_info = cJSON_GetObjectItem(m_queries, "threats");
+ 			// actual result field is the first child, array
+diff -ur bcti-sdk-linux-5.27.2.orig/src/IsisSdkIp/IsisSdkIp.h bcti-sdk-linux-5.27.2/src/IsisSdkIp/IsisSdkIp.h
+--- bcti-sdk-linux-5.27.2.orig/src/IsisSdkIp/IsisSdkIp.h	2019-04-03 19:45:52.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/IsisSdkIp/IsisSdkIp.h	2019-07-25 11:12:07.000000000 -0400
+@@ -85,6 +85,8 @@
+ 	time_t      expire;             //!< Output: When record expires (TTL)
+ 	uint32_t    threatCount;        //!< Output: Number of threats originating from this site
+ 	int8_t      ipStatus;           //!< Output: 0 is ok 1 is a threat, -1 no information
++	uint32_t    threatMask;			//!< Output: Bitmask of all threat types
++	uint8_t     reputation;			//!< Output: Reputation score for IP
+ 
+ 	IpReputationData()
+ 		: domain()
+@@ -95,6 +97,8 @@
+ 		, expire(0)
+ 		, threatCount(0)
+ 		, ipStatus(0)
++		, threatMask(0)
++		, reputation(0)
+ 	{}
+ };
+ typedef std::shared_ptr<IpReputationData> IpReputationPtr;
