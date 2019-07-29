@@ -26,6 +26,7 @@ build:
 	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0010_status_ip_error.patch
 	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0011_ipgetinfo.patch
 	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0012_resolve.patch
+	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0013_restart.patch
 
 	make -C $(TMPDIR)/${BCI_SDK_DIR}/src Daemon
 
