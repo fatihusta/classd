@@ -1,0 +1,29 @@
+diff -ur bcti-sdk-linux-5.27.2.orig/src/Daemon/Daemon.cpp bcti-sdk-linux-5.27.2/src/Daemon/Daemon.cpp
+--- bcti-sdk-linux-5.27.2.orig/src/Daemon/Daemon.cpp	2019-06-18 14:19:21.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/Daemon/Daemon.cpp	2019-08-01 13:48:41.000000000 -0400
+@@ -235,7 +235,12 @@
+ 
+ DAEMON_SDK_DEFN(Daemon::GetStatus)
+ {
+-	CHECK_JSON("")
++	CHECK_JSON(
++		MULTILINE(
++			"?test_connection": false,
++		)
++	)
++	GET_JSON_BOOL("test_connection", testConnection, false, false)
+ 
+ 	Configuration* config = Configuration::Instance();
+ 
+@@ -249,7 +254,9 @@
+ 
+ 	Json::String(jRoot, "server", config->GetServer());
+ 	Json::Number(jRoot, "port", config->GetServerPort());
+-	Json::Bool(jRoot, "connection_ok", TestServerConnection());
++	if(testConnection){
++		Json::Bool(jRoot, "connection_ok", TestServerConnection());		
++	}
+ 	Json::Number(jRoot, "send_timeout_secs", config->GetSndTimeout());
+ 	Json::Number(jRoot, "recv_timeout_secs", config->GetRcvTimeout());
+ 
+Binary files bcti-sdk-linux-5.27.2.orig/src/Daemon/.obj/Daemon.o and bcti-sdk-linux-5.27.2/src/Daemon/.obj/Daemon.o differ
