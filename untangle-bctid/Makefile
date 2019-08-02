@@ -28,6 +28,7 @@ build:
 	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0012_resolve.patch
 	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0013_restart.patch
 	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0014_test_connection.patch
+	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0015_heartbeat.patch
 
 	make -C $(TMPDIR)/${BCI_SDK_DIR}/src Daemon
 
