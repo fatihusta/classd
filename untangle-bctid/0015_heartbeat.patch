@@ -1,0 +1,39 @@
+diff -ur bcti-sdk-linux-5.27.2.orig/src/Daemon/Daemon.cpp bcti-sdk-linux-5.27.2/src/Daemon/Daemon.cpp
+--- bcti-sdk-linux-5.27.2.orig/src/Daemon/Daemon.cpp	2019-06-18 14:19:21.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/Daemon/Daemon.cpp	2019-08-01 14:06:44.000000000 -0400
+@@ -322,4 +329,11 @@
+ 
+ 	return jRoot;
+ }
++
++DAEMON_SDK_DEFN(Daemon::GetHeartbeat)
++{
++	cJSON* jRoot = Json::Object();
++	Json::Bool(jRoot, "up", true);
++	return jRoot;
++}
+ }
+diff -ur bcti-sdk-linux-5.27.2.orig/src/Daemon/Daemon.h bcti-sdk-linux-5.27.2/src/Daemon/Daemon.h
+--- bcti-sdk-linux-5.27.2.orig/src/Daemon/Daemon.h	2019-05-04 17:30:13.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/Daemon/Daemon.h	2019-08-01 14:09:08.000000000 -0400
+@@ -254,6 +254,7 @@
+ {
+ 	DAEMON_SDK_DECL(GetStatsCounters);
+ 	DAEMON_SDK_DECL(GetStatus);
++	DAEMON_SDK_DECL(GetHeartbeat);
+ };
+ }
+ #endif	// #define Daemon_h
+diff -ur bcti-sdk-linux-5.27.2.orig/src/Daemon/main.cpp bcti-sdk-linux-5.27.2/src/Daemon/main.cpp
+--- bcti-sdk-linux-5.27.2.orig/src/Daemon/main.cpp	2019-07-29 14:12:06.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/Daemon/main.cpp	2019-08-01 14:10:49.000000000 -0400
+@@ -408,6 +408,7 @@
+ 	s_sdkFns["url/setcacheclear"] = DaemonUrl::SetUrlCacheClear;
+ 	s_sdkFns["counters"] = Daemon::GetStatsCounters;
+ 	s_sdkFns["status"] = Daemon::GetStatus;
++	s_sdkFns["heartbeat"] = Daemon::GetHeartbeat;
+ 
+ 	s_clientFns["foff"] = SetFormattingOff;
+ 	s_clientFns["fon"] = SetFormattingOn;
+Binary files bcti-sdk-linux-5.27.2.orig/src/Daemon/.obj/Daemon.o and bcti-sdk-linux-5.27.2/src/Daemon/.obj/Daemon.o differ
+Binary files bcti-sdk-linux-5.27.2.orig/src/Daemon/.obj/main.o and bcti-sdk-linux-5.27.2/src/Daemon/.obj/main.o differ
