@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#DEBHELPER#
-
 if [ "$1" = "configure" ]; then
     old_file=/etc/bctid/bcti.cfg.dpkg-old
     new_file=/etc/bctid/bcti.cfg
@@ -11,5 +9,7 @@ if [ "$1" = "configure" ]; then
     -e 's/Device=.*/Device='$device'/' \
     -e 's/UID=.*/UID='$uid'/' $new_file
 fi
+
+#DEBHELPER#
 
 exit 0
