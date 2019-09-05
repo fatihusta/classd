@@ -1,5 +1,15 @@
 #!/bin/bash
 
+if [ "$1" = "configure" ]; then
+    old_file=/etc/bctid/bcti.cfg.dpkg-old
+    new_file=/etc/bctid/bcti.cfg
+    device=$(grep Device $old_file | head -1 | cut -d= -f2)
+    uid=$(grep UID $old_file | head -1 | cut -d= -f2)
+    sed -i \
+    -e 's/Device=.*/Device='$device'/' \
+    -e 's/UID=.*/UID='$uid'/' $new_file
+fi
+
 #DEBHELPER#
 
 exit 0
