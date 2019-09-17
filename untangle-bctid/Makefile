@@ -29,6 +29,7 @@ build:
 	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0013_restart.patch
 	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0014_test_connection.patch
 	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0016_protocol_fail.patch
+	patch -p1 -d $(TMPDIR)/${BCI_SDK_DIR} < ./0017_server_ip_address.patch
 
 	make -C $(TMPDIR)/${BCI_SDK_DIR}/src Daemon
 
