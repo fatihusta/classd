@@ -1,0 +1,45 @@
+diff -ur bcti-sdk-linux-5.27.2.orig/src/IsisSdkCore/TCPConnection.cpp bcti-sdk-linux-5.27.2/src/IsisSdkCore/TCPConnection.cpp
+--- bcti-sdk-linux-5.27.2.orig/src/IsisSdkCore/TCPConnection.cpp	2019-08-07 12:39:15.000000000 -0400
++++ bcti-sdk-linux-5.27.2/src/IsisSdkCore/TCPConnection.cpp	2019-09-17 16:55:34.000000000 -0400
+@@ -271,8 +271,8 @@
+ 		}
+ 		else
+ 		{
+-			Log(LOG_Error, "Cannot connect to server %s: %s",
+-				GetHostName().c_str(), strerror(err));
++			Log(LOG_Error, "Cannot connect to server %s (%s): %s",
++				GetHostName().c_str(), m_addr.GetIpAddress().GetString(), strerror(err));
+ 		}
+ 		++s_errors;
+ 		Close();
+@@ -440,7 +440,7 @@
+ 				snprintf(buf, 15u, "[Error %d]", m_error);
+ 				msg = buf;
+ 			}
+-			Log(LOG_Error, "Cannot connect to host %s: %s", host.c_str(), msg.c_str());
++			Log(LOG_Error, "Cannot connect to host %s (%s): %s", host.c_str(), m_addr.GetIpAddress().GetString(), msg.c_str());
+ 			Close();
+ 			++s_errors;
+ 			return ConnectError();
+@@ -752,8 +752,8 @@
+ #endif
+ 			{
+ 				std::string msg = GetErrorMessage(m_error);
+-				Log(LOG_Error, "Cannot send to host %s: %s",
+-					m_addr.GetName().c_str(), msg.c_str());
++				Log(LOG_Error, "Cannot send to host %s (%s): %s",
++					m_addr.GetName().c_str(), m_addr.GetIpAddress().GetString(), msg.c_str());
+ 				++s_errors;
+ 				Close();
+ 			}
+@@ -814,8 +814,8 @@
+ 		{
+ 			// EAGAIN without a poller (blocking) == recv timeout
+ 			std::string msg = GetErrorMessage(m_error);
+-			Log(LOG_Error, "Cannot receive from host %s: %s",
+-				m_addr.GetName().c_str(), msg.c_str());
++			Log(LOG_Error, "Cannot receive from host %s (%s): %s",
++				m_addr.GetName().c_str(), m_addr.GetIpAddress().GetString(), msg.c_str());
+ 			++s_errors;
+ 			Close();
+ 		}
