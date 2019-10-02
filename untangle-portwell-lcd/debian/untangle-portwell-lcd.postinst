@@ -1,5 +1,0 @@
-#! /bin/bash
-
-rm -f /etc/init.d/${DPKG_MAINTSCRIPT_PACKAGE}
-
-systemctl --no-block enable untangle-portwell-lcd.service 
